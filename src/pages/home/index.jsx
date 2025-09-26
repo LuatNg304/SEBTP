@@ -8,10 +8,14 @@ import {
     FiMapPin,
     FiChevronDown
 } from "react-icons/fi";
+import LoginModal from "../../components/modals/LoginModal";
+import RegisterModal from "../../components/modals/RegisterModal";
 
 const HomePage = () => {
     const [priceRange, setPriceRange] = useState(1000);
     const [activeTab, setActiveTab] = useState("recommended");
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
 
     const products = [
         {
@@ -106,6 +110,14 @@ const HomePage = () => {
             featured: false
         }
     ];
+    const handleOpenLogin = () => {
+        setShowLoginModal(true);
+        setShowRegisterModal(false);
+    };
+    const handleOpenRegister = () => {
+    setShowRegisterModal(true);
+    setShowLoginModal(false);
+  };
 
     return (
         <div
@@ -153,7 +165,8 @@ const HomePage = () => {
                             <button className="p-2 rounded-full hover:bg-white/40">
                                 <FiHeart className="h-6 w-6 text-gray-700" />
                             </button>
-                            <button className="px-3 py-1 bg-white rounded-full text-sm font-medium hover:bg-gray-100">
+                            <button className="px-3 py-1 bg-white rounded-full text-sm font-medium hover:bg-gray-100" onClick={handleOpenLogin}>
+
                                 Đăng nhập
                             </button>
                             <button className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800">
@@ -164,6 +177,16 @@ const HomePage = () => {
                             </button>
                         </div>
                     </div>
+                    <LoginModal
+                        isOpen={showLoginModal}
+                        onClose={() => setShowLoginModal(false)}
+                        onSwitchToRegister={handleOpenRegister}
+                    />
+                    <RegisterModal
+                        isOpen={showRegisterModal}
+                        onClose={() => setShowRegisterModal(false)}
+                        onSwitchToLogin={handleOpenLogin}
+                    />
 
                     {/* 1/3 giữa: Slogan */}
                     <div className="flex items-center justify-center">
@@ -187,7 +210,7 @@ const HomePage = () => {
                                     />
                                 </div>
 
-                                
+
 
                                 {/* Search Button Div */}
                                 <div className="rounded-lg">
