@@ -8,6 +8,8 @@ import {
     FiMapPin,
     FiChevronDown
 } from "react-icons/fi";
+import { DownOutlined } from '@ant-design/icons';
+import { Dropdown, Space, Typography } from 'antd';
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 
@@ -110,14 +112,28 @@ const HomePage = () => {
             featured: false
         }
     ];
+    const items = [
+        {
+            key: '1',
+            label: 'Item 1',
+        },
+        {
+            key: '2',
+            label: 'Item 2',
+        },
+        {
+            key: '3',
+            label: 'Item 3',
+        },
+    ];
     const handleOpenLogin = () => {
         setShowLoginModal(true);
         setShowRegisterModal(false);
     };
     const handleOpenRegister = () => {
-    setShowRegisterModal(true);
-    setShowLoginModal(false);
-  };
+        setShowRegisterModal(true);
+        setShowLoginModal(false);
+    };
 
     return (
         <div
@@ -210,11 +226,25 @@ const HomePage = () => {
                                     />
                                 </div>
 
-
+                                {/* Dropdown Select Div */}
+                                <div className="ml-2">
+                                    <Dropdown
+                                        menu={{
+                                            items,
+                                            selectable: true,
+                                            defaultSelectedKeys: ["3"],
+                                        }}
+                                    >
+                                        <button className="flex items-center gap-2 bg-white border border-white px-6 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100">
+                                            <span>Danh mục</span>
+                                            <DownOutlined className="text-gray-600" />
+                                        </button>
+                                    </Dropdown>
+                                </div>
 
                                 {/* Search Button Div */}
-                                <div className="rounded-lg">
-                                    <button className="bg-green-600 hover:bg-green-700 text-black font-medium px-6 py-3 rounded-lg h-full">
+                                <div className="ml-2">
+                                    <button className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg h-full">
                                         Tìm kiếm
                                     </button>
                                 </div>
