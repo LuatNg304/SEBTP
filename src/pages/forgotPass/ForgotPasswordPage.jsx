@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // Component icon Loader
 const Loader = ({ className }) => (
@@ -20,50 +21,37 @@ const Loader = ({ className }) => (
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState(null);
-  const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
   // Hàm xử lý submit form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage(null);
-    setIsError(false);
-    setIsLoading(true);
+ const handleSubmit = async (e) => {
+   e.preventDefault();
+   setIsLoading(true);
 
-    try {
-      // Gọi mock API bằng axios
-      const response = await axios.get(
-        "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category"
-      );
-      const users = response.data;
-      
+   try {
+     const response = await axios.get(
+       "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category"
+     );
+     const users = response.data;
 
-      // Tìm email trong dữ liệu mock
-      const user = users.find(
-        (u) => u.email === email);
-       console.log(user);
-      if (user) {
-        setMessage(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);
-        setIsError(false);
+     const user = users.find((u) => u.email === email);
+     if (user) {
+       toast.success(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);
+       setTimeout(() => {
+         navigate("/otp", { state: { id: user.id, email: user.email } });
+       }, 1000);
+     } else {
+       toast.error("Email không tồn tại trong hệ thống");
+     }
+   } catch (error) {
+     toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+   } finally {
+     setIsLoading(false);
+   }
+ };
 
-        // Chuyển sang trang OTP, truyền id và email
-        setTimeout(() => {
-          navigate("/otp", { state: { id: user.id, email: user.email } });
-        }, 1000); // Delay nhỏ để người dùng nhìn thấy thông báo
-      } else {
-        setMessage("Email không tồn tại trong hệ thống");
-        setIsError(true);
-      }
-    } catch (error) {
-      setMessage("Có lỗi xảy ra. Vui lòng thử lại.");
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-green-200">
@@ -100,18 +88,6 @@ const ForgotPasswordPage = () => {
             />
           </div>
 
-          {message && (
-            <div
-              role="alert"
-              className={`p-3 text-sm rounded-lg border ${
-                isError
-                  ? "bg-red-50 border-red-300 text-red-700"
-                  : "bg-green-50 border-green-300 text-green-700"
-              }`}
-            >
-              {message}
-            </div>
-          )}
 
           <button
             type="submit"
