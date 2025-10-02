@@ -76,7 +76,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               type="tel"
               id="phone"
               name="phone"
-              placeholder="Phone (optional)"
+              placeholder="Phone "
               value={formData.phone}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
