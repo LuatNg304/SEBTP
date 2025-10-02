@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -8,8 +9,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     password: "",
     rememberMe: false,
   });
-
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -81,12 +84,17 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
               />
               Remember password
             </label>
-            <button
-              type="button"
-              className="text-sm text-red-500 hover:underline"
-            >
-              Forgot Password
-            </button>
+           <button
+            type="button"
+            className="text-sm text-red-500 hover:underline"
+            onClick={() => {
+              onClose(); // đóng modal login
+              navigate("/forgot-password"); // chuyển sang trang mới
+            }}
+          >
+            Forgot Password
+          </button>
+        
           </div>
         </div>
 
@@ -110,7 +118,9 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           </div>
         </div>
       </form>
+      
     </Modal>
+    
   );
 };
 
