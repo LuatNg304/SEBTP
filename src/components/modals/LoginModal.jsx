@@ -1,33 +1,36 @@
-import React, { useState } from 'react';
-import Modal from './Modal';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import Modal from "./Modal";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
 
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Login data:', formData);
+    console.log("Login data:", formData);
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Sign In">
       <div className="flex flex-col items-center mb-6">
-        <button type="button" className="flex items-center gap-2 px-6 py-3 border-2 border-emerald-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-all">
+        <button
+          type="button"
+          className="flex items-center gap-2 px-6 py-3 border-2 border-emerald-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-all"
+        >
           <img src="/gg.png" alt="Google" className="w-5 h-5" />
           <span className="text-emerald-700">Continue with Google</span>
         </button>
@@ -40,7 +43,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             type="email"
             id="email"
             name="email"
-            placeholder="ShareCode.vn"
+            placeholder="Name"
             value={formData.email}
             onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
@@ -63,7 +66,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
 
@@ -78,7 +81,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
               />
               Remember password
             </label>
-            <button type="button" className="text-sm text-red-500 hover:underline">
+            <button
+              type="button"
+              className="text-sm text-red-500 hover:underline"
+            >
               Forgot Password
             </button>
           </div>

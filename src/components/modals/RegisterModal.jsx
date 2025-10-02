@@ -6,7 +6,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     email: '',
     fullName: '',
-    phone: '',
+
     password: '',
     confirmPassword: ''
   });
@@ -71,17 +71,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             />
           </div>
 
-          <div>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              placeholder="Phone (optional)"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
-            />
-          </div>
+        
           
           <div className="relative">
             <input
@@ -100,7 +90,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
 
@@ -120,7 +110,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
         </div>
