@@ -188,7 +188,11 @@ const HomePage = () => {
                 >
                   Đăng nhập
                 </button>
-                <button className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800">
+                <button
+                  className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800"
+                  onClick={handleOpenLogin}
+                >
+                  
                   Đăng tin
                 </button>
                 <button className="p-2 rounded-full bg-white shadow">

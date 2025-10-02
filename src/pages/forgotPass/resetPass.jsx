@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const ResetPasswordPage = () => {
   const location = useLocation();
@@ -10,18 +11,13 @@ const ResetPasswordPage = () => {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState(null);
-  const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-    setIsError(false);
 
     if (password !== confirmPassword) {
-      setMessage("Mật khẩu xác nhận không khớp.");
-      setIsError(true);
+      toast.error("Mật khẩu xác nhận không khớp.");
       return;
     }
 
@@ -30,34 +26,20 @@ const ResetPasswordPage = () => {
       // Gọi API mock để cập nhật mật khẩu
       await axios.put(
         `https://68d2aeb4cc7017eec544da0a.mockapi.io/Category/${id}`,
-        {
-          password,
-        }
+        { password }
       );
 
-      setMessage("Đổi mật khẩu thành công! Chuyển về trang đăng nhập...");
-      setIsError(false);
-
+      toast.success("Đổi mật khẩu thành công! Chuyển về trang đăng nhập...");
       setTimeout(() => {
         navigate("/"); // chuyển về login
       }, 1500);
     } catch (error) {
-      setMessage("Có lỗi xảy ra. Vui lòng thử lại.");
-      setIsError(true);
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!id) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <p>
-          Người dùng không hợp lệ. Vui lòng làm lại quy trình quên mật khẩu.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-green-200">
@@ -90,21 +72,10 @@ const ResetPasswordPage = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              minLength={8}
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
-
-          {message && (
-            <div
-              className={`p-2 text-sm rounded ${
-                isError
-                  ? "bg-red-50 text-red-700"
-                  : "bg-green-50 text-green-700"
-              }`}
-            >
-              {message}
-            </div>
-          )}
 
           <button
             type="submit"
