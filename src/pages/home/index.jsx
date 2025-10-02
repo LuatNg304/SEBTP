@@ -258,12 +258,6 @@ const HomePage = () => {
                 </div>
             </header>
 
-
-
-
-
-
-
             {/* Content */}
             <main className="mx-auto px-4 py-8 max-w-[1200px] w-full mt-8">
                 {/* Sub Navigation */}

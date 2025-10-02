@@ -6,3 +6,6 @@ body {
   background-attachment: fixed; /* Giữ cố định khi scroll */
   background-repeat: no-repeat; /* Không lặp */
 }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
