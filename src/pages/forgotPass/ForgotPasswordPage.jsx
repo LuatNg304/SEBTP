@@ -42,7 +42,8 @@ const ForgotPasswordPage = () => {
       
 
       // Tìm email trong dữ liệu mock
-      const user = users.find((u) => u.email === email);
+      const user = users.find(
+        (u) => u.email === email);
        console.log(user);
       if (user) {
         setMessage(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);

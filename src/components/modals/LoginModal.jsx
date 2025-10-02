@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -11,13 +13,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   });
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-
-
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Login data:", formData);
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,6 +21,35 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await axios.get(
+        "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category"
+      );
+      const users = response.data;
+      const user = users.find(
+        (u) => u.email === formData.email && u.password === formData.password
+      );
+
+      if (user) {
+        toast.success("Đăng nhập thành công!");
+        setTimeout(() => {
+          onClose();
+          navigate("/");
+        }, 1000);
+      } else {
+        toast.error("Email hoặc mật khẩu không đúng.");
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,7 +71,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             type="email"
             id="email"
             name="email"
-            placeholder="Name"
+            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300 transition-all"
@@ -84,26 +109,26 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
               />
               Remember password
             </label>
-           <button
-            type="button"
-            className="text-sm text-red-500 hover:underline"
-            onClick={() => {
-              onClose(); // đóng modal login
-              navigate("/forgot-password"); // chuyển sang trang mới
-            }}
-          >
-            Forgot Password
-          </button>
-        
+            <button
+              type="button"
+              className="text-sm text-red-500 hover:underline"
+              onClick={() => {
+                onClose();
+                navigate("/forgot-password");
+              }}
+            >
+              Forgot Password
+            </button>
           </div>
         </div>
 
         <div className="space-y-4 pt-2">
           <button
             type="submit"
+            disabled={isLoading}
             className="w-full bg-gradient-to-r from-green-400 to-emerald-500 text-white py-3 rounded-lg hover:from-green-500 hover:to-emerald-600 transition-all font-medium shadow-md"
           >
-            Sign In
+            {isLoading ? "Đang đăng nhập..." : "Sign In"}
           </button>
 
           <div className="flex items-center justify-center gap-1 text-sm">
@@ -118,9 +143,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           </div>
         </div>
       </form>
-      
     </Modal>
-    
   );
 };
 
