@@ -19,7 +19,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
-  const navigate = useNavigate();
+  const navigate = useNavigate();q
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
