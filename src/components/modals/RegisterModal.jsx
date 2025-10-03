@@ -50,8 +50,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category"
       );
       const users = res.data;
-      const emailExits = users.some((u)=> u.email === formData.email);
-      if(emailExits) {
+      const emailExits = users.some((u) => u.email === formData.email);
+      if (emailExits) {
         toast.error("Email đã tồn tại. Vui lòng sử dụng email khác.");
         setIsLoading(false);
         return;
@@ -187,8 +187,11 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             Already have an account?{" "}
             <button
               type="button"
-              onClick={onSwitchToLogin}
-              className="text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
+              onClick={() => {
+                onClose(); // đóng modal đăng ký
+                onSwitchToLogin(); // mở modal đăng nhập
+              }}
+              className="text-emerald-600 hover:text-emerald-700 hover:underline focus:underline font-medium transition-colors duration-150"
             >
               Sign in
             </button>
@@ -204,7 +207,10 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               Terms & Privacy
             </button>
             {/* Modal hiển thị Terms & Privacy */}
-             <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+            <TermsModal
+              isOpen={showTerms}
+              onClose={() => setShowTerms(false)}
+            />
           </p>
         </div>
       </form>
