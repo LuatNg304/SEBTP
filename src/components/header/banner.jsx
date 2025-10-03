@@ -1,6 +1,7 @@
 import React from "react";
 import { Search, MapPin, ChevronDown } from "lucide-react";
 
+
 const Banner = () => {
   return (
   <section className="bg-gradient-to-b from-green-200 via-green-300 via-green-300 to-green-300 pb-0 pt-14">

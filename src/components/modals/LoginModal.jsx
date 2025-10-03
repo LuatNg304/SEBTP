@@ -135,9 +135,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
             <span className="text-gray-500">Don't have an account?</span>
             <button
               type="button"
-              onClick={() => {
-                onClose()
-                onSwitchToRegister()}}
+              onClick={onSwitchToRegister}
               className="text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
             >
               Sign up
