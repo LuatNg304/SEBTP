@@ -6,6 +6,9 @@ import Oto from "./pages/home/Oto";
 import Bike from "./pages/home/Bike";
 import Pin from "./pages/home/Pin";
 import AllProduct from "./pages/home/AllProduct";
+import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
+import OTPPage from "./pages/forgotPass/Otp";
+import ResetPasswordPage from "./pages/forgotPass/resetPass";
 
 const router = createBrowserRouter([
   {
@@ -28,8 +31,22 @@ const router = createBrowserRouter([
         path: "pin",
         element: <Pin/>,
       },
+      
+      
     ],
   },
+  {
+        path: "forgot-password",
+        element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
+      },
+      {
+        path: "otp",
+        element: <OTPPage/>, // trang nhập mã OTP hiển thị trong layout ngoài
+      },
+      {
+        path: "reset-password",
+        element: <ResetPasswordPage/> 
+      }
 ]);
 
 function App() {
