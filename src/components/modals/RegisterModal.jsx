@@ -19,8 +19,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
- 
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -142,6 +140,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           >
             {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
           </button>
+          
+         
         </div>
 
         <div className="relative">

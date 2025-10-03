@@ -1,18 +1,39 @@
 import React from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import HomePage from "./pages/home";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
-import OTPPage from "./pages/forgotPass/Otp";
+import Oto from "./pages/home/Oto";
+import Bike from "./pages/home/Bike";
+import Pin from "./pages/home/Pin";
+import AllProduct from "./pages/home/AllProduct";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />, // layout ngoài
+    children: [
+      {
+        index: true,
+        element: <AllProduct />, // trang chủ (mặc định) hiển thị trong layout ngoài
+      },
+      {
+        path: "oto",
+        element: <Oto/>,
+      },
+      {
+        path: "bike",
+        element: <Bike/>,
+      },
+      {
+        path: "pin",
+        element: <Pin/>,
+      },
+    ],
+  },
+]);
+
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage/>} />
-        <Route path="/otp" element={<OTPPage/>} />
-      </Routes>
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
