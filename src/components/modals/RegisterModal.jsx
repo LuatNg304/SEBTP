@@ -43,18 +43,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     setIsLoading(true);
 
     try {
-      // Kiểm tra email đã tồn tại chưa
-      const res = await axios.get(
-        "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category"
-      );
-      const users = res.data;
-      const emailExists = users.some((u) => u.email === formData.email);
-      if (emailExists) {
-        toast.error("Email đã tồn tại. Vui lòng sử dụng email khác.");
-        setIsLoading(false);
-        return;
-      }
-
       // Tạo user mới
       const response = await axios.post(
         "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category",
