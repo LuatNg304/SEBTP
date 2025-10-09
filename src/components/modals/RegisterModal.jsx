@@ -2,26 +2,26 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
 
-import axios from "axios";
 import { toast } from "react-toastify";
 import TermsModal from "./TermsModal";
+import api from "../../../config/axios";
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const [formData, setFormData] = useState({
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [values, setValues] = useState({
     email: "",
     fullName: "",
     password: "",
     confirmPassword: "",
     isOver18: false,
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
+    setValues((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
@@ -30,12 +30,12 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.isOver18) {
+    if (!values.isOver18) {
       toast.error("Bạn phải xác nhận trên 18 tuổi để tiếp tục.");
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (values.password !== values.confirmPassword) {
       toast.error("Mật khẩu và xác nhận mật khẩu không khớp.");
       return;
     }
@@ -44,18 +44,16 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
     try {
       // Tạo user mới
-      const response = await axios.post(
-        "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category",
-        {
-          email: formData.email,
-          password: formData.password,
-          fullName: formData.fullName,
-        }
-      );
+      const payload = {
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName,
+      };
+      const response = await api.post("/Category", payload);
 
       if (response.status === 201) {
         toast.success("Đăng ký thành công! Bạn có thể đăng nhập ngay.");
-        setFormData({
+        setValues({
           email: "",
           fullName: "",
           password: "",
@@ -94,7 +92,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           type="text"
           name="fullName"
           placeholder="Full name"
-          value={formData.fullName}
+          value={values.fullName}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
           required
@@ -103,7 +101,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           type="email"
           name="email"
           placeholder="Email"
-          value={formData.email}
+          value={values.email}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
           required
@@ -115,7 +113,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             type={showPassword ? "text" : "password"}
             name="password"
             placeholder="Password (min. 8 char)"
-            value={formData.password}
+            value={values.password}
             onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
             required
@@ -128,8 +126,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           >
             {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
           </button>
-          
-         
         </div>
 
         <div className="relative">
@@ -137,7 +133,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
             placeholder="Confirm password"
-            value={formData.confirmPassword}
+            value={values.confirmPassword}
             onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
             required
@@ -157,7 +153,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
             type="checkbox"
             id="isOver18"
             name="isOver18"
-            checked={formData.isOver18}
+            checked={values.isOver18}
             onChange={handleChange}
             className="rounded border-gray-300 text-green-500 focus:ring-green-400"
           />
