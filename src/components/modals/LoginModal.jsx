@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import { useDispatch } from "react-redux";
-import { login } from "../../redux/accountSlide";
+import { login } from "../../redux/accountSlice";
 import api from "../../config/axios";
-
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -33,7 +32,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         toast.success("Đăng nhập thành công!");
         onClose();
       }
-      const {token} = response.data;
+      const { token } = response.data;
       localStorage.setItem("token", token);
 
       // lưu vào statel toàn cục

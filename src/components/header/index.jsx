@@ -9,8 +9,7 @@ import SignupBanner from "../../components/body/SignupBanner";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
-
-const HomePage = () => {
+const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
@@ -83,7 +82,6 @@ const HomePage = () => {
       },
     ],
   };
-
   return (
     <div
       className="overflow-x-hidden"
@@ -98,11 +96,11 @@ const HomePage = () => {
     >
       {/* ===== HEADER ===== */}
       <header className="relative w-full h-[200px]">
-        <img
+        {/* <img
           src="/panner.png"
           alt="Header background"
           className="w-full h-full object-cover"
-        />
+        /> */}
 
         <div className="absolute top-0 left-0 w-full h-full grid grid-rows-3">
           {/* ===== NAVIGATION ===== */}
@@ -114,7 +112,7 @@ const HomePage = () => {
               </button>
               <div className="grid grid-cols-3 items-center px-6">
                 <NavLink
-                  onClick={() => window.location.reload()}
+                  to="/"
                   className="text-2xl font-extrabold tracking-wide uppercase no-underline"
                   style={{ color: "#0b5229ff" }}
                 >
@@ -180,121 +178,10 @@ const HomePage = () => {
               />
             </div>
           </div>
-
-          {/* ===== SLOGAN ===== */}
-          <div className="flex items-center justify-center">
-            <span className="text-3xl font-bold font-poppins text-white drop-shadow-xl">
-              "Sống xanh – Lái xe điện – Bảo vệ môi trường"
-            </span>
-          </div>
-
-          {/* ===== SEARCH ===== */}
-          <div className="flex items-center justify-center px-4 py-6 mt-10">
-            <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-2">
-              <div className="flex w-full rounded-lg overflow-hidden">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Tìm sản phẩm..."
-                    className="w-full px-4 py-3 text-gray-600 bg-white text-sm focus:outline-none"
-                  />
-                </div>
-
-                {/* Dropdown danh mục */}
-                <div className="ml-2">
-                  <Dropdown
-                    menu={{
-                      items,
-                      selectable: true,
-                      defaultSelectedKeys: ["3"],
-                    }}
-                  >
-                    <button className="flex items-center gap-2 bg-white border border-white px-6 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100">
-                      <span>Danh mục</span>
-                      <DownOutlined className="text-gray-600" />
-                    </button>
-                  </Dropdown>
-                </div>
-
-                {/* Nút tìm kiếm */}
-                <div className="ml-2">
-                  <button className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg h-full">
-                    Tìm kiếm
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </header>
-
-      {/* ===== CONTENT ===== */}
-      <main className="mx-auto px-4 py-8 max-w-[1200px] w-full mt-8">
-        {/* Sub Navigation */}
-        <nav className="bg-white bg-opacity-90 rounded-lg shadow-sm mb-4">
-          <div className="container mx-auto px-4 py-3">
-            <ul className="flex space-x-8">
-              <li>
-                <NavLink
-                  to="oto"
-                  className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-colors duration-200 ${
-                      isActive
-                        ? "text-white bg-green-600"
-                        : "text-green-600 hover:text-green-800"
-                    }`
-                  }
-                >
-                  Oto điện
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="bike"
-                  className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-colors duration-200 ${
-                      isActive
-                        ? "text-white bg-green-600"
-                        : "text-green-600 hover:text-green-800"
-                    }`
-                  }
-                >
-                  Xe máy điện
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="pin"
-                  className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-colors duration-200 ${
-                      isActive
-                        ? "text-white bg-green-600"
-                        : "text-green-600 hover:text-green-800"
-                    }`
-                  }
-                >
-                  Pin
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-        </nav>
-
-        {/* Outlet render trang con */}
-        <div className="bg-white rounded-lg p-6">
-          <Outlet />
-        </div>
-      </main>
-
-      {/* ===== SIGNUP BANNER ===== */}
-      {!account && showSignupBanner && (
-        <SignupBanner
-          onSignupClick={() => setShowRegisterModal(true)}
-          onClose={() => setShowSignupBanner(false)}
-        />
-      )}
     </div>
   );
 };
 
-export default HomePage;
+export default Header;

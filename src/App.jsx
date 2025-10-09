@@ -9,6 +9,7 @@ import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
 import ResetPasswordPage from "./pages/forgotPass/resetPass";
+import ViewProduct from "./pages/viewProduct";
 
 const router = createBrowserRouter([
   {
@@ -21,32 +22,34 @@ const router = createBrowserRouter([
       },
       {
         path: "oto",
-        element: <Oto/>,
+        element: <Oto />,
       },
       {
         path: "bike",
-        element: <Bike/>,
+        element: <Bike />,
       },
       {
         path: "pin",
-        element: <Pin/>,
+        element: <Pin />,
       },
-      
-      
     ],
   },
   {
-        path: "forgot-password",
-        element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
-      },
-      {
-        path: "otp",
-        element: <OTPPage/>, // trang nhập mã OTP hiển thị trong layout ngoài
-      },
-      {
-        path: "reset-password",
-        element: <ResetPasswordPage/> 
-      }
+    path: "forgot-password",
+    element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
+  },
+  {
+    path: "otp",
+    element: <OTPPage />, // trang nhập mã OTP hiển thị trong layout ngoài
+  },
+  {
+    path: "reset-password",
+    element: <ResetPasswordPage />,
+  },
+  {
+    path: "view-product/:slug",
+    element: <ViewProduct />,
+  },
 ]);
 
 function App() {
