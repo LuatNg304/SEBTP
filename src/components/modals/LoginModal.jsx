@@ -1,27 +1,58 @@
-import React, { useState } from 'react';
-import Modal from './Modal';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { use, useState } from "react";
+import Modal from "./Modal";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import api from "../../../config/axios";
+import { useDispatch } from "react-redux";
+import { login } from "../../../redux/accountSlide";
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login data:', formData);
+    try {
+      const response = await api.get("/Category"); // ví dụ mock data
+      const users = response.data;
+
+      // tìm người dùng có email và password trùng
+      const user = users.find(
+        (u) => u.email === formData.email && u.password === formData.password
+      );
+      if (user) {
+        toast.success("Đăng nhập thành công!");
+        onClose();
+      }
+      const {token} = response.data;
+      localStorage.setItem("token", token);
+
+      // lưu vào statel toàn cục
+      dispatch(login(user));
+      // reset form
+      setFormData({
+        email: "",
+        password: "",
+        rememberMe: false,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Lỗi khi đăng nhập. Vui lòng thử lại.");
+    }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 

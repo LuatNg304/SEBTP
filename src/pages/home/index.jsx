@@ -6,13 +6,26 @@ import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 import SignupBanner from "../../components/body/SignupBanner";
 
-import { Outlet, NavLink } from "react-router-dom";
+
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../../redux/accountSlide";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
 
+  //  Lấy dữ liệu account từ Redux
+  const account = useSelector((state) => state.account);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+ // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // nếu bạn có token
+    dispatch(logout()); // xoá tài khoản trong Redux
+  };
+  // Dropdown danh mục
   const items = [
     { key: "1", label: "Item 1" },
     { key: "2", label: "Item 2" },
@@ -23,9 +36,53 @@ const HomePage = () => {
     setShowLoginModal(true);
     setShowRegisterModal(false);
   };
+
   const handleOpenRegister = () => {
     setShowRegisterModal(true);
     setShowLoginModal(false);
+  };
+  // ✅ Các mục trong dropdown của avatar
+  const userMenu = {
+    items: [
+      {
+        key: "1",
+        label: (
+          <div
+            //onClick={() => navigate("/profile")}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <FiUser className="text-green-600" />
+            <span>Trang cá nhân</span>
+          </div>
+        ),
+      },
+      {
+        key: "2",
+        label: (
+          <div
+           // onClick={() => navigate("/register-seller")}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <FiMenu className="text-green-600" />
+            <span>Đăng ký Seller</span>
+          </div>
+        ),
+      },
+      {
+        type: "divider",
+      },
+      {
+        key: "3",
+        label: (
+          <div
+             onClick={handleLogout}
+            className="flex items-center gap-2 text-red-500 cursor-pointer"
+          >
+            🚪 <span>Đăng xuất</span>
+          </div>
+        ),
+      },
+    ],
   };
 
   return (
@@ -40,7 +97,7 @@ const HomePage = () => {
         minHeight: "100vh",
       }}
     >
-      {/* Top Bar */}
+      {/* ===== HEADER ===== */}
       <header className="relative w-full h-[200px]">
         <img
           src="/panner.png"
@@ -49,7 +106,7 @@ const HomePage = () => {
         />
 
         <div className="absolute top-0 left-0 w-full h-full grid grid-rows-3">
-          {/* Nav */}
+          {/* ===== NAVIGATION ===== */}
           <div className="grid grid-cols-3 items-center px-6">
             {/* Left: Logo */}
             <div className="flex items-center gap-3">
@@ -75,18 +132,43 @@ const HomePage = () => {
               <button className="p-2 rounded-full hover:bg-white/40">
                 <FiHeart className="h-6 w-6 text-gray-700" />
               </button>
-              <button
-                className="px-3 py-1 bg-white rounded-full text-sm font-medium hover:bg-gray-100"
-                onClick={handleOpenLogin}
-              >
-                Đăng nhập
-              </button>
-              <button
-                className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800"
-                onClick={handleOpenLogin}
-              >
-                Đăng tin
-              </button>
+
+              {/*  Nếu có tài khoản */}
+              {account ? (
+                <Dropdown
+                  menu={userMenu}
+                  placement="bottomRight"
+                  trigger={["click"]}
+                >
+                  <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow hover:bg-gray-100 transition">
+                    <img
+                      src={account?.avatar || "/default-avatar.png"}
+                      alt="avatar"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                    />
+                    <span className="font-medium text-gray-700">
+                      {account?.fullName || "Người dùng"}
+                    </span>
+                  </button>
+                </Dropdown>
+              ) : (
+                <>
+                  <button
+                    className="px-3 py-1 bg-white rounded-full text-sm font-medium hover:bg-gray-100"
+                    onClick={handleOpenLogin}
+                  >
+                    Đăng nhập
+                  </button>
+                  <button
+                    className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800"
+                    onClick={handleOpenLogin}
+                  >
+                    Đăng tin
+                  </button>
+                </>
+              )}
+
+              {/* Modal đăng nhập / đăng ký */}
               <LoginModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
@@ -97,20 +179,17 @@ const HomePage = () => {
                 onClose={() => setShowRegisterModal(false)}
                 onSwitchToLogin={handleOpenLogin}
               />
-              <button className="p-2 rounded-full bg-white shadow">
-                <FiUser className="h-6 w-6 text-gray-700" />
-              </button>
             </div>
           </div>
 
-          {/* Slogan */}
+          {/* ===== SLOGAN ===== */}
           <div className="flex items-center justify-center">
             <span className="text-3xl font-bold font-poppins text-white drop-shadow-xl">
               "Sống xanh – Lái xe điện – Bảo vệ môi trường"
             </span>
           </div>
 
-          {/* Search */}
+          {/* ===== SEARCH ===== */}
           <div className="flex items-center justify-center px-4 py-6 mt-10">
             <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-2">
               <div className="flex w-full rounded-lg overflow-hidden">
@@ -122,7 +201,7 @@ const HomePage = () => {
                   />
                 </div>
 
-                {/* Dropdown */}
+                {/* Dropdown danh mục */}
                 <div className="ml-2">
                   <Dropdown
                     menu={{
@@ -138,7 +217,7 @@ const HomePage = () => {
                   </Dropdown>
                 </div>
 
-                {/* Search Button */}
+                {/* Nút tìm kiếm */}
                 <div className="ml-2">
                   <button className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg h-full">
                     Tìm kiếm
@@ -150,7 +229,7 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* Content */}
+      {/* ===== CONTENT ===== */}
       <main className="mx-auto px-4 py-8 max-w-[1200px] w-full mt-8">
         {/* Sub Navigation */}
         <nav className="bg-white bg-opacity-90 rounded-lg shadow-sm mb-4">
@@ -202,21 +281,14 @@ const HomePage = () => {
           </div>
         </nav>
 
-        {/* Outlet để render các trang con */}
+        {/* Outlet render trang con */}
         <div className="bg-white rounded-lg p-6">
           <Outlet />
         </div>
       </main>
 
-      {/* Modal đăng ký */}
-      <RegisterModal
-        isOpen={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-        onSwitchToLogin={() => setShowLoginModal(true)}
-      />
-
-      {/* Banner đăng ký */}
-      {showSignupBanner && (
+      {/* ===== SIGNUP BANNER ===== */}
+      {!account && showSignupBanner && (
         <SignupBanner
           onSignupClick={() => setShowRegisterModal(true)}
           onClose={() => setShowSignupBanner(false)}
