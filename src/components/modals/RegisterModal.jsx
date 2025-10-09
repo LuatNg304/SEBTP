@@ -4,7 +4,8 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { toast } from "react-toastify";
 import TermsModal from "./TermsModal";
-import api from "../../../config/axios";
+import api from "../../config/axios";
+
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +50,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
         password: values.password,
         fullName: values.fullName,
       };
-      const response = await api.post("/Category", payload);
+      const response = await api.post("auth-controller/register", payload);
 
       if (response.status === 201) {
         toast.success("Đăng ký thành công! Bạn có thể đăng nhập ngay.");

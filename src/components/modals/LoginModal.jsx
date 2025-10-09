@@ -3,9 +3,11 @@ import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../../config/axios";
+
 import { useDispatch } from "react-redux";
-import { login } from "../../../redux/accountSlide";
+import { login } from "../../redux/accountSlide";
+import api from "../../config/axios";
+
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
