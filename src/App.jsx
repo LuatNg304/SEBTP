@@ -9,6 +9,12 @@ import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
 import ResetPasswordPage from "./pages/forgotPass/resetPass";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminPosts from "./pages/admin/AdminPosts";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 
 const router = createBrowserRouter([
   {
@@ -21,32 +27,41 @@ const router = createBrowserRouter([
       },
       {
         path: "oto",
-        element: <Oto/>,
+        element: <Oto />,
       },
       {
         path: "bike",
-        element: <Bike/>,
+        element: <Bike />,
       },
-      {
-        path: "pin",
-        element: <Pin/>,
-      },
-      
-      
     ],
   },
   {
-        path: "forgot-password",
-        element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
-      },
-      {
-        path: "otp",
-        element: <OTPPage/>, // trang nhập mã OTP hiển thị trong layout ngoài
-      },
-      {
-        path: "reset-password",
-        element: <ResetPasswordPage/> 
-      }
+    path: "pin",
+    element: <Pin />,
+  },
+  // Route admin
+  {
+    path: "admin",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminDashboard /> }, // <= route mặc định
+      { path: "posts", element: <AdminPosts /> },
+      { path: "users", element: <AdminUsers /> },
+      { path: "settings", element: <AdminSettings /> },
+    ],
+  },
+  {
+    path: "forgot-password",
+    element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
+  },
+  {
+    path: "otp",
+    element: <OTPPage />, // trang nhập mã OTP hiển thị trong layout ngoài
+  },
+  {
+    path: "reset-password",
+    element: <ResetPasswordPage />,
+  },
 ]);
 
 function App() {
