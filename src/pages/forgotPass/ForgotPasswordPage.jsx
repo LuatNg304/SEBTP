@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../../../config/axios";
 
 // Component icon Loader
 const Loader = ({ className }) => (
@@ -31,9 +32,7 @@ const ForgotPasswordPage = () => {
    setIsLoading(true);
 
    try {
-     const response = await axios.get(
-       "https://68d2aeb4cc7017eec544da0a.mockapi.io/Category"
-     );
+     const response = await api.get("/Category");
      const users = response.data;
 
      const user = users.find((u) => u.email === email);

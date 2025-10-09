@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../../../config/axios";
 
 const OTPPage = () => {
   const navigate = useNavigate();
@@ -20,12 +21,10 @@ const OTPPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.get(
-        "https://68d2aeb4cc7017eec544da0a.mockapi.io/OTP"
-      );
+      const response = await api.get("/OTP");
       const users = response.data;
 
-      const user = users.find((u) => u.id === id);
+      const user = users.find((u) => u.email === email);
       if (!user) {
         toast.error("Người dùng không tồn tại.");
       } else if (Number(user.OTP) === Number(otp)) {

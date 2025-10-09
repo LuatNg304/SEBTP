@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../../../config/axios";
 
 const ResetPasswordPage = () => {
   const location = useLocation();
@@ -24,8 +25,8 @@ const ResetPasswordPage = () => {
     setIsLoading(true);
     try {
       // Gọi API mock để cập nhật mật khẩu
-      await axios.put(
-        `https://68d2aeb4cc7017eec544da0a.mockapi.io/Category/${id}`,
+      await api.put(
+        `Category/${id}`,
         { password }
       );
 
