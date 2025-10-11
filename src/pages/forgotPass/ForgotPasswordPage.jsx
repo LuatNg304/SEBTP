@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 
 // Component icon Loader
 const Loader = ({ className }) => (
