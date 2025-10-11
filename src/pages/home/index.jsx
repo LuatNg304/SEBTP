@@ -6,10 +6,9 @@ import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 import SignupBanner from "../../components/body/SignupBanner";
 
-
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../../redux/accountSlide";
+import { logout } from "../../redux/accountSlide";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -20,7 +19,7 @@ const HomePage = () => {
   const account = useSelector((state) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate();
- // Hàm xử lý đăng xuất
+  // Hàm xử lý đăng xuất
   const handleLogout = () => {
     localStorage.removeItem("token"); // nếu bạn có token
     dispatch(logout()); // xoá tài khoản trong Redux
@@ -60,7 +59,7 @@ const HomePage = () => {
         key: "2",
         label: (
           <div
-           // onClick={() => navigate("/register-seller")}
+            // onClick={() => navigate("/register-seller")}
             className="flex items-center gap-2 cursor-pointer"
           >
             <FiMenu className="text-green-600" />
@@ -75,7 +74,7 @@ const HomePage = () => {
         key: "3",
         label: (
           <div
-             onClick={handleLogout}
+            onClick={handleLogout}
             className="flex items-center gap-2 text-red-500 cursor-pointer"
           >
             🚪 <span>Đăng xuất</span>

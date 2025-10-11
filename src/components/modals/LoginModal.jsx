@@ -3,9 +3,9 @@ import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import api from "../../../config/axios";
+import api from "../../config/axios";
 import { useDispatch } from "react-redux";
-import { login } from "../../../redux/accountSlide";
+import { login } from "../../redux/accountSlide";
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -31,7 +31,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         toast.success("Đăng nhập thành công!");
         onClose();
       }
-      const {token} = response.data;
+      const { token } = response.data;
       localStorage.setItem("token", token);
 
       // lưu vào statel toàn cục

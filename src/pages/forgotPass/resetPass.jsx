@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import api from "../../../config/axios";
+import api from "../../config/axios";
 
 const ResetPasswordPage = () => {
   const location = useLocation();
@@ -25,10 +25,7 @@ const ResetPasswordPage = () => {
     setIsLoading(true);
     try {
       // Gọi API mock để cập nhật mật khẩu
-      await api.put(
-        `Category/${id}`,
-        { password }
-      );
+      await api.put(`Category/${id}`, { password });
 
       toast.success("Đổi mật khẩu thành công! Chuyển về trang đăng nhập...");
       setTimeout(() => {
@@ -40,7 +37,6 @@ const ResetPasswordPage = () => {
       setIsLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-green-200">
