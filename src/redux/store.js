@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import { configureStore } from '@reduxjs/toolkit'
-import  accountSlideReducer  from './accountSlide'
-
-export const store = configureStore({
-  reducer: {
-    account: accountSlideReducer
-  },
-})
-=======
 import { configureStore } from "@reduxjs/toolkit";
 import storage from "redux-persist/lib/storage";
 import persistReducer from "redux-persist/es/persistReducer";
@@ -27,4 +17,3 @@ let store = configureStore({
 let persistor = persistStore(store);
 
 export { store, persistor };
->>>>>>> main

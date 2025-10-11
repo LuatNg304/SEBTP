@@ -9,16 +9,12 @@ import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
 import ResetPasswordPage from "./pages/forgotPass/resetPass";
-<<<<<<< HEAD
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminPosts from "./pages/admin/AdminPosts";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
-=======
 import ViewProduct from "./pages/viewProduct";
->>>>>>> main
 
 const router = createBrowserRouter([
   {
@@ -37,7 +33,6 @@ const router = createBrowserRouter([
         path: "bike",
         element: <Bike />,
       },
-<<<<<<< HEAD
     ],
   },
   {
@@ -54,17 +49,9 @@ const router = createBrowserRouter([
       { path: "users", element: <AdminUsers /> },
       { path: "settings", element: <AdminSettings /> },
     ],
-  },
+  },  
   {
-=======
-      {
-        path: "pin",
-        element: <Pin />,
-      },
-    ],
-  },
-  {
->>>>>>> main
+
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
   },
@@ -76,13 +63,12 @@ const router = createBrowserRouter([
     path: "reset-password",
     element: <ResetPasswordPage />,
   },
-<<<<<<< HEAD
-=======
+
   {
     path: "view-product/:slug",
     element: <ViewProduct />,
   },
->>>>>>> main
+
 ]);
 
 function App() {

@@ -8,11 +8,7 @@ import SignupBanner from "../../components/body/SignupBanner";
 
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-<<<<<<< HEAD
-import { logout } from "../../redux/accountSlide";
-=======
 import { logout } from "../../redux/accountSlice";
->>>>>>> main
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);

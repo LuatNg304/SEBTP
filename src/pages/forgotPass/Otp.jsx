@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
-<<<<<<< HEAD
-=======
 
->>>>>>> main
 
 const OTPPage = () => {
   const navigate = useNavigate();

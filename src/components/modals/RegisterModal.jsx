@@ -5,10 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import TermsModal from "./TermsModal";
 import api from "../../config/axios";
-<<<<<<< HEAD
-=======
 
->>>>>>> main
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
