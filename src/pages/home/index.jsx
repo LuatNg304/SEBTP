@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FiHeart, FiUser, FiMenu } from "react-icons/fi";
 import { DownOutlined } from "@ant-design/icons";
-import { Dropdown } from "antd";
+import { Drawer, Dropdown } from "antd";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 import SignupBanner from "../../components/body/SignupBanner";
@@ -14,6 +14,8 @@ const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
+  const [openDrawer, setOpenDrawer] = useState(false);
+   const [activeItem, setActiveItem] = useState("");
 
   //  Lấy dữ liệu account từ Redux
   const account = useSelector((state) => state.account);
@@ -39,6 +41,19 @@ const HomePage = () => {
   const handleOpenRegister = () => {
     setShowRegisterModal(true);
     setShowLoginModal(false);
+  };
+  // ✅ Menu chính (Drawer)
+  const mainMenu = [
+    { key: "", label: "Trang chủ" },
+    { key: "oto", label: "Ô tô điện" },
+    { key: "bike", label: "Xe máy điện" },
+    { key: "pin", label: "Pin & phụ kiện" },
+    { key: "about", label: "Giới thiệu" },
+  ];
+  const handleMenuClick = (item) => {
+    setActiveItem(item.key);
+    setOpenDrawer(false);
+    navigate(`/${item.key}`);
   };
   // ✅ Các mục trong dropdown của avatar
   const userMenu = {
@@ -107,11 +122,58 @@ const HomePage = () => {
         <div className="absolute top-0 left-0 w-full h-full grid grid-rows-3">
           {/* ===== NAVIGATION ===== */}
           <div className="grid grid-cols-3 items-center px-6">
-            {/* Left: Logo */}
+            
+            {/* Left: Logo + Menu */}
             <div className="flex items-center gap-3">
-              <button className="p-2 rounded-full bg-white shadow">
+              {/* ✅ Nút mở Drawer */}
+              <button
+                className="p-2 rounded-full bg-white shadow hover:bg-gray-100"
+                onClick={() => setOpenDrawer(true)}
+              >
                 <FiMenu className="h-6 w-6 text-green-700" />
               </button>
+
+              {/* ✅ Drawer menu */}
+              <Drawer
+                title={
+                  <div className="text-2xl font-bold text-white text-center">
+                    Danh mục
+                  </div>
+                }
+                placement="left"
+                onClose={() => setOpenDrawer(false)}
+                open={openDrawer}
+                closable={false}
+                width={260}
+                headerStyle={{
+                  background:
+                    "linear-gradient(135deg, #16a34a, #22c55e, #86efac)",
+                  borderBottom: "2px solid #bbf7d0",
+                }}
+                bodyStyle={{
+                  background:
+                    "linear-gradient(180deg, #22c55e, #16a34a, #15803d)",
+                  color: "white",
+                  paddingTop: "20px",
+                }}
+              >
+                <ul className="space-y-3">
+                  {mainMenu.map((item) => (
+                    <li
+                      key={item.key}
+                      onClick={() => handleMenuClick(item)}
+                      className={`cursor-pointer text-lg font-semibold text-center py-3 rounded-xl transition-all duration-200 ${
+                        activeItem === item.key
+                          ? "bg-white text-green-700 border-2 border-green-400 shadow-md scale-[1.03]"
+                          : "text-white hover:border hover:border-green-200 hover:bg-white/10 hover:scale-[1.02]"
+                      }`}
+                    >
+                      {item.label}
+                    </li>
+                  ))}
+                </ul>
+              </Drawer>
+
               <div className="grid grid-cols-3 items-center px-6">
                 <NavLink
                   onClick={() => window.location.reload()}

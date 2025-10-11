@@ -33,12 +33,13 @@ const router = createBrowserRouter([
         path: "bike",
         element: <Bike />,
       },
+      {
+        path: "pin",
+        element: <Pin />,
+      },
     ],
   },
-  {
-    path: "pin",
-    element: <Pin />,
-  },
+
   // Route admin
   {
     path: "admin",
@@ -49,9 +50,8 @@ const router = createBrowserRouter([
       { path: "users", element: <AdminUsers /> },
       { path: "settings", element: <AdminSettings /> },
     ],
-  },  
+  },
   {
-
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
   },
@@ -68,7 +68,6 @@ const router = createBrowserRouter([
     path: "view-product/:slug",
     element: <ViewProduct />,
   },
-
 ]);
 
 function App() {
