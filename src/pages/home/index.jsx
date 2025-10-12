@@ -114,7 +114,11 @@ const HomePage = () => {
               </button>
               <div className="grid grid-cols-3 items-center px-6">
                 <NavLink
-                  onClick={() => window.location.reload()}
+                  to="/"
+                  onClick={() => {
+                    
+                    setTimeout(() => window.location.reload(), 100);
+                  }}
                   className="text-2xl font-extrabold tracking-wide uppercase no-underline"
                   style={{ color: "#0b5229ff" }}
                 >

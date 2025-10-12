@@ -3,112 +3,121 @@ import React from 'react';
 import { Card } from 'antd';
 const { Meta } = Card;
 import { FiHeart } from "react-icons/fi";
+import { useNavigate } from 'react-router-dom';
 
 const Oto = () => {
-    const bikes = [
-    {
-      id: 1,
-      name: "VinFast Theon S",
-      price: "69.900.000 VNĐ",
-      image:
-        "https://vinfastauto.com/sites/default/files/styles/images_1440_x_623/public/2023-07/theon-s-hinh-anh-gif_0.gif",
-      specs: {
-        range: "150 km",
-        maxSpeed: "90 km/h",
-        batteryCapacity: "3.5 kWh",
-        chargingTime: "6 giờ",
-      },
-      features: ["Khóa thông minh", "Định vị GPS", "Chống trộm"],
-      rating: 4.8,
-      status: "Còn hàng",
-      featured: true,
+   const Navigate = useNavigate();
+const bikes = [
+    
+  {
+    id: 1,
+    slug: "vinfast-theon-s",
+    name: "VinFast Theon S",
+    price: "69.900.000 VNĐ",
+    image:
+      "https://vinfastauto.com/sites/default/files/styles/images_1440_x_623/public/2023-07/theon-s-hinh-anh-gif_0.gif",
+    specs: {
+      range: "150 km",
+      maxSpeed: "90 km/h",
+      batteryCapacity: "3.5 kWh",
+      chargingTime: "6 giờ",
     },
-    {
-      id: 2,
-      name: "VinFast Klara S",
-      price: "39.900.000 VNĐ",
-      image:
-        "https://vinfastauto.com/sites/default/files/styles/images_1440_x_623/public/2023-07/klara-s-2022-hinh-anh-gif_0.gif",
-      specs: {
-        range: "120 km",
-        maxSpeed: "60 km/h",
-        batteryCapacity: "2.9 kWh",
-        chargingTime: "5 giờ",
-      },
-      features: ["Chống nước IP67", "Đèn LED", "Phanh ABS"],
-      rating: 4.5,
-      status: "Còn hàng",
-      featured: false,
+    features: ["Khóa thông minh", "Định vị GPS", "Chống trộm"],
+    rating: 4.8,
+    status: "Còn hàng",
+    featured: true,
+  },
+  {
+    id: 2,
+    slug: "vinfast-klara-s",
+    name: "VinFast Klara S",
+    price: "39.900.000 VNĐ",
+    image:
+      "https://vinfastauto.com/sites/default/files/styles/images_1440_x_623/public/2023-07/klara-s-2022-hinh-anh-gif_0.gif",
+    specs: {
+      range: "120 km",
+      maxSpeed: "60 km/h",
+      batteryCapacity: "2.9 kWh",
+      chargingTime: "5 giờ",
     },
-    {
-      id: 3,
-      name: "Yadea G5",
-      price: "35.900.000 VNĐ",
-      image:
-        "https://bizweb.dktcdn.net/100/440/241/products/xe-may-dien-yadea-g5-pro.jpg",
-      specs: {
-        range: "100 km",
-        maxSpeed: "55 km/h",
-        batteryCapacity: "2.4 kWh",
-        chargingTime: "4 giờ",
-      },
-      features: ["Màn hình LCD", "Khóa từ", "Phanh đĩa"],
-      rating: 4.3,
-      status: "Còn hàng",
-      featured: true,
+    features: ["Chống nước IP67", "Đèn LED", "Phanh ABS"],
+    rating: 4.5,
+    status: "Còn hàng",
+    featured: false,
+  },
+  {
+    id: 3,
+    slug: "yadea-g5",
+    name: "Yadea G5",
+    price: "35.900.000 VNĐ",
+    image:
+      "https://bizweb.dktcdn.net/100/440/241/products/xe-may-dien-yadea-g5-pro.jpg",
+    specs: {
+      range: "100 km",
+      maxSpeed: "55 km/h",
+      batteryCapacity: "2.4 kWh",
+      chargingTime: "4 giờ",
     },
-    {
-      id: 4,
-      name: "Dibao Jeek",
-      price: "29.900.000 VNĐ",
-      image:
-        "https://dibamotors.com.vn/wp-content/uploads/2023/02/z4134419749880_73ab778e78ead824323c10ea42a4a8c4.jpg",
-      specs: {
-        range: "90 km",
-        maxSpeed: "50 km/h",
-        batteryCapacity: "2.0 kWh",
-        chargingTime: "4 giờ",
-      },
-      features: ["Đèn LED", "Khóa điện tử", "Phanh đĩa"],
-      rating: 4.2,
-      status: "Hết hàng",
-      featured: false,
+    features: ["Màn hình LCD", "Khóa từ", "Phanh đĩa"],
+    rating: 4.3,
+    status: "Còn hàng",
+    featured: true,
+  },
+  {
+    id: 4,
+    slug: "dibao-jeek",
+    name: "Dibao Jeek",
+    price: "29.900.000 VNĐ",
+    image:
+      "https://dibamotors.com.vn/wp-content/uploads/2023/02/z4134419749880_73ab778e78ead824323c10ea42a4a8c4.jpg",
+    specs: {
+      range: "90 km",
+      maxSpeed: "50 km/h",
+      batteryCapacity: "2.0 kWh",
+      chargingTime: "4 giờ",
     },
-    {
-      id: 5,
-      name: "Pega NewTech",
-      price: "32.900.000 VNĐ",
-      image:
-        "https://xedienvietthanh.com/wp-content/uploads/2021/09/xe-may-dien-pega-newtech-mau-den.jpg",
-      specs: {
-        range: "110 km",
-        maxSpeed: "60 km/h",
-        batteryCapacity: "2.6 kWh",
-        chargingTime: "5 giờ",
-      },
-      features: ["Khóa chống trộm", "Đèn pha LED", "Phanh CBS"],
-      rating: 4.4,
-      status: "Còn hàng",
-      featured: true,
+    features: ["Đèn LED", "Khóa điện tử", "Phanh đĩa"],
+    rating: 4.2,
+    status: "Hết hàng",
+    featured: false,
+  },
+  {
+    id: 5,
+    slug: "pega-newtech",
+    name: "Pega NewTech",
+    price: "32.900.000 VNĐ",
+    image:
+      "https://xedienvietthanh.com/wp-content/uploads/2021/09/xe-may-dien-pega-newtech-mau-den.jpg",
+    specs: {
+      range: "110 km",
+      maxSpeed: "60 km/h",
+      batteryCapacity: "2.6 kWh",
+      chargingTime: "5 giờ",
     },
-    {
-      id: 6,
-      name: "Niu NQi GTS",
-      price: "55.900.000 VNĐ",
-      image:
-        "https://niuvietnam.vn/wp-content/uploads/2023/05/xe-dien-niu-nqi-gts-pro-mau-den.jpg",
-      specs: {
-        range: "140 km",
-        maxSpeed: "75 km/h",
-        batteryCapacity: "3.1 kWh",
-        chargingTime: "5.5 giờ",
-      },
-      features: ["App kết nối", "Định vị GPS", "Chống trộm"],
-      rating: 4.7,
-      status: "Còn hàng",
-      featured: true,
+    features: ["Khóa chống trộm", "Đèn pha LED", "Phanh CBS"],
+    rating: 4.4,
+    status: "Còn hàng",
+    featured: true,
+  },
+  {
+    id: 6,
+    slug: "niu-nqi-gts",
+    name: "Niu NQi GTS",
+    price: "55.900.000 VNĐ",
+    image:
+      "https://niuvietnam.vn/wp-content/uploads/2023/05/xe-dien-niu-nqi-gts-pro-mau-den.jpg",
+    specs: {
+      range: "140 km",
+      maxSpeed: "75 km/h",
+      batteryCapacity: "3.1 kWh",
+      chargingTime: "5.5 giờ",
     },
-  ];
+    features: ["App kết nối", "Định vị GPS", "Chống trộm"],
+    rating: 4.7,
+    status: "Còn hàng",
+    featured: true,
+  },
+];
   return (
     <div className="container mx-auto px-4 py-8">
           {/* Grid Xe máy điện */}
@@ -117,6 +126,7 @@ const Oto = () => {
               <div
                 key={bike.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                onClick={() => Navigate(`/view-product/${bike.slug}`)}
               >
                 {/* Ảnh sản phẩm */}
                 <div className="relative">
