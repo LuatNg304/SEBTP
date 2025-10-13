@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
-
 
 const OTPPage = () => {
   const navigate = useNavigate();
@@ -12,36 +11,53 @@ const OTPPage = () => {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!id || !email) {
-    navigate("/forgot-password"); // nếu không có id/email, quay lại trang quên mật khẩu
-  }
+  // ✅ Kiểm tra email/id khi load trang
+  useEffect(() => {
+    if (!id || !email) {
+      navigate("/forgot-password");
+    }
+  }, [id, email, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await api.get("/OTP");
+      // ✅ Gọi mock API
+      const response = await api.get("/cake");
       const users = response.data;
 
-      const user = users.find((u) => u.email === email);
+      // ✅ Tìm user khớp email
+      const user = users.find(
+        (u) => u.email?.toLowerCase() === email?.toLowerCase()
+      );
+
+      console.log("User tìm được:", user);
+
       if (!user) {
         toast.error("Người dùng không tồn tại.");
-      } else if (Number(user.OTP) === Number(otp)) {
+      } else if (
+       Number(user.Otp) === Number(otp) // ✅ So sánh dạng chuỗi để chắc chắn
+        
+      ) {  
+
         toast.success("OTP đúng! Chuyển sang trang đổi mật khẩu...");
         setTimeout(() => {
           navigate("/reset-password", {
             state: { id: user.id, email: user.email },
           });
         }, 1000);
+
       } else {
         toast.error("OTP không đúng. Vui lòng thử lại.");
       }
     } catch (error) {
+      console.error("Lỗi khi kiểm tra OTP:", error);
       toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
     }
+  
   };
 
   return (
@@ -54,7 +70,7 @@ const OTPPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="number"
+            type="text"
             placeholder="Nhập OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}

@@ -16,8 +16,9 @@ const AdminLayout = () => {
       <Layout
         style={{
           background: "#f5f6fa",
-          padding: "16px 24px",
-          height: "calc(100vh - 200px)", // header cao 200px
+          padding: "8px 16px",
+          height: "calc(100vh - 160px)",
+
           overflow: "auto",
         }}
       >
@@ -32,8 +33,9 @@ const AdminLayout = () => {
         <Content
           style={{
             background: "#fff",
-            padding: 16,
-            borderRadius: 8,
+            padding: 12,
+            borderRadius: 12,
+
             height: "calc(100% - 40px)",
             overflow: "auto",
           }}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { toast } from "react-toastify";
 import api from "../../config/axios";
 
@@ -9,7 +9,7 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
 
   const { id, email } = location.state || {}; // nhận id và email từ OTP page
-
+   console.log("ResetPasswordPage state:", location.state);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
