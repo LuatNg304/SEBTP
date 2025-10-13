@@ -18,37 +18,88 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.get("/Category"); // ví dụ mock data
-      const users = response.data;
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await api.post("auth/basic-login"); // ví dụ mock data
+  //     const users = response.data;
 
-      // tìm người dùng có email và password trùng
-      const user = users.find(
-        (u) => u.email === formData.email && u.password === formData.password
-      );
-      if (user) {
-        toast.success("Đăng nhập thành công!");
-        onClose();
-      }
-      const { token } = response.data;
-      localStorage.setItem("token", token);
+  //     // tìm người dùng có email và password trùng
+  //     const user = users.find(
+  //       (u) => u.email === formData.email && u.password === formData.password
+  //     );
+  //     if (user) {
+  //       toast.success("Đăng nhập thành công!");
+  //       onClose();
+  //     }
+  //     const { token } = response.data;
+  //     localStorage.setItem("token", token);
 
-      // lưu vào statel toàn cục
-      dispatch(login(user));
-      // reset form
-      setFormData({
-        email: "",
-        password: "",
-        rememberMe: false,
-      });
-    } catch (error) {
-      console.error(error);
-      toast.error("Lỗi khi đăng nhập. Vui lòng thử lại.");
+  //     // lưu vào statel toàn cục
+  //     dispatch(login(user));
+  //     // reset form
+  //     setFormData({
+  //       email: "",
+  //       password: "",
+  //       rememberMe: false,
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Lỗi khi đăng nhập. Vui lòng thử lại.");
+  //   }
+  // };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    // Gửi POST request đến API với email và password
+    const response = await api.post("/auth/basic-login", {
+      email: formData.email,
+      password: formData.password,
+    });
+
+    // Lấy accessToken từ phản hồi
+    const { accessToken } = response.data;
+
+    if (!accessToken) {
+      toast.error("Tài khoản hoặc mật khẩu không đúng!");
+      return;
     }
-  };
 
+    // Lưu accessToken vào localStorage
+    localStorage.setItem("accessToken", accessToken);
+
+    // Gửi thông tin user vào redux (tùy nếu bạn có endpoint get profile)
+    // Ví dụ: lấy thông tin user từ token nếu API hỗ trợ
+    dispatch(
+      login({
+        email: formData.email,
+      })
+    );
+
+    toast.success("Đăng nhập thành công!");
+
+    // Reset form và đóng modal
+    setFormData({
+      email: "",
+      password: "",
+      rememberMe: false,
+    });
+    onClose();
+
+    // Chuyển hướng sau khi login thành công
+    navigate("/");
+
+  } catch (error) {
+    console.error("Login error:", error);
+
+    // Nếu có lỗi từ backend
+    const message =
+      error.response?.data?.message ||
+      "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+
+    toast.error(message);
+  }
+};
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
