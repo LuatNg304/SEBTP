@@ -5,13 +5,14 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import TermsModal from "./TermsModal";
 import api from "../../config/axios";
-
+import { useNavigate } from "react-router-dom";
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const navigate = useNavigate();
   const [values, setValues] = useState({
     email: "",
     fullName: "",
@@ -36,24 +37,26 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       return;
     }
 
-    if (values.password !== values.confirmPassword) {
-      toast.error("Mật khẩu và xác nhận mật khẩu không khớp.");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       // Tạo user mới
-      const payload = {
+
+      const response = await api.post("/auth/register", {
         email: values.email,
         password: values.password,
+        confirmPassword: values.confirmPassword,
         fullName: values.fullName,
-      };
-      const response = await api.post("auth-controller/register", payload);
+      });
 
-      if (response.status === 201) {
-        toast.success("Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+      const { success, message, data } = response.data;
+
+      if (success) {
+        toast.success(
+          "Đăng ký thành công! Vui lòng kiểm tra email để nhận mã OTP."
+        );
+
+        // Reset form
         setValues({
           email: "",
           fullName: "",
@@ -61,18 +64,31 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           confirmPassword: "",
           isOver18: false,
         });
+
+        // Chuyển đến trang nhập OTP
         setTimeout(() => {
           onClose(); // đóng modal đăng ký
-          onSwitchToLogin(); // mở modal đăng nhập
+          navigate("/otp", {
+            state: {
+              
+              email: values.email,
+              type: "register", // 🔹 để OTPPage biết đây là xác minh khi đăng ký
+            },
+          });
         }, 800);
+      } else {
+        toast.error(message || "Đăng ký thất bại. Vui lòng thử lại.");
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      console.log(error);
+
+      const msg =
+        error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create your account">
       {/* Google Sign Up */}

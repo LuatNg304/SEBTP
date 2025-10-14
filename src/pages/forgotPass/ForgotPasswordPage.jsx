@@ -40,7 +40,8 @@ const ForgotPasswordPage = () => {
      if (user) {
        toast.success(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);
        setTimeout(() => {
-         navigate("/otp", { state: { id: user.id, email: user.email } });
+        navigate("/otp", { state: { id: user.id, email: user.email, type: "forgot" } });
+
        }, 1000);
      } else {
        toast.error("Email không tồn tại trong hệ thống");

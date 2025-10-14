@@ -1,63 +1,85 @@
+
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
 
 
 const OTPPage = () => {
+  
+
   const navigate = useNavigate();
   const location = useLocation();
-  const { id, email } = location.state || {}; // lấy id, email từ state
+
+  // Nhận dữ liệu từ navigate("/otp", { state: { email, type } });
+  const { email, type } = location.state || {};
 
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!id || !email) {
-    navigate("/forgot-password"); // nếu không có id/email, quay lại trang quên mật khẩu
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email) {
+      toast.error("Thiếu thông tin email.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await api.get("/OTP");
-      const users = response.data;
+      // Gửi POST request đến API backend
+      const response = await api.post(`/auth/verify-register`, null, {
+        params: { email, otp },
+      });
 
-      const user = users.find((u) => u.email === email);
-      if (!user) {
-        toast.error("Người dùng không tồn tại.");
-      } else if (Number(user.OTP) === Number(otp)) {
-        toast.success("OTP đúng! Chuyển sang trang đổi mật khẩu...");
+      // Giả sử backend trả về { success: true, message: "Xác thực thành công" }
+      if (response.data?.success) {
+        toast.success(response.data?.message || "Xác minh OTP thành công!");
+
         setTimeout(() => {
-          navigate("/reset-password", {
-            state: { id: user.id, email: user.email },
-          });
+          if (type === "register") {
+            // Nếu xác minh OTP cho đăng ký
+           navigate("/", { state: { openLogin: true } });
+          } else if (type === "forgot") {
+            // Nếu xác minh OTP cho quên mật khẩu
+            navigate("/reset-password", { state: { email } });
+          } else {
+            navigate("/");
+          }
         }, 1000);
       } else {
-        toast.error("OTP không đúng. Vui lòng thử lại.");
+        toast.error(
+          response.data?.message || "OTP không đúng hoặc đã hết hạn."
+        );
       }
     } catch (error) {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      console.error(error);
+      if (error.response?.status === 400) {
+        toast.error("OTP không hợp lệ hoặc đã hết hạn.");
+      } else if (error.response?.status === 403) {
+        toast.error("Bạn không có quyền xác thực OTP này.");
+      } else {
+        toast.error("Lỗi hệ thống, vui lòng thử lại.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-
-  return (
+    return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-green-50">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center mb-6">Nhập OTP</h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Xác minh OTP</h1>
         <p className="text-sm text-gray-500 text-center mb-4">
-          OTP đã gửi đến email: <span className="font-medium">{email}</span>
+          Mã OTP đã gửi đến email:{email}
+          <span className="font-medium">{email || "Không xác định"}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="number"
-            placeholder="Nhập OTP"
+            placeholder="Nhập mã OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -69,12 +91,14 @@ const OTPPage = () => {
             disabled={isLoading}
             className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all disabled:opacity-70"
           >
-            {isLoading ? "Đang kiểm tra..." : "Xác nhận OTP"}
+            {isLoading ? "Đang xác minh..." : "Xác nhận OTP"}
           </button>
         </form>
       </div>
+      
     </div>
   );
+
 };
 
 export default OTPPage;

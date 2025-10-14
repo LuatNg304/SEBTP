@@ -5,15 +5,27 @@ import { Dropdown } from "antd";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 import SignupBanner from "../../components/body/SignupBanner";
-
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
+  const currentUser = useSelector((state) => state.account);
+  // ✅ Mở modal đăng nhập nếu có state từ navigate
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.openLogin) {
+      setShowLoginModal(true);
+
+      // ✅ Xoá state để tránh mở lại khi F5
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   //  Lấy dữ liệu account từ Redux
   const account = useSelector((state) => state.account);
@@ -47,11 +59,11 @@ const HomePage = () => {
         key: "1",
         label: (
           <div
-            //onClick={() => navigate("/profile")}
+            onClick={() => navigate("/view-profile")}
             className="flex items-center gap-2 cursor-pointer"
           >
             <FiUser className="text-green-600" />
-            <span>Trang cá nhân</span>
+            <span>Thông tin cá nhân</span>
           </div>
         ),
       },
@@ -116,7 +128,6 @@ const HomePage = () => {
                 <NavLink
                   to="/"
                   onClick={() => {
-                    
                     setTimeout(() => window.location.reload(), 100);
                   }}
                   className="text-2xl font-extrabold tracking-wide uppercase no-underline"
@@ -150,7 +161,7 @@ const HomePage = () => {
                       className="w-8 h-8 rounded-full object-cover border border-gray-300"
                     />
                     <span className="font-medium text-gray-700">
-                      {account?.fullName || "Người dùng"}
+                      {account.user.fullName || "Người dùng"}
                     </span>
                   </button>
                 </Dropdown>

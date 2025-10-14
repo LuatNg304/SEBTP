@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
 import ResetPasswordPage from "./pages/forgotPass/resetPass";
 import ViewProduct from "./pages/viewProduct";
+import UserProfile from "./pages/viewProfile";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
     path: "view-product/:slug",
     element: <ViewProduct />,
   },
+  {
+    path:"view-profile",
+    element: <UserProfile />,
+  }
 ]);
 
 function App() {

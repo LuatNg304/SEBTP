@@ -48,58 +48,53 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   //     toast.error("Lỗi khi đăng nhập. Vui lòng thử lại.");
   //   }
   // };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    // Gửi POST request đến API với email và password
-    const response = await api.post("/auth/basic-login", {
-      email: formData.email,
-      password: formData.password,
-    });
-
-    // Lấy accessToken từ phản hồi
-    const { accessToken } = response.data;
-
-    if (!accessToken) {
-      toast.error("Tài khoản hoặc mật khẩu không đúng!");
-      return;
-    }
-
-    // Lưu accessToken vào localStorage
-    localStorage.setItem("accessToken", accessToken);
-
-    // Gửi thông tin user vào redux (tùy nếu bạn có endpoint get profile)
-    // Ví dụ: lấy thông tin user từ token nếu API hỗ trợ
-    dispatch(
-      login({
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Gửi POST request đến API với email và password
+      const response = await api.post("auth/basic-login", {
         email: formData.email,
-      })
-    );
+        password: formData.password,
+      });
 
-    toast.success("Đăng nhập thành công!");
+      // Lấy accessToken từ phản hồi
+      const { accessToken } = response.data;
 
-    // Reset form và đóng modal
-    setFormData({
-      email: "",
-      password: "",
-      rememberMe: false,
-    });
-    onClose();
+      if (!accessToken) {
+        toast.error("Tài khoản hoặc mật khẩu không đúng!");
+        return;
+      }
 
-    // Chuyển hướng sau khi login thành công
-    navigate("/");
+      // Lưu accessToken vào localStorage
+      localStorage.setItem("accessToken", accessToken);
 
-  } catch (error) {
-    console.error("Login error:", error);
+      // Gửi thông tin user vào redux (tùy nếu bạn có endpoint get profile)
+      // Ví dụ: lấy thông tin user từ token nếu API hỗ trợ
+      dispatch(login(response.data));
 
-    // Nếu có lỗi từ backend
-    const message =
-      error.response?.data?.message ||
-      "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      toast.success("Đăng nhập thành công!");
 
-    toast.error(message);
-  }
-};
+      // Reset form và đóng modal
+      setFormData({
+        email: "",
+        password: "",
+        rememberMe: false,
+      });
+      onClose();
+
+      // Chuyển hướng sau khi login thành công
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+
+      // Nếu có lỗi từ backend
+      const message =
+        error.response?.data?.message ||
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+
+      toast.error(message);
+    }
+  };
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({

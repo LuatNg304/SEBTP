@@ -1,23 +1,23 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = null
+const initialState = null;
 
 export const accountSlice = createSlice({
-  name: 'account',
+  name: "account",
   initialState,
   reducers: {
     login: (state, action) => {
-      state = action.payload;
-      return state;
+      return action.payload;
     },
-    logout:()=>{
-        return initialState
+    logout: () => {
+      return initialState;
     },
-    
+    updateUser: (state, action) => {
+      return { ...state, ...action.payload };
+    }
   },
-})
+});
 
-
-export const {login,logout } = accountSlice.actions;
+export const { login, logout,updateUser } = accountSlice.actions;
 
 export default accountSlice.reducer;
