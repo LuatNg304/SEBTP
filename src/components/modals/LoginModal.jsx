@@ -56,24 +56,18 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         email: formData.email,
         password: formData.password,
       });
-
       // Lấy accessToken từ phản hồi
-      const { accessToken } = response.data;
-
+      const { accessToken,user } = response.data;
       if (!accessToken) {
         toast.error("Tài khoản hoặc mật khẩu không đúng!");
         return;
       }
-
       // Lưu accessToken vào localStorage
       localStorage.setItem("accessToken", accessToken);
-
       // Gửi thông tin user vào redux (tùy nếu bạn có endpoint get profile)
       // Ví dụ: lấy thông tin user từ token nếu API hỗ trợ
       dispatch(login(response.data));
-
       toast.success("Đăng nhập thành công!");
-
       // Reset form và đóng modal
       setFormData({
         email: "",
@@ -81,12 +75,20 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         rememberMe: false,
       });
       onClose();
-
       // Chuyển hướng sau khi login thành công
-      navigate("/");
+      if(user.role ==="BUYER"){
+        navigate("/");
+      }else{
+        navigate("/dashboard");
+      }
+      
+      
     } catch (error) {
       console.error("Login error:", error);
-
+      if(error.message === "Network Error"){
+        toast.error("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
+        return;
+      }
       // Nếu có lỗi từ backend
       const message =
         error.response?.data?.message ||

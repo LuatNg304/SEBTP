@@ -36,6 +36,10 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: "/seller",
+    element: <div>Seller Page</div>, // trang seller hiển thị trong layout ngoài
+  },
+  {
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
   },

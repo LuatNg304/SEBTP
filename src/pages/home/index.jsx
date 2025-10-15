@@ -16,27 +16,24 @@ const HomePage = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
   const currentUser = useSelector((state) => state.account);
-  // ✅ Mở modal đăng nhập nếu có state từ navigate
+  
   const location = useLocation();
   useEffect(() => {
     if (location.state?.openLogin) {
       setShowLoginModal(true);
-
-      // ✅ Xoá state để tránh mở lại khi F5
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
-  //  Lấy dữ liệu account từ Redux
   const account = useSelector((state) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // Hàm xử lý đăng xuất
+  
   const handleLogout = () => {
-    localStorage.removeItem("token"); // nếu bạn có token
-    dispatch(logout()); // xoá tài khoản trong Redux
+    localStorage.removeItem("token");
+    dispatch(logout());
   };
-  // Dropdown danh mục
+  
   const items = [
     { key: "1", label: "Item 1" },
     { key: "2", label: "Item 2" },
@@ -52,7 +49,7 @@ const HomePage = () => {
     setShowRegisterModal(true);
     setShowLoginModal(false);
   };
-  // ✅ Các mục trong dropdown của avatar
+  
   const userMenu = {
     items: [
       {
@@ -60,9 +57,9 @@ const HomePage = () => {
         label: (
           <div
             onClick={() => navigate("/view-profile")}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
           >
-            <FiUser className="text-green-600" />
+            <FiUser className="text-green-600 transition-transform duration-200 hover:scale-110" />
             <span>Thông tin cá nhân</span>
           </div>
         ),
@@ -71,10 +68,9 @@ const HomePage = () => {
         key: "2",
         label: (
           <div
-            // onClick={() => navigate("/register-seller")}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
           >
-            <FiMenu className="text-green-600" />
+            <FiMenu className="text-green-600 transition-transform duration-200 hover:scale-110" />
             <span>Đăng ký Seller</span>
           </div>
         ),
@@ -87,7 +83,7 @@ const HomePage = () => {
         label: (
           <div
             onClick={handleLogout}
-            className="flex items-center gap-2 text-red-500 cursor-pointer"
+            className="flex items-center gap-2 text-red-500 cursor-pointer transition-colors duration-200 hover:text-red-700"
           >
             🚪 <span>Đăng xuất</span>
           </div>
@@ -113,7 +109,7 @@ const HomePage = () => {
         <img
           src="/panner.png"
           alt="Header background"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-opacity duration-300"
         />
 
         <div className="absolute top-0 left-0 w-full h-full grid grid-rows-3">
@@ -121,8 +117,8 @@ const HomePage = () => {
           <div className="grid grid-cols-3 items-center px-6">
             {/* Left: Logo */}
             <div className="flex items-center gap-3">
-              <button className="p-2 rounded-full bg-white shadow">
-                <FiMenu className="h-6 w-6 text-green-700" />
+              <button className="p-2 rounded-full bg-white shadow transition-all duration-300 hover:shadow-lg hover:scale-110 hover:bg-gray-50 active:scale-95">
+                <FiMenu className="h-6 w-6 text-green-700 transition-transform duration-300" />
               </button>
               <div className="grid grid-cols-3 items-center px-6">
                 <NavLink
@@ -130,7 +126,7 @@ const HomePage = () => {
                   onClick={() => {
                     setTimeout(() => window.location.reload(), 100);
                   }}
-                  className="text-2xl font-extrabold tracking-wide uppercase no-underline"
+                  className="text-2xl font-extrabold tracking-wide uppercase no-underline transition-all duration-300 hover:scale-105 hover:tracking-wider"
                   style={{ color: "#0b5229ff" }}
                 >
                   ECO-SANH
@@ -143,22 +139,21 @@ const HomePage = () => {
 
             {/* Right: Actions */}
             <div className="flex items-center justify-end gap-4">
-              <button className="p-2 rounded-full hover:bg-white/40">
-                <FiHeart className="h-6 w-6 text-gray-700" />
+              <button className="p-2 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 active:scale-95">
+                <FiHeart className="h-6 w-6 text-gray-700 transition-colors duration-300 hover:text-red-500 hover:fill-red-500" />
               </button>
 
-              {/*  Nếu có tài khoản */}
               {account ? (
                 <Dropdown
                   menu={userMenu}
                   placement="bottomRight"
                   trigger={["click"]}
                 >
-                  <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow hover:bg-gray-100 transition">
+                  <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow transition-all duration-300 hover:shadow-lg hover:bg-gray-50 hover:scale-105 active:scale-95">
                     <img
                       src={account?.avatar || "/default-avatar.png"}
                       alt="avatar"
-                      className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-300 transition-all duration-300 hover:border-green-600"
                     />
                     <span className="font-medium text-gray-700">
                       {account.user.fullName || "Người dùng"}
@@ -168,13 +163,13 @@ const HomePage = () => {
               ) : (
                 <>
                   <button
-                    className="px-3 py-1 bg-white rounded-full text-sm font-medium hover:bg-gray-100"
+                    className="px-3 py-1 bg-white rounded-full text-sm font-medium transition-all duration-300 hover:bg-gray-100 hover:shadow-md hover:scale-105 active:scale-95"
                     onClick={handleOpenLogin}
                   >
                     Đăng nhập
                   </button>
                   <button
-                    className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800"
+                    className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-lg hover:scale-105 active:scale-95"
                     onClick={handleOpenLogin}
                   >
                     Đăng tin
@@ -182,7 +177,6 @@ const HomePage = () => {
                 </>
               )}
 
-              {/* Modal đăng nhập / đăng ký */}
               <LoginModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
@@ -198,20 +192,20 @@ const HomePage = () => {
 
           {/* ===== SLOGAN ===== */}
           <div className="flex items-center justify-center">
-            <span className="text-3xl font-bold font-poppins text-white drop-shadow-xl">
+            <span className="text-3xl font-bold font-poppins text-white drop-shadow-xl transition-all duration-500 hover:scale-105 hover:drop-shadow-2xl">
               "Sống xanh – Lái xe điện – Bảo vệ môi trường"
             </span>
           </div>
 
           {/* ===== SEARCH ===== */}
           <div className="flex items-center justify-center px-4 py-6 mt-10">
-            <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-2">
+            <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-2 transition-all duration-300 hover:shadow-2xl">
               <div className="flex w-full rounded-lg overflow-hidden">
                 <div className="flex-1">
                   <input
                     type="text"
                     placeholder="Tìm sản phẩm..."
-                    className="w-full px-4 py-3 text-gray-600 bg-white text-sm focus:outline-none"
+                    className="w-full px-4 py-3 text-gray-600 bg-white text-sm focus:outline-none transition-all duration-300 focus:ring-2 focus:ring-green-600"
                   />
                 </div>
 
@@ -224,16 +218,16 @@ const HomePage = () => {
                       defaultSelectedKeys: ["3"],
                     }}
                   >
-                    <button className="flex items-center gap-2 bg-white border border-white px-6 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100">
+                    <button className="flex items-center gap-2 bg-white border border-white px-6 py-3 rounded-lg font-medium text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:shadow-md hover:border-gray-200">
                       <span>Danh mục</span>
-                      <DownOutlined className="text-gray-600" />
+                      <DownOutlined className="text-gray-600 transition-transform duration-300 group-hover:rotate-180" />
                     </button>
                   </Dropdown>
                 </div>
 
                 {/* Nút tìm kiếm */}
                 <div className="ml-2">
-                  <button className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg h-full">
+                  <button className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg h-full transition-all duration-300 hover:bg-green-700 hover:shadow-lg hover:scale-105 active:scale-95">
                     Tìm kiếm
                   </button>
                 </div>
@@ -244,19 +238,19 @@ const HomePage = () => {
       </header>
 
       {/* ===== CONTENT ===== */}
-      <main className="mx-auto px-4 py-8 max-w-[1200px] w-full mt-8">
+      <main className="mx-auto px-4 py-8 max-w-[1200px] w-full mt-8 transition-opacity duration-500">
         {/* Sub Navigation */}
-        <nav className="bg-white bg-opacity-90 rounded-lg shadow-sm mb-4">
+        <nav className="bg-white bg-opacity-90 rounded-lg shadow-sm mb-4 transition-all duration-300 hover:shadow-md">
           <div className="container mx-auto px-4 py-3">
             <ul className="flex space-x-8">
               <li>
                 <NavLink
                   to="oto"
                   className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-colors duration-200 ${
+                    `font-medium px-3 py-1 rounded-md transition-all duration-300 ${
                       isActive
-                        ? "text-white bg-green-600"
-                        : "text-green-600 hover:text-green-800"
+                        ? "text-white bg-green-600 shadow-md scale-105"
+                        : "text-green-600 hover:text-green-800 hover:bg-green-50 hover:scale-105"
                     }`
                   }
                 >
@@ -267,10 +261,10 @@ const HomePage = () => {
                 <NavLink
                   to="bike"
                   className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-colors duration-200 ${
+                    `font-medium px-3 py-1 rounded-md transition-all duration-300 ${
                       isActive
-                        ? "text-white bg-green-600"
-                        : "text-green-600 hover:text-green-800"
+                        ? "text-white bg-green-600 shadow-md scale-105"
+                        : "text-green-600 hover:text-green-800 hover:bg-green-50 hover:scale-105"
                     }`
                   }
                 >
@@ -281,10 +275,10 @@ const HomePage = () => {
                 <NavLink
                   to="pin"
                   className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-colors duration-200 ${
+                    `font-medium px-3 py-1 rounded-md transition-all duration-300 ${
                       isActive
-                        ? "text-white bg-green-600"
-                        : "text-green-600 hover:text-green-800"
+                        ? "text-white bg-green-600 shadow-md scale-105"
+                        : "text-green-600 hover:text-green-800 hover:bg-green-50 hover:scale-105"
                     }`
                   }
                 >
@@ -296,17 +290,19 @@ const HomePage = () => {
         </nav>
 
         {/* Outlet render trang con */}
-        <div className="bg-white rounded-lg p-6">
+        <div className="bg-white rounded-lg p-6 transition-all duration-500 hover:shadow-xl">
           <Outlet />
         </div>
       </main>
 
       {/* ===== SIGNUP BANNER ===== */}
       {!account && showSignupBanner && (
-        <SignupBanner
-          onSignupClick={() => setShowRegisterModal(true)}
-          onClose={() => setShowSignupBanner(false)}
-        />
+        <div className="transition-all duration-500 ease-in-out">
+          <SignupBanner
+            onSignupClick={() => setShowRegisterModal(true)}
+            onClose={() => setShowSignupBanner(false)}
+          />
+        </div>
       )}
     </div>
   );

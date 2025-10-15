@@ -70,7 +70,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           onClose(); // đóng modal đăng ký
           navigate("/otp", {
             state: {
-              
               email: values.email,
               type: "register", // 🔹 để OTPPage biết đây là xác minh khi đăng ký
             },
@@ -81,7 +80,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       }
     } catch (error) {
       console.log(error);
-
       const msg =
         error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.";
       toast.error(msg);
