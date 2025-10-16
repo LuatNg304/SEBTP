@@ -9,6 +9,11 @@ import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
 import ResetPasswordPage from "./pages/forgotPass/resetPass";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminPosts from "./pages/admin/AdminPosts";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/viewProduct";
 import UserProfile from "./pages/viewProfile";
 
@@ -35,6 +40,18 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  // Route admin
+  {
+    path: "admin",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminDashboard /> }, // <= route mặc định
+      { path: "posts", element: <AdminPosts /> },
+      { path: "users", element: <AdminUsers /> },
+      { path: "settings", element: <AdminSettings /> },
+    ],
+  },
   {
     path: "/seller",
     element: <div>Seller Page</div>, // trang seller hiển thị trong layout ngoài
@@ -51,6 +68,7 @@ const router = createBrowserRouter([
     path: "reset-password",
     element: <ResetPasswordPage />,
   },
+
   {
     path: "view-product/:slug",
     element: <ViewProduct />,

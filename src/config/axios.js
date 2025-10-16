@@ -7,6 +7,7 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+<<<<<<< HEAD
 // Thêm token trước khi gửi request
 api.interceptors.request.use(
   (config) => {
@@ -22,3 +23,6 @@ api.interceptors.request.use(
   }
 );
 export default api;
+=======
+export default api;
+>>>>>>> feature/admin

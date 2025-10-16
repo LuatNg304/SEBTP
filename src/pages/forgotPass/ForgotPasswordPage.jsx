@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
 
@@ -28,10 +27,11 @@ const ForgotPasswordPage = () => {
   const navigate = useNavigate();
 
   // Hàm xử lý submit form
- const handleSubmit = async (e) => {
-   e.preventDefault();
-   setIsLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
+<<<<<<< HEAD
    try {
      const response = await api.get("/Category");
      const users = response.data;
@@ -52,7 +52,27 @@ const ForgotPasswordPage = () => {
      setIsLoading(false);
    }
  };
+=======
+    try {
+      const response = await api.get("/Category");
+      const users = response.data;
+>>>>>>> feature/admin
 
+      const user = users.find((u) => u.email === email);
+      if (user) {
+        toast.success(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);
+        setTimeout(() => {
+          navigate("/otp", { state: { id: user.id, email: user.email } });
+        }, 1000);
+      } else {
+        toast.error("Email không tồn tại trong hệ thống");
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-green-200">
@@ -88,7 +108,6 @@ const ForgotPasswordPage = () => {
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
             />
           </div>
-
 
           <button
             type="submit"
