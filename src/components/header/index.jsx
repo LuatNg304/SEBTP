@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FiHeart, FiUser, FiMenu } from "react-icons/fi";
-import { Dropdown } from "antd";
+import { Dropdown, Button, Switch } from "antd";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
@@ -15,13 +15,16 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const role = account?.user?.role;
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     dispatch(logout());
   };
-    const handleGoToPost = () => {
-      navigate("post/vehicle"); // 👉 chuyển hướng sang trang đăng tin
-    };
+
+  const handleGoToPost = () => {
+    navigate("/post/vehicle");
+  };
 
   const handleOpenLogin = () => {
     setShowLoginModal(true);
@@ -33,23 +36,26 @@ const Header = () => {
     setShowLoginModal(false);
   };
 
+  // ⚙️ Handle switch Buyer/Seller
+  const handleRoleSwitch = (checked) => {
+    if (checked) {
+      navigate("/seller-management");
+    } else {
+      navigate("/");
+    }
+  };
+
   const userMenu = {
     items: [
       {
-        key: "1",
+        key: "profile",
         label: (
-          <div className="flex items-center gap-2 cursor-pointer">
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate("/view-profile")}
+          >
             <FiUser className="text-green-600" />
             <span>Trang cá nhân</span>
-          </div>
-        ),
-      },
-      {
-        key: "2",
-        label: (
-          <div className="flex items-center gap-2 cursor-pointer">
-            <FiMenu className="text-green-600" />
-            <span>Đăng ký Seller</span>
           </div>
         ),
       },
@@ -57,7 +63,28 @@ const Header = () => {
         type: "divider",
       },
       {
-        key: "3",
+        key: "switch-role",
+        label: (
+          <div className="flex items-center justify-between w-full gap-3 py-1">
+            <span className="text-gray-700 whitespace-nowrap">
+              Chế độ Seller
+            </span>
+            <Switch
+              checked={role === "SELLER"}
+              onChange={handleRoleSwitch}
+              checkedChildren="On"
+              unCheckedChildren="Off"
+              style={{ minWidth: 44 }} // giúp giữ khoảng cách ổn định
+            />
+          </div>
+        ),
+      },
+
+      {
+        type: "divider",
+      },
+      {
+        key: "logout",
         label: (
           <div
             onClick={handleLogout}
@@ -86,8 +113,7 @@ const Header = () => {
         </NavLink>
       </div>
 
-      {/* CENTER */}
-
+      {/* CENTER: SEARCH */}
       <div className="bg-[#F4F4F4] rounded-full h-12 flex items-center px-4 col-span-4">
         <form className="flex items-center w-full">
           <input
@@ -111,7 +137,7 @@ const Header = () => {
         </button>
 
         {account?.user ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Dropdown
               menu={userMenu}
               placement="bottomRight"

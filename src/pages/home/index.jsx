@@ -11,13 +11,11 @@ import { logout } from "../../redux/accountSlice";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
-
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
-  
-  
+
   const location = useLocation();
   useEffect(() => {
     if (location.state?.openLogin) {
@@ -26,34 +24,31 @@ const HomePage = () => {
     }
   }, [location.state]);
 
-
   const account = useSelector((state) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     dispatch(logout());
   };
-  
+
   const items = [
     { key: "1", label: "Item 1" },
     { key: "2", label: "Item 2" },
     { key: "3", label: "Item 3" },
   ];
 
-
   const handleOpenLogin = () => {
     setShowLoginModal(true);
     setShowRegisterModal(false);
   };
 
-
   const handleOpenRegister = () => {
     setShowRegisterModal(true);
     setShowLoginModal(false);
   };
-  
+
   // Tạo menu items động dựa trên role
   const getUserMenuItems = () => {
     const menuItems = [
@@ -107,7 +102,6 @@ const HomePage = () => {
     return menuItems;
   };
 
-
   return (
     <div
       className="overflow-x-hidden"
@@ -127,7 +121,6 @@ const HomePage = () => {
           alt="Header background"
           className="w-full h-full object-cover transition-opacity duration-300"
         />
-
 
         <div className="absolute top-0 left-0 w-full h-full grid grid-rows-3">
           {/* ===== NAVIGATION ===== */}
@@ -151,10 +144,8 @@ const HomePage = () => {
               </div>
             </div>
 
-
             {/* Center: Empty */}
             <div></div>
-
 
             {/* Right: Actions */}
             <div className="flex items-center justify-end gap-4">
@@ -162,23 +153,29 @@ const HomePage = () => {
                 <FiHeart className="h-6 w-6 text-gray-700 transition-colors duration-300 hover:text-red-500 hover:fill-red-500" />
               </button>
 
-
               {account ? (
                 <>
-                  {/* Nút vào trang Seller Management - chỉ hiện khi đã là SELLER */}
                   {account?.user?.role === "SELLER" && (
-                    <Button
-                      type="primary"
-                      icon={<ShopOutlined />}
-                      onClick={() => navigate("/seller-management")}
-                      className="transition-all duration-300 hover:scale-105 active:scale-95"
-                      style={{ 
-                        backgroundColor: "#52c41a",
-                        borderColor: "#52c41a"
+                    <button
+                      onClick={() => navigate("/seller")}
+                      className="
+      px-6 py-2
+      bg-white
+      rounded-full
+      shadow-none
+      text-black
+      font-medium
+      text-base
+      border-none
+      transition hover:bg-green-50 active:bg-green-100
+      focus:outline-none
+    "
+                      style={{
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
                       }}
                     >
                       Quản lý Shop
-                    </Button>
+                    </button>
                   )}
 
                   <Dropdown
@@ -215,7 +212,6 @@ const HomePage = () => {
                 </>
               )}
 
-
               <LoginModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
@@ -229,14 +225,12 @@ const HomePage = () => {
             </div>
           </div>
 
-
           {/* ===== SLOGAN ===== */}
           <div className="flex items-center justify-center">
             <span className="text-3xl font-bold font-poppins text-white drop-shadow-xl transition-all duration-500 hover:scale-105 hover:drop-shadow-2xl">
               "Sống xanh – Lái xe điện – Bảo vệ môi trường"
             </span>
           </div>
-
 
           {/* ===== SEARCH ===== */}
           <div className="flex items-center justify-center px-4 py-6 mt-10">
@@ -249,7 +243,6 @@ const HomePage = () => {
                     className="w-full px-4 py-3 text-gray-600 bg-white text-sm focus:outline-none transition-all duration-300 focus:ring-2 focus:ring-green-600"
                   />
                 </div>
-
 
                 {/* Dropdown danh mục */}
                 <div className="ml-2">
@@ -267,7 +260,6 @@ const HomePage = () => {
                   </Dropdown>
                 </div>
 
-
                 {/* Nút tìm kiếm */}
                 <div className="ml-2">
                   <button className="bg-green-600 text-white font-medium px-6 py-2 rounded-lg h-full transition-all duration-300 hover:bg-green-700 hover:shadow-lg hover:scale-105 active:scale-95">
@@ -279,7 +271,6 @@ const HomePage = () => {
           </div>
         </div>
       </header>
-
 
       {/* ===== CONTENT ===== */}
       <main className="mx-auto px-4 py-8 max-w-[1200px] w-full mt-8 transition-opacity duration-500">
@@ -333,13 +324,11 @@ const HomePage = () => {
           </div>
         </nav>
 
-
         {/* Outlet render trang con */}
         <div className="bg-white rounded-lg p-6 transition-all duration-500 hover:shadow-xl">
           <Outlet />
         </div>
       </main>
-
 
       {/* ===== SIGNUP BANNER ===== */}
       {!account && showSignupBanner && (
@@ -353,6 +342,5 @@ const HomePage = () => {
     </div>
   );
 };
-
 
 export default HomePage;

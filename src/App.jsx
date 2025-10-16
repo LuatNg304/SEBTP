@@ -21,6 +21,10 @@ import SellerDashboard from "./pages/seller/SellerDashboard";
 import VehiclePost from "./pages/seller/VehiclePost";
 import BatteryPost from "./pages/seller/BatteryPost";
 import SellerLayout from "./pages/seller/SellerLayout";
+import Dashboarrd from "./components/dasboard";
+import PostPanding from "./pages/admin/post/postPanding";
+import PostReject from "./pages/admin/post/PostReject";
+import PostAccept from "./pages/admin/post/PostAccept";
 
 const router = createBrowserRouter([
   {
@@ -46,17 +50,17 @@ const router = createBrowserRouter([
     ],
   },
 
-  // Route admin
-  {
-    path: "admin",
-    element: <AdminLayout />,
-    children: [
-      { index: true, element: <AdminDashboard /> }, // <= route mặc định
-      { path: "posts", element: <AdminPosts /> },
-      { path: "users", element: <AdminUsers /> },
-      { path: "settings", element: <AdminSettings /> },
-    ],
-  },
+  // // Route admin
+  // {
+  //   path: "admin",
+  //   element: <AdminLayout />,
+  //   children: [
+  //     { index: true, element: <AdminDashboard /> }, // <= route mặc định
+  //     { path: "posts", element: <AdminPosts /> },
+  //     { path: "users", element: <AdminUsers /> },
+  //     { path: "settings", element: <AdminSettings /> },
+  //   ],
+  // },
   {
     path: "seller",
     element: <SellerLayout />, // layout chứa header + sidebar
@@ -64,6 +68,25 @@ const router = createBrowserRouter([
       { index: true, element: <SellerDashboard /> },
       { path: "post/vehicle", element: <VehiclePost /> },
       { path: "post/battery", element: <BatteryPost /> },
+    ],
+  },
+  {
+    path: "admin",
+    element: <Dashboarrd />,
+    children: [
+      {
+        index: true,
+        element: <PostPanding/>,
+      },
+      {
+        path:"post-reject",
+        element:<PostReject/>,
+      },{
+        path:"post-accept",
+        element:<PostAccept/>
+      }
+     
+      
     ],
   },
   {
@@ -88,9 +111,9 @@ const router = createBrowserRouter([
     element: <UserProfile />,
   },
   {
-    path:"upgrade-seller",
+    path: "upgrade-seller",
     element: <UpgradeSeller />,
-  }
+  },
 ]);
 
 function App() {

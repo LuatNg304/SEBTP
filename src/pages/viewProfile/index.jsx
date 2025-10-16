@@ -137,127 +137,138 @@ const UserProfile = () => {
   // };
 
   return (
-    <Card
+    <div
+      className="overflow-x-hidden"
       style={{
-        width: "90%",
-        margin: "20px auto",
-        borderRadius: 16,
-        boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
-        padding: "30px",
-        backgroundColor: "#fff",
+        backgroundImage: "url('/background.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        backgroundRepeat: "no-repeat",
+        minHeight: "100vh",
       }}
     >
-      {/* Header */}
-      <div
+      <Card
         style={{
-          display: "flex",
-          alignItems: "center",
-          marginBottom: 30,
-          justifyContent: "space-between",
+          width: "90%",
+          margin: "20px auto",
+          borderRadius: 16,
+          boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
+          padding: "30px",
+          backgroundColor: "#fff",
         }}
       >
-        <Space align="center">
-          <Avatar
-            size={100}
-            src={user.avatar}
-            icon={<UserOutlined />}
-            style={{ border: "2px solid #eee" }}
-          />
-          <div style={{ marginLeft: 20 }}>
-            <h2 style={{ marginBottom: 4 }}>{user.fullName}</h2>
-            <p style={{ color: "#888", marginBottom: 0 }}>{user.role}</p>
-          </div>
-        </Space>
-
-        <Space>
-          <Button
-            type="default"
-            icon={<HomeOutlined />}
-            onClick={() => navigate("/")}
-            style={{ borderRadius: 8 }}
-          >
-            Quay về Home
-          </Button>
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={showModal}
-            style={{
-              borderRadius: 8,
-              background: "#1677ff",
-              fontWeight: 500,
-            }}
-          >
-            Cập nhật thông tin
-          </Button>
-        </Space>
-      </div>
-
-      {/* Table */}
-      <Table
-        dataSource={data}
-        columns={columns}
-        pagination={false}
-        bordered
-        style={{
-          borderRadius: 12,
-          overflow: "hidden",
-        }}
-      />
-
-      {/* Modal update */}
-      <Modal
-        title="Cập nhật thông tin người dùng"
-        open={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        okText="Cập nhật"
-        cancelText="Hủy"
-        centered
-        confirmLoading={loading}
-      >
-        <Form layout="vertical" form={form}>
-          <Form.Item
-            name="fullName"
-            label="Họ và tên"
-            rules={[
-              { required: true, message: "Vui lòng nhập họ và tên!" },
-              { min: 3, message: "Tên phải có ít nhất 3 ký tự!" },
-              { max: 50, message: "Tên không được vượt quá 50 ký tự!" },
-            ]}
-          >
-            <Input placeholder="Nhập họ và tên đầy đủ" />
-          </Form.Item>
-
-          <Form.Item
-            name="phone"
-            label="Số điện thoại"
-            rules={[
-              { required: true, message: "Vui lòng nhập số điện thoại!" },
-              {
-                pattern: /^\d{10,11}$/,
-                message: "Số điện thoại phải có 10–11 chữ số!",
-              },
-            ]}
-          >
-            <Input placeholder="VD: 0912345678" />
-          </Form.Item>
-
-          <Form.Item
-            name="address"
-            label="Địa chỉ"
-            rules={[
-              { required: true, message: "Vui lòng nhập địa chỉ!" },
-              { min: 5, message: "Địa chỉ phải có ít nhất 5 ký tự!" },
-            ]}
-          >
-            <Input.TextArea
-              rows={2}
-              placeholder="Nhập địa chỉ hiện tại của bạn"
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: 30,
+            justifyContent: "space-between",
+          }}
+        >
+          <Space align="center">
+            <Avatar
+              size={100}
+              src={user.avatar}
+              icon={<UserOutlined />}
+              style={{ border: "2px solid #eee" }}
             />
-          </Form.Item>
+            <div style={{ marginLeft: 20 }}>
+              <h2 style={{ marginBottom: 4 }}>{user.fullName}</h2>
+              <p style={{ color: "#888", marginBottom: 0 }}>{user.role}</p>
+            </div>
+          </Space>
 
-          {/* <Form.Item
+          <Space>
+            <Button
+              type="default"
+              icon={<HomeOutlined />}
+              onClick={() => navigate("/")}
+              style={{ borderRadius: 8 }}
+            >
+              Quay về Home
+            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={showModal}
+              style={{
+                borderRadius: 8,
+                background: "#1677ff",
+                fontWeight: 500,
+              }}
+            >
+              Cập nhật thông tin
+            </Button>
+          </Space>
+        </div>
+
+        {/* Table */}
+        <Table
+          dataSource={data}
+          columns={columns}
+          pagination={false}
+          bordered
+          style={{
+            borderRadius: 12,
+            overflow: "hidden",
+          }}
+        />
+
+        {/* Modal update */}
+        <Modal
+          title="Cập nhật thông tin người dùng"
+          open={isModalVisible}
+          onOk={handleOk}
+          onCancel={handleCancel}
+          okText="Cập nhật"
+          cancelText="Hủy"
+          centered
+          confirmLoading={loading}
+        >
+          <Form layout="vertical" form={form}>
+            <Form.Item
+              name="fullName"
+              label="Họ và tên"
+              rules={[
+                { required: true, message: "Vui lòng nhập họ và tên!" },
+                { min: 3, message: "Tên phải có ít nhất 3 ký tự!" },
+                { max: 50, message: "Tên không được vượt quá 50 ký tự!" },
+              ]}
+            >
+              <Input placeholder="Nhập họ và tên đầy đủ" />
+            </Form.Item>
+
+            <Form.Item
+              name="phone"
+              label="Số điện thoại"
+              rules={[
+                { required: true, message: "Vui lòng nhập số điện thoại!" },
+                {
+                  pattern: /^\d{10,11}$/,
+                  message: "Số điện thoại phải có 10–11 chữ số!",
+                },
+              ]}
+            >
+              <Input placeholder="VD: 0912345678" />
+            </Form.Item>
+
+            <Form.Item
+              name="address"
+              label="Địa chỉ"
+              rules={[
+                { required: true, message: "Vui lòng nhập địa chỉ!" },
+                { min: 5, message: "Địa chỉ phải có ít nhất 5 ký tự!" },
+              ]}
+            >
+              <Input.TextArea
+                rows={2}
+                placeholder="Nhập địa chỉ hiện tại của bạn"
+              />
+            </Form.Item>
+
+            {/* <Form.Item
             name="avatar"
             label="Ảnh đại diện"
             valuePropName="fileList"
@@ -277,9 +288,10 @@ const UserProfile = () => {
               />
             )}
           </Form.Item> */}
-        </Form>
-      </Modal>
-    </Card>
+          </Form>
+        </Modal>
+      </Card>
+    </div>
   );
 };
 

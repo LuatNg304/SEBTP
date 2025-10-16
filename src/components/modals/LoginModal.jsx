@@ -7,7 +7,6 @@ import api from "../../config/axios";
 import { useDispatch } from "react-redux";
 import { login } from "../../redux/accountSlice";
 
-
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
     email: "",
@@ -57,7 +56,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         password: formData.password,
       });
       // Lấy accessToken từ phản hồi
-      const { accessToken,user } = response.data;
+      const { accessToken, user } = response.data;
       if (!accessToken) {
         toast.error("Tài khoản hoặc mật khẩu không đúng!");
         return;
@@ -76,19 +75,19 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
       });
       onClose();
       // Chuyển hướng sau khi login thành công
-      if(user.role ==="BUYER" ||user.role ==="SELLER"){
+      if (user.role === "BUYER" || user.role === "SELLER") {
         navigate("/");
       }
       if (user.role === "SELLER") {
         navigate("/seller");
+      } else if (user.role === "ADMIN") {
+        navigate("/admin");
       } else {
         navigate("/");
       }
-      
-      
     } catch (error) {
       console.error("Login error:", error);
-      if(error.message === "Network Error"){
+      if (error.message === "Network Error") {
         toast.error("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
         return;
       }
