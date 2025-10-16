@@ -140,17 +140,8 @@ const HomePage = () => {
             
             {/* Left: Logo + Menu */}
             <div className="flex items-center gap-3">
-<<<<<<< HEAD
               <button className="p-2 rounded-full bg-white shadow transition-all duration-300 hover:shadow-lg hover:scale-110 hover:bg-gray-50 active:scale-95">
                 <FiMenu className="h-6 w-6 text-green-700 transition-transform duration-300" />
-=======
-              {/* ✅ Nút mở Drawer */}
-              <button
-                className="p-2 rounded-full bg-white shadow hover:bg-gray-100"
-                onClick={() => setOpenDrawer(true)}
-              >
-                <FiMenu className="h-6 w-6 text-green-700" />
->>>>>>> feature/admin
               </button>
 
               {/* ✅ Drawer menu */}
