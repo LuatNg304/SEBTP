@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 
 import React, { useState } from "react";
-=======
-import React, { useState, useEffect } from "react";
->>>>>>> feature/admin
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
@@ -20,16 +16,6 @@ const OTPPage = () => {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-<<<<<<< HEAD
-=======
-  // ✅ Kiểm tra email/id khi load trang
-  useEffect(() => {
-    if (!id || !email) {
-      navigate("/forgot-password");
-    }
-  }, [id, email, navigate]);
-
->>>>>>> feature/admin
   const handleSubmit = async (e) => {
     e.preventDefault();
 
