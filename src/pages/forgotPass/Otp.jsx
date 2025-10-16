@@ -41,7 +41,6 @@ const OTPPage = () => {
     setIsLoading(true);
 
     try {
-<<<<<<< HEAD
       // Gửi POST request đến API backend
       const response = await api.post(`/auth/verify-register`, null, {
         params: { email, otp },
@@ -51,27 +50,6 @@ const OTPPage = () => {
       if (response.data?.success) {
         toast.success(response.data?.message || "Xác minh OTP thành công!");
 
-=======
-      // ✅ Gọi mock API
-      const response = await api.get("/cake");
-      const users = response.data;
-
-      // ✅ Tìm user khớp email
-      const user = users.find(
-        (u) => u.email?.toLowerCase() === email?.toLowerCase()
-      );
-
-      console.log("User tìm được:", user);
-
-      if (!user) {
-        toast.error("Người dùng không tồn tại.");
-      } else if (
-       Number(user.Otp) === Number(otp) // ✅ So sánh dạng chuỗi để chắc chắn
-        
-      ) {  
-
-        toast.success("OTP đúng! Chuyển sang trang đổi mật khẩu...");
->>>>>>> feature/admin
         setTimeout(() => {
           if (type === "register") {
             // Nếu xác minh OTP cho đăng ký
@@ -90,7 +68,6 @@ const OTPPage = () => {
         );
       }
     } catch (error) {
-<<<<<<< HEAD
       console.error(error);
       if (error.response?.status === 400) {
         toast.error("OTP không hợp lệ hoặc đã hết hạn.");
@@ -99,21 +76,13 @@ const OTPPage = () => {
       } else {
         toast.error("Lỗi hệ thống, vui lòng thử lại.");
       }
-=======
-      console.error("Lỗi khi kiểm tra OTP:", error);
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
->>>>>>> feature/admin
     } finally {
       setIsLoading(false);
     }
   
   };
 
-<<<<<<< HEAD
     return (
-=======
-  return (
->>>>>>> feature/admin
     <div className="min-h-screen flex items-center justify-center p-4 bg-green-50">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
         <h1 className="text-2xl font-bold text-center mb-6">Xác minh OTP</h1>
@@ -124,13 +93,8 @@ const OTPPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-<<<<<<< HEAD
             type="number"
             placeholder="Nhập mã OTP"
-=======
-            type="text"
-            placeholder="Nhập OTP"
->>>>>>> feature/admin
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
