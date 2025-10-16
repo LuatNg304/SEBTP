@@ -17,6 +17,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/viewProduct";
 import UserProfile from "./pages/viewProfile";
 import UpgradeSeller from "./pages/ViewUpgrade";
+import SellerDashboard from "./pages/seller/SellerDashboard";
+import VehiclePost from "./pages/seller/VehiclePost";
+import BatteryPost from "./pages/seller/BatteryPost";
+import SellerLayout from "./pages/seller/SellerLayout";
 
 const router = createBrowserRouter([
   {
@@ -54,8 +58,13 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/seller",
-    element: <div>Seller Page</div>, // trang seller hiển thị trong layout ngoài
+    path: "seller",
+    element: <SellerLayout />, // layout chứa header + sidebar
+    children: [
+      { index: true, element: <SellerDashboard /> },
+      { path: "post/vehicle", element: <VehiclePost /> },
+      { path: "post/battery", element: <BatteryPost /> },
+    ],
   },
   {
     path: "forgot-password",
@@ -75,7 +84,7 @@ const router = createBrowserRouter([
     element: <ViewProduct />,
   },
   {
-    path:"view-profile",
+    path: "view-profile",
     element: <UserProfile />,
   },
   {

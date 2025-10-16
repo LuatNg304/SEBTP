@@ -19,6 +19,9 @@ const Header = () => {
     localStorage.removeItem("token");
     dispatch(logout());
   };
+    const handleGoToPost = () => {
+      navigate("post/vehicle"); // 👉 chuyển hướng sang trang đăng tin
+    };
 
   const handleOpenLogin = () => {
     setShowLoginModal(true);
@@ -107,19 +110,32 @@ const Header = () => {
           <FiHeart className="h-6 w-6 text-gray-700" />
         </button>
 
-        {account ? (
-          <Dropdown menu={userMenu} placement="bottomRight" trigger={["click"]}>
-            <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow hover:bg-gray-100 transition">
-              <img
-                src={account?.avatar || "/default-avatar.png"}
-                alt="avatar"
-                className="w-8 h-8 rounded-full object-cover border border-gray-300"
-              />
-              <span className="font-medium text-gray-700">
-                {account?.fullName || "Người dùng"}
-              </span>
+        {account?.user ? (
+          <div className="flex items-center gap-2">
+            <Dropdown
+              menu={userMenu}
+              placement="bottomRight"
+              trigger={["click"]}
+            >
+              <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow hover:bg-gray-100 transition">
+                <img
+                  src={account?.user?.avatar || "/default-avatar.png"}
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                />
+                <span className="font-medium text-gray-700">
+                  {account?.user?.fullName || "Người dùng"}
+                </span>
+              </button>
+            </Dropdown>
+
+            <button
+              className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800"
+              onClick={handleGoToPost}
+            >
+              Đăng tin
             </button>
-          </Dropdown>
+          </div>
         ) : (
           <>
             <button

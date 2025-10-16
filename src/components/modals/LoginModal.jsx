@@ -78,8 +78,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
       // Chuyển hướng sau khi login thành công
       if(user.role ==="BUYER" ||user.role ==="SELLER"){
         navigate("/");
-      }else{
-        navigate("/dashboard");
+      }
+      if (user.role === "SELLER") {
+        navigate("/seller");
+      } else {
+        navigate("/");
       }
       
       
