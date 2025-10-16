@@ -11,7 +11,12 @@ import {
   message,
   Space,
 } from "antd";
-import { UserOutlined, EditOutlined, HomeOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  EditOutlined,
+  HomeOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
@@ -49,7 +54,6 @@ const UserProfile = () => {
       fullName: user.fullName,
       phone: user.phone,
       address: user.address,
-      
     });
   };
 
@@ -86,11 +90,24 @@ const UserProfile = () => {
     { key: "1", label: "Email", value: user.email },
     { key: "2", label: "Họ và tên", value: user.fullName },
     { key: "3", label: "Vai trò", value: user.role },
-    { key: "4", label: "Provider", value: user.provider },
-    { key: "5", label: "Số điện thoại", value: user.phone || "Chưa cập nhật" },
-    { key: "6", label: "Địa chỉ", value: user.address || "Chưa cập nhật" },
-    
-  ];
+    { key: "4", label: "Số điện thoại", value: user.phone || "Chưa cập nhật" },
+    { key: "5", label: "Địa chỉ", value: user.address || "Chưa cập nhật" },
+    {
+      key: "6",
+      label: "Tên cửa hàng",
+      value: user.role === "SELLER" ? user.storeName : null,
+    },
+    {
+      key: "7",
+      label: "Description",
+      value: user.role === "SELLER" ? user.storeDescription : null,
+    },
+    {
+      key: "8",
+      label: "Tên cửa hàng",
+      value: user.role === "SELLER" ? user.socialMedia : null,
+    },
+  ].filter((item) => item.value !== null);
 
   const columns = [
     {
@@ -217,7 +234,10 @@ const UserProfile = () => {
             label="Số điện thoại"
             rules={[
               { required: true, message: "Vui lòng nhập số điện thoại!" },
-              { pattern: /^\d{10,11}$/, message: "Số điện thoại phải có 10–11 chữ số!" },
+              {
+                pattern: /^\d{10,11}$/,
+                message: "Số điện thoại phải có 10–11 chữ số!",
+              },
             ]}
           >
             <Input placeholder="VD: 0912345678" />
@@ -231,7 +251,10 @@ const UserProfile = () => {
               { min: 5, message: "Địa chỉ phải có ít nhất 5 ký tự!" },
             ]}
           >
-            <Input.TextArea rows={2} placeholder="Nhập địa chỉ hiện tại của bạn" />
+            <Input.TextArea
+              rows={2}
+              placeholder="Nhập địa chỉ hiện tại của bạn"
+            />
           </Form.Item>
 
           {/* <Form.Item

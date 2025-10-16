@@ -16,6 +16,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/viewProduct";
 import UserProfile from "./pages/viewProfile";
+import UpgradeSeller from "./pages/ViewUpgrade";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
   {
     path:"view-profile",
     element: <UserProfile />,
+  },
+  {
+    path:"upgrade-seller",
+    element: <UpgradeSeller />,
   }
 ]);
 

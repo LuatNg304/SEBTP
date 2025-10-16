@@ -13,8 +13,8 @@ export const accountSlice = createSlice({
       return initialState;
     },
     updateUser: (state, action) => {
-      return { ...state, ...action.payload };
-    }
+      state.user = action.payload;
+    },
   },
 });
 
