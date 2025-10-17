@@ -25,6 +25,8 @@ import Dashboarrd from "./components/dasboard";
 import PostPanding from "./pages/admin/post/postPanding";
 import PostReject from "./pages/admin/post/PostReject";
 import PostAccept from "./pages/admin/post/PostAccept";
+import PackagePage from "./pages/seller/packket/PackagePage";
+
 
 const router = createBrowserRouter([
   {
@@ -68,6 +70,10 @@ const router = createBrowserRouter([
       { index: true, element: <SellerDashboard /> },
       { path: "post/vehicle", element: <VehiclePost /> },
       { path: "post/battery", element: <BatteryPost /> },
+      {
+        path: "package",
+        element: <PackagePage />,
+      },
     ],
   },
   {
@@ -76,19 +82,19 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <PostPanding/>,
+        element: <PostPanding />,
       },
       {
-        path:"post-reject",
-        element:<PostReject/>,
-      },{
-        path:"post-accept",
-        element:<PostAccept/>
-      }
-     
-      
+        path: "post-reject",
+        element: <PostReject />,
+      },
+      {
+        path: "post-accept",
+        element: <PostAccept />,
+      },
     ],
   },
+
   {
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài

@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
-import { Search } from "lucide-react";
+import { Icon, LogOutIcon, Search, Wallet2Icon } from "lucide-react";
 
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -23,7 +23,7 @@ const Header = () => {
   };
 
   const handleGoToPost = () => {
-    navigate("/post/vehicle");
+    navigate("/seller/post/vehicle");
   };
 
   const handleOpenLogin = () => {
@@ -83,6 +83,7 @@ const Header = () => {
       {
         type: "divider",
       },
+      
       {
         key: "logout",
         label: (
@@ -90,7 +91,8 @@ const Header = () => {
             onClick={handleLogout}
             className="flex items-center gap-2 text-red-500 cursor-pointer"
           >
-            🚪 <span>Đăng xuất</span>
+            <LogOutIcon className="text-red-500" />
+             <span>Đăng xuất</span>
           </div>
         ),
       },
@@ -170,12 +172,7 @@ const Header = () => {
             >
               Đăng nhập
             </button>
-            <button
-              className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800"
-              onClick={handleOpenLogin}
-            >
-              Đăng tin
-            </button>
+            
           </>
         )}
 
