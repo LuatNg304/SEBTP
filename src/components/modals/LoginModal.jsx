@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import api from "../../config/axios";
 import { useDispatch } from "react-redux";
 import { login } from "../../redux/accountSlice";
+import { GoogleLogin } from "@react-oauth/google";
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -107,16 +108,38 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     }));
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const credential = credentialResponse.credential; // JWT ID Token
+    console.log("Google credential:", credential);
+
+    try {
+      // Gửi credential lên backend
+      const res = await fetch("http://localhost:8080/api/auth/google", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ credential }), // gửi theo DTO bạn định nghĩa
+      });
+
+      if (!res.ok) throw new Error("Google login failed");
+
+      const data = await res.json();
+      console.log("Backend response:", data);
+
+      onClose(); // đóng modal
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Sign In">
       <div className="flex flex-col items-center mb-6">
-        <button
-          type="button"
-          className="flex items-center gap-2 px-6 py-3 border-2 border-emerald-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-all"
-        >
-          <img src="/gg.png" alt="Google" className="w-5 h-5" />
-          <span className="text-emerald-700">Continue with Google</span>
-        </button>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => console.log("Login Failed")}
+        />
         <p className="text-gray-500 mt-4">or sign in with:</p>
       </div>
 

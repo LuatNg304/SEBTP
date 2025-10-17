@@ -10,6 +10,7 @@ import { FormInput } from "../../components/Upload/FormInput";
 import PostTypeToggle from "../../components/Upload/PostTypeToggle";
 import api from "../../config/axios";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 export default function VehiclePost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
@@ -27,7 +28,7 @@ export default function VehiclePost() {
     deliveryMethods: [], // mảng các delivery method
     paymentTypes: [], // mảng các payment type
     isUseWallet: false, // sử dụng ví hay không
-    vehicleYear: "",
+    productYear: "",
     vehicleMileage: "",
   });
 
@@ -107,16 +108,16 @@ export default function VehiclePost() {
         ),
         paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
         isUseWallet: formData.isUseWallet,
-        vehicleYear: Number(formData.vehicleYear),
+        productYear: Number(formData.productYear),
         vehicleMileage: Number(formData.vehicleMileage),
       };
 
       const response = await api.post("/seller/posts", payload);
       console.log("Bài đăng thành công:", response.data);
-      alert("Đăng bài thành công!");
+      toast.success("Đăng bài thành công!");
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
-      alert(error.response?.data?.message || "Có lỗi xảy ra.");
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra.");
     }
   };
 
@@ -132,9 +133,9 @@ export default function VehiclePost() {
 
         <header>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {formData.productType === "vehicle"
-              ? "Đăng bán Xe điện"
-              : "Đăng bán Pin điện"}
+           
+               Đăng bán Xe điện
+              
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
             Điền thông tin chi tiết để đăng bán.
@@ -285,13 +286,13 @@ export default function VehiclePost() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <FormInput
-                  id="vehicleYear"
-                  name="vehicleYear"
+                  id="productYear"
+                  name="productYear"
                   label="Năm sản xuất"
                   type="number"
                   placeholder="2021"
                   icon={LucideCalendar}
-                  value={formData.vehicleYear}
+                  value={formData.productYear}
                   onChange={handleChange}
                   required
                 />
