@@ -27,6 +27,8 @@ import PostReject from "./pages/admin/post/Posted";
 import PostAccept from "./pages/admin/post/PostAccept";
 import Posted from "./pages/admin/post/Posted";
 import PostPanding from "./pages/admin/post/PostPanding";
+import ViewWallet from "./pages/ViewWallet";
+import VNPayCallback from "./pages/ViewWallet/VNPayCallback";
 
 const router = createBrowserRouter([
   {
@@ -109,6 +111,10 @@ const router = createBrowserRouter([
     element: <ViewProduct />,
   },
   {
+    path:"wallet",
+    element: <ViewWallet/>
+  },
+  {
     path: "view-profile",
     element: <UserProfile />,
   },
@@ -116,6 +122,10 @@ const router = createBrowserRouter([
     path: "upgrade-seller",
     element: <UpgradeSeller />,
   },
+  {
+    path:"/user/wallet/vnpay-return/deposit",
+     element: <VNPayCallback />
+  }
 ]);
 
 function App() {

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { FiHeart, FiUser, FiMenu } from "react-icons/fi";
+import { FiHeart, FiUser, FiMenu, FiZap } from "react-icons/fi";
 import { Dropdown, Button, Switch } from "antd";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
-import { Search } from "lucide-react";
+import { Search, User, Wallet, Wallet2 } from "lucide-react";
+import { AiFillWallet } from "react-icons/ai";
 
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -54,8 +55,20 @@ const Header = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/view-profile")}
           >
-            <FiUser className="text-green-600" />
+            <User className="text-green-700" />
             <span>Trang cá nhân</span>
+          </div>
+        ),
+      },
+      {
+        key: "wallet",
+        label: (
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate("/wallet")}
+          >
+            <Wallet2 className="text-green-700" />
+            <span>Ví</span>
           </div>
         ),
       },

@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { PiFileZip } from "react-icons/pi";
+import { User, Wallet } from "lucide-react";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -59,8 +61,20 @@ const HomePage = () => {
             onClick={() => navigate("/view-profile")}
             className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
           >
-            <FiUser className="text-green-600 transition-transform duration-200 hover:scale-110" />
+            <User className="text-green-700 transition-transform duration-200 hover:scale-110" />
             <span>Thông tin cá nhân</span>
+          </div>
+        ),
+      },
+      {
+        key: "2",
+        label: (
+          <div
+            onClick={() => navigate("/wallet")}
+            className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
+          >
+            <Wallet className="text-green-700 transition-transform duration-200 hover:scale-110" />
+            <span>Ví</span>
           </div>
         ),
       },
@@ -69,7 +83,7 @@ const HomePage = () => {
     // Chỉ hiển thị "Đăng ký Seller" nếu user chưa phải là seller
     if (account?.user?.role !== "SELLER") {
       menuItems.push({
-        key: "2",
+        key: "3",
         label: (
           <div
             onClick={() => navigate("/upgrade-seller")}
@@ -87,7 +101,7 @@ const HomePage = () => {
         type: "divider",
       },
       {
-        key: "3",
+        key: "4",
         label: (
           <div
             onClick={handleLogout}
