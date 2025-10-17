@@ -1,6 +1,6 @@
 import React from 'react'
 
-const PostReject = () => {
+const Posted = () => {
   return (
     <div>
       PostReject
@@ -8,4 +8,4 @@ const PostReject = () => {
   )
 }
 
-export default PostReject
+export default Posted

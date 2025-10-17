@@ -24,7 +24,7 @@ const items = [
   getItem("Post", "sub1", <UserOutlined />, [
     getItem("Pending", "1", null, null, "/admin"),
     getItem("Reject", "2", null, null, "/admin/post-reject"),
-    getItem("Accept", "3", null, null, "/admin/post-accept"),
+    getItem("Posted", "3", null, null, "/admin/posted"),
   ]),
 ];
 
@@ -114,9 +114,9 @@ const Dashboard = () => {
           </div>
         </Content>
 
-        <Footer style={{ textAlign: "center", background: "#f0f2f5" }}>
+        {/* <Footer style={{ textAlign: "center", background: "#f0f2f5" }}>
           ECO-SANH ©2025
-        </Footer>
+        </Footer> */}
       </Layout>
     </Layout>
   );

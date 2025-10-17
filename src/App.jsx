@@ -22,9 +22,11 @@ import VehiclePost from "./pages/seller/VehiclePost";
 import BatteryPost from "./pages/seller/BatteryPost";
 import SellerLayout from "./pages/seller/SellerLayout";
 import Dashboarrd from "./components/dasboard";
-import PostPanding from "./pages/admin/post/postPanding";
-import PostReject from "./pages/admin/post/PostReject";
+
+import PostReject from "./pages/admin/post/Posted";
 import PostAccept from "./pages/admin/post/PostAccept";
+import Posted from "./pages/admin/post/Posted";
+import PostPanding from "./pages/admin/post/PostPanding";
 
 const router = createBrowserRouter([
   {
@@ -82,8 +84,8 @@ const router = createBrowserRouter([
         path:"post-reject",
         element:<PostReject/>,
       },{
-        path:"post-accept",
-        element:<PostAccept/>
+        path:"posted",
+        element:<Posted/>
       }
      
       
