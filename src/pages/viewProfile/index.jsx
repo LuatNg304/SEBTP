@@ -20,6 +20,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { updateUser } from "../../redux/accountSlice";
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -27,6 +29,7 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Lấy thông tin user
   const fetchUser = async () => {
@@ -68,6 +71,10 @@ const UserProfile = () => {
       if (res.data?.data) {
         setUser(res.data.data);
         toast.success("Cập nhật thông tin thành công!");
+        //  Gọi lại /user/me để lấy role mới
+        const response = await api.get("/user/me");
+        const updatedUser = response.data.data;
+        dispatch(updateUser(updatedUser)); // ✅ Cập nhật Redux
         setIsModalVisible(false);
       } else {
         toast.error(" Cập nhật thất bại!");
