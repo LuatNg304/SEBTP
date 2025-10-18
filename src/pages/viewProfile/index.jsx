@@ -24,6 +24,7 @@ import { useDispatch } from "react-redux";
 import { updateUser } from "../../redux/accountSlice";
 
 const UserProfile = () => {
+  
   const [user, setUser] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
