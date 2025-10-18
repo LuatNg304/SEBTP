@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
-import { Search, User, Wallet, Wallet2 } from "lucide-react";
+import { LogOutIcon, Search, User, Wallet, Wallet2 } from "lucide-react";
 import { AiFillWallet } from "react-icons/ai";
 
 const Header = () => {

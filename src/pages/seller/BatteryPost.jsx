@@ -11,6 +11,9 @@ import { FormInput } from "../../components/Upload/FormInput";
 import { useSelector } from "react-redux";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
+
 
 export default function BatteryPost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
@@ -18,7 +21,7 @@ export default function BatteryPost() {
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const user = useSelector((state) => state.account.user);
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     productType: "BATTERY",
     title: "",
@@ -28,7 +31,7 @@ export default function BatteryPost() {
     priorityPackageId: "",
     deliveryMethods: [],
     paymentTypes: [],
-    isUseWallet: false,
+   
 
     // --- Thông tin pin ---
     batteryType: "",
@@ -74,9 +77,7 @@ export default function BatteryPost() {
           ? [...prev.paymentTypes, value]
           : prev.paymentTypes.filter((p) => p !== value),
       }));
-    } else if (type === "checkbox" && name === "isUseWallet") {
-      setFormData((prev) => ({ ...prev, isUseWallet: checked }));
-    } else {
+    }  else {
       setFormData({ ...formData, [name]: value });
     }
   };
@@ -106,6 +107,7 @@ export default function BatteryPost() {
       };
 
       const response = await api.post("/seller/posts", payload);
+      navigate("/seller");
       console.log("Bài đăng thành công:", response.data);
       toast.success("Đăng bài thành công!");
     } catch (error) {
@@ -296,16 +298,6 @@ export default function BatteryPost() {
                 </label>
               ))}
             </div>
-
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="isUseWallet"
-                checked={formData.isUseWallet}
-                onChange={handleChange}
-              />
-              <span className="ml-2">Sử dụng ví</span>
-            </label>
           </div>
 
           <div className="flex justify-end pt-4">
