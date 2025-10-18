@@ -29,6 +29,8 @@ import Posted from "./pages/admin/post/Posted";
 import PostPanding from "./pages/admin/post/PostPanding";
 import ViewWallet from "./pages/ViewWallet";
 import VNPayCallback from "./pages/ViewWallet/VNPayCallback";
+import PackagePage from "./pages/seller/packket/PackagePage";
+
 
 const router = createBrowserRouter([
   {
@@ -72,6 +74,10 @@ const router = createBrowserRouter([
       { index: true, element: <SellerDashboard /> },
       { path: "post/vehicle", element: <VehiclePost /> },
       { path: "post/battery", element: <BatteryPost /> },
+      {
+        path: "package",
+        element: <PackagePage />,
+      },
     ],
   },
   {
@@ -80,7 +86,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <PostPanding/>,
+        element: <PostPanding />,
       },
       {
         path:"post-reject",
@@ -93,6 +99,7 @@ const router = createBrowserRouter([
       
     ],
   },
+
   {
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài

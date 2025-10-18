@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { LucideBattery, LucideDollarSign, LucideRuler } from "lucide-react";
+import {
+  LucideBattery,
+  LucideDollarSign,
+  LucideZap,
+  LucideRuler,
+} from "lucide-react";
 import ImageUploadArea from "../../components/Upload/ImageUploadArea";
 import PostTypeToggle from "../../components/Upload/PostTypeToggle";
 import { FormInput } from "../../components/Upload/FormInput";
@@ -13,75 +18,62 @@ export default function BatteryPost() {
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const user = useSelector((state) => state.account.user);
+
   const [formData, setFormData] = useState({
-    productType: "battery", // mặc định là xe
+    productType: "BATTERY",
     title: "",
     description: "",
     price: "",
     address: user?.address || "",
-    priorityPackageId: "", // gói ưu tiên
-    deliveryMethods: [], // mảng các delivery method
-    paymentTypes: [], // mảng các payment type
-    isUseWallet: false, // sử dụng ví hay không
-    productYear: "",
-    
+    priorityPackageId: "",
+    deliveryMethods: [],
+    paymentTypes: [],
+    isUseWallet: false,
+
+    // --- Thông tin pin ---
+    batteryType: "",
+    capacity: "",
+    voltage: "",
+    batteryBrand: "",
   });
-  // Fetch priority packages
+
+  // Fetch APIs
   useEffect(() => {
-    const fetchPriorityPackages = async () => {
+    const fetchAll = async () => {
       try {
-        const resp = await api.get("/seller/priority-packages");
-        setPriorityPackages(resp.data); // giả sử API trả về array JSON
+        const [pkgRes, payRes, delivRes] = await Promise.all([
+          api.get("/seller/priority-packages"),
+          api.get("/seller/payment-types"),
+          api.get("/seller/delivery-methods"),
+        ]);
+        setPriorityPackages(pkgRes.data);
+        setPaymentTypesOptions(payRes.data);
+        setDeliveryMethodsOptions(delivRes.data);
       } catch (err) {
-        console.error("Lỗi lấy gói ưu tiên:", err);
+        console.error("Lỗi khi fetch dữ liệu:", err);
       }
     };
-
-    fetchPriorityPackages();
+    fetchAll();
   }, []);
 
-  // Fetch payment types
-  useEffect(() => {
-    const fetchPaymentTypes = async () => {
-      try {
-        const resp = await api.get("/seller/payment-types");
-        setPaymentTypesOptions(resp.data); //  API trả về array: ["DEPOSIT","FULL", ...]
-      } catch (err) {
-        console.error("Lỗi lấy phương thức thanh toán:", err);
-      }
-    };
-    fetchPaymentTypes();
-  }, []);
-
-  // Fetch delivery methods
-  useEffect(() => {
-    const fetchDeliveryMethods = async () => {
-      try {
-        const resp = await api.get("/seller/delivery-methods");
-        setDeliveryMethodsOptions(resp.data); // ["HOME DELIVERY", "STORE PICKUP", ...]
-      } catch (err) {
-        console.error("Lỗi lấy phương thức giao hàng:", err);
-      }
-    };
-    fetchDeliveryMethods();
-  }, []);
+  // handle input change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox" && name === "deliveryMethods") {
-      setFormData((prev) => {
-        const newMethods = checked
+      setFormData((prev) => ({
+        ...prev,
+        deliveryMethods: checked
           ? [...prev.deliveryMethods, value]
-          : prev.deliveryMethods.filter((m) => m !== value);
-        return { ...prev, deliveryMethods: newMethods };
-      });
+          : prev.deliveryMethods.filter((m) => m !== value),
+      }));
     } else if (type === "checkbox" && name === "paymentTypes") {
-      setFormData((prev) => {
-        const newPayments = checked
+      setFormData((prev) => ({
+        ...prev,
+        paymentTypes: checked
           ? [...prev.paymentTypes, value]
-          : prev.paymentTypes.filter((p) => p !== value);
-        return { ...prev, paymentTypes: newPayments };
-      });
+          : prev.paymentTypes.filter((p) => p !== value),
+      }));
     } else if (type === "checkbox" && name === "isUseWallet") {
       setFormData((prev) => ({ ...prev, isUseWallet: checked }));
     } else {
@@ -89,6 +81,7 @@ export default function BatteryPost() {
     }
   };
 
+  // handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -104,8 +97,12 @@ export default function BatteryPost() {
         ),
         paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
         isUseWallet: formData.isUseWallet,
-        productYear: Number(formData.productYear),
-       
+
+        // --- Truyền thông tin pin ---
+        batteryType: formData.batteryType,
+        capacity: Number(formData.capacity),
+        voltage: formData.voltage,
+        batteryBrand: formData.batteryBrand,
       };
 
       const response = await api.post("/seller/posts", payload);
@@ -169,19 +166,65 @@ export default function BatteryPost() {
             />
           </div>
 
-          
+          {/* --- Thông số Pin --- */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 space-y-5">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b pb-3 border-gray-100 dark:border-gray-700">
+              2. Thông số Pin
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <FormInput
+                id="batteryBrand"
+                name="batteryBrand"
+                label="Thương hiệu pin"
+                placeholder="CATL, LG, VinES..."
+                value={formData.batteryBrand}
+                onChange={handleChange}
+                required
+              />
+              <FormInput
+                id="batteryType"
+                name="batteryType"
+                label="Loại pin"
+                placeholder="LFP, NMC..."
+                value={formData.batteryType}
+                onChange={handleChange}
+                required
+              />
+              <FormInput
+                id="capacity"
+                name="capacity"
+                label="Dung lượng"
+                type="number"
+                placeholder="60 (Ah hoặc Wh)"
+                icon={LucideRuler}
+                value={formData.capacity}
+                onChange={handleChange}
+                required
+              />
+              <FormInput
+                id="voltage"
+                name="voltage"
+                label="Điện áp định mức"
+                placeholder="48V, 60V..."
+                icon={LucideZap}
+                value={formData.voltage}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
           {/* Mô tả & Hình ảnh */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 space-y-5">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b pb-3 border-gray-100 dark:border-gray-700">
-              2. Mô tả & Hình ảnh
+              3. Mô tả & Hình ảnh
             </h2>
             <textarea
               id="description"
               name="description"
               rows="5"
               className="block w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-3 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
-              placeholder="Thông tin chi tiết về pin, tình trạng, chu kỳ sạc, thương hiệu..."
+              placeholder="Thông tin chi tiết về pin, tình trạng, chu kỳ sạc..."
               value={formData.description}
               onChange={handleChange}
               required
@@ -189,7 +232,7 @@ export default function BatteryPost() {
             <ImageUploadArea />
           </div>
 
-          {/* Gói ưu tiên */}
+          {/* Gói đề xuất */}
           <div className="mt-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
             <label className="block text-gray-700 dark:text-gray-300 mb-1">
               Gói đề xuất
@@ -199,20 +242,11 @@ export default function BatteryPost() {
               value={formData.priorityPackageId}
               onChange={(e) => {
                 const pkgId = e.target.value;
-
-                // cập nhật id của gói vào formData
-                setFormData((prev) => ({
-                  ...prev,
-                  priorityPackageId: pkgId,
-                }));
-
-                // tìm gói tương ứng trong danh sách
+                setFormData((prev) => ({ ...prev, priorityPackageId: pkgId }));
                 const selected = priorityPackages.find((p) => p.id === pkgId);
                 setSelectedPackage(selected);
               }}
-              className="w-full rounded-lg border-gray-300 dark:border-gray-600 
-             dark:bg-gray-700 dark:text-white p-3 focus:ring-emerald-500 
-             focus:border-emerald-500"
+              className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-3 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="">-- Chọn gói đề xuất (không bắt buộc) --</option>
               {priorityPackages.map((pkg) => (
@@ -223,48 +257,46 @@ export default function BatteryPost() {
             </select>
           </div>
 
-          {/* Delivery methods dynamic */}
-          <div className="mt-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
-            <label className="block text-gray-700 dark:text-gray-300 mb-1">
-              Phương thức giao hàng
-            </label>
-            {deliveryMethodsOptions.map((method) => (
-              <label key={method} className="inline-flex items-center mr-4">
-                <input
-                  type="checkbox"
-                  name="deliveryMethods"
-                  value={method}
-                  checked={formData.deliveryMethods.includes(method)}
-                  onChange={handleChange}
-                  className="form-checkbox"
-                />
-                <span className="ml-2">{method}</span>
+          {/* Delivery & Payment */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 space-y-5">
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">
+                Phương thức giao hàng
               </label>
-            ))}
-          </div>
+              {deliveryMethodsOptions.map((method) => (
+                <label key={method} className="inline-flex items-center mr-4">
+                  <input
+                    type="checkbox"
+                    name="deliveryMethods"
+                    value={method}
+                    checked={formData.deliveryMethods.includes(method)}
+                    onChange={handleChange}
+                    className="form-checkbox"
+                  />
+                  <span className="ml-2">{method}</span>
+                </label>
+              ))}
+            </div>
 
-          {/* Payment types dynamic */}
-          <div className="mt-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
-            <label className="block text-gray-700 dark:text-gray-300 mb-1">
-              Phương thức thanh toán
-            </label>
-            {paymentTypesOptions.map((type) => (
-              <label key={type} className="inline-flex items-center mr-4">
-                <input
-                  type="checkbox"
-                  name="paymentTypes"
-                  value={type}
-                  checked={formData.paymentTypes.includes(type)}
-                  onChange={handleChange}
-                  className="form-checkbox"
-                />
-                <span className="ml-2">{type}</span>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-1">
+                Phương thức thanh toán
               </label>
-            ))}
-          </div>
+              {paymentTypesOptions.map((type) => (
+                <label key={type} className="inline-flex items-center mr-4">
+                  <input
+                    type="checkbox"
+                    name="paymentTypes"
+                    value={type}
+                    checked={formData.paymentTypes.includes(type)}
+                    onChange={handleChange}
+                    className="form-checkbox"
+                  />
+                  <span className="ml-2">{type}</span>
+                </label>
+              ))}
+            </div>
 
-          {/* Sử dụng ví */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
             <label className="inline-flex items-center">
               <input
                 type="checkbox"
