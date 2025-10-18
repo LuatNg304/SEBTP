@@ -11,14 +11,15 @@ import PostTypeToggle from "../../components/Upload/PostTypeToggle";
 import api from "../../config/axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function VehiclePost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
-  const [selectedPackage, setSelectedPackage] = useState(null);
+  
   const user = useSelector((state) => state.account.user);
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     productType: "VEHICLE",
     title: "",
@@ -62,10 +63,7 @@ export default function VehiclePost() {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-      if (name === "isUseWallet") {
-        //  Checkbox boolean: gán trực tiếp giá trị checked (true/false)
-        setFormData((prev) => ({ ...prev, [name]: checked }));
-      } else {
+      
         //  Checkbox dạng mảng
         if (checked) {
           setFormData((prev) => ({ ...prev, [name]: [...prev[name], value] }));
@@ -75,7 +73,7 @@ export default function VehiclePost() {
             [name]: prev[name].filter((v) => v !== value),
           }));
         }
-      }
+      
     } else {
       //  Input text, number, select...
       setFormData({ ...formData, [name]: value });
@@ -108,6 +106,7 @@ export default function VehiclePost() {
       };
 
       const response = await api.post("/seller/posts", payload);
+      navigate("/seller");
       console.log("Đăng bài thành công:", response.data);
       toast.success("Đăng bài thành công!");
     } catch (error) {
@@ -226,18 +225,7 @@ export default function VehiclePost() {
               ))}
             </div>
           </div>
-          {/* Sử dụng ví */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="isUseWallet"
-                checked={formData.isUseWallet}
-                onChange={handleChange}
-              />
-              <span className="ml-2">Sử dụng ví</span>
-            </label>
-          </div>
+          
           {/* Thông số kỹ thuật xe */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg space-y-5">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -314,7 +302,7 @@ export default function VehiclePost() {
             />
             <ImageUploadArea />
           </div>
-          {/* Sử dụng ví */}
+          
 
           <div className="flex justify-end">
             <button
