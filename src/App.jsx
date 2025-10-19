@@ -30,6 +30,7 @@ import PostPanding from "./pages/admin/post/PostPanding";
 import ViewWallet from "./pages/ViewWallet";
 import VNPayCallback from "./pages/ViewWallet/VNPayCallback";
 import PackagePage from "./pages/seller/packket/PackagePage";
+import PostView from "./pages/seller/posts/PostView";
 
 
 const router = createBrowserRouter([
@@ -74,6 +75,7 @@ const router = createBrowserRouter([
       { index: true, element: <SellerDashboard /> },
       { path: "post/vehicle", element: <VehiclePost /> },
       { path: "post/battery", element: <BatteryPost /> },
+      { path: "/seller/posts/view/:id", element: <PostView /> },
       {
         path: "package",
         element: <PackagePage />,
@@ -89,14 +91,13 @@ const router = createBrowserRouter([
         element: <PostPanding />,
       },
       {
-        path:"post-reject",
-        element:<PostReject/>,
-      },{
-        path:"posted",
-        element:<Posted/>
-      }
-     
-      
+        path: "post-reject",
+        element: <PostReject />,
+      },
+      {
+        path: "posted",
+        element: <Posted />,
+      },
     ],
   },
 
@@ -118,8 +119,8 @@ const router = createBrowserRouter([
     element: <ViewProduct />,
   },
   {
-    path:"wallet",
-    element: <ViewWallet/>
+    path: "wallet",
+    element: <ViewWallet />,
   },
   {
     path: "view-profile",
@@ -130,9 +131,9 @@ const router = createBrowserRouter([
     element: <UpgradeSeller />,
   },
   {
-    path:"/user/wallet/vnpay-return/deposit",
-     element: <VNPayCallback />
-  }
+    path: "/user/wallet/vnpay-return/deposit",
+    element: <VNPayCallback />,
+  },
 ]);
 
 function App() {

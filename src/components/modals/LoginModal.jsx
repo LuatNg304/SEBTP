@@ -18,36 +18,6 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await api.post("auth/basic-login"); // ví dụ mock data
-  //     const users = response.data;
-
-  //     // tìm người dùng có email và password trùng
-  //     const user = users.find(
-  //       (u) => u.email === formData.email && u.password === formData.password
-  //     );
-  //     if (user) {
-  //       toast.success("Đăng nhập thành công!");
-  //       onClose();
-  //     }
-  //     const { token } = response.data;
-  //     localStorage.setItem("token", token);
-
-  //     // lưu vào statel toàn cục
-  //     dispatch(login(user));
-  //     // reset form
-  //     setFormData({
-  //       email: "",
-  //       password: "",
-  //       rememberMe: false,
-  //     });
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Lỗi khi đăng nhập. Vui lòng thử lại.");
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
