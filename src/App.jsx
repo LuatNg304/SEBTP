@@ -8,7 +8,7 @@ import Pin from "./pages/home/Pin";
 import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
-import ResetPasswordPage from "./pages/forgotPass/resetPass";
+
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminPosts from "./pages/admin/AdminPosts";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -22,7 +22,6 @@ import VehiclePost from "./pages/seller/VehiclePost";
 import BatteryPost from "./pages/seller/BatteryPost";
 import SellerLayout from "./pages/seller/SellerLayout";
 import Dashboarrd from "./components/dasboard";
-
 import PostReject from "./pages/admin/post/Posted";
 import PostAccept from "./pages/admin/post/PostAccept";
 import Posted from "./pages/admin/post/Posted";
@@ -30,6 +29,8 @@ import PostPanding from "./pages/admin/post/PostPanding";
 import ViewWallet from "./pages/ViewWallet";
 import VNPayCallback from "./pages/ViewWallet/VNPayCallback";
 import PackagePage from "./pages/seller/packket/PackagePage";
+
+import DemoUp from "./utils/demoUp";
 
 
 const router = createBrowserRouter([
@@ -104,14 +105,13 @@ const router = createBrowserRouter([
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
   },
+  
+
   {
     path: "otp",
     element: <OTPPage />, // trang nhập mã OTP hiển thị trong layout ngoài
   },
-  {
-    path: "reset-password",
-    element: <ResetPasswordPage />,
-  },
+  
 
   {
     path: "view-product/:slug",
@@ -132,6 +132,9 @@ const router = createBrowserRouter([
   {
     path:"/user/wallet/vnpay-return/deposit",
      element: <VNPayCallback />
+  },{
+    path:"test",
+    element:<DemoUp/>
   }
 ]);
 

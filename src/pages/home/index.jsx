@@ -24,6 +24,8 @@ const HomePage = () => {
       setShowLoginModal(true);
       window.history.replaceState({}, document.title);
     }
+    console.log(account);
+    
   }, [location.state]);
 
   const account = useSelector((state) => state.account);
@@ -199,7 +201,7 @@ const HomePage = () => {
                   >
                     <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow transition-all duration-300 hover:shadow-lg hover:bg-gray-50 hover:scale-105 active:scale-95">
                       <img
-                        src={account?.avatar || "/default-avatar.png"}
+                        src={account.user.avatar || "/default-avatar.png"}
                         alt="avatar"
                         className="w-8 h-8 rounded-full object-cover border border-gray-300 transition-all duration-300 hover:border-green-600"
                       />

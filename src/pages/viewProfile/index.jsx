@@ -8,7 +8,6 @@ import {
   Input,
   Avatar,
   Upload,
-  message,
   Space,
 } from "antd";
 import {
@@ -16,23 +15,28 @@ import {
   EditOutlined,
   HomeOutlined,
   UploadOutlined,
+  CameraOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { updateUser } from "../../redux/accountSlice";
+import { uploadFile } from "../../utils/upload";
+
 
 const UserProfile = () => {
-  
   const [user, setUser] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isAvatarModalVisible, setIsAvatarModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Lấy thông tin user
   const fetchUser = async () => {
     try {
       const res = await api.get("/user/me");
@@ -51,7 +55,6 @@ const UserProfile = () => {
     fetchUser();
   }, []);
 
-  // Mở modal
   const showModal = () => {
     setIsModalVisible(true);
     form.setFieldsValue({
@@ -61,24 +64,25 @@ const UserProfile = () => {
     });
   };
 
-  // Gửi cập nhật
+  const showAvatarModal = () => {
+    setIsAvatarModalVisible(true);
+    setPreviewUrl(user.avatar);
+  };
+
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-
       setLoading(true);
       const res = await api.put("/user/me", values);
 
       if (res.data?.data) {
         setUser(res.data.data);
         toast.success("Cập nhật thông tin thành công!");
-        //  Gọi lại /user/me để lấy role mới
         const response = await api.get("/user/me");
-        const updatedUser = response.data.data;
-        dispatch(updateUser(updatedUser)); // ✅ Cập nhật Redux
+        dispatch(updateUser(response.data.data));
         setIsModalVisible(false);
       } else {
-        toast.error(" Cập nhật thất bại!");
+        toast.error("Cập nhật thất bại!");
       }
     } catch (error) {
       console.error(error);
@@ -88,7 +92,48 @@ const UserProfile = () => {
     }
   };
 
+  const handleFileChange = (info) => {
+    const file = info.file.originFileObj || info.file;
+    setSelectedFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (e) => setPreviewUrl(e.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleAvatarOk = async () => {
+    if (!selectedFile) {
+      toast.warning("Vui lòng chọn ảnh!");
+      return;
+    }
+
+    try {
+      setAvatarLoading(true);
+      const url = await uploadFile(selectedFile)
+      console.log(url);
+      const res = await api.patch("/user/avatar",  url );
+      if (res.data?.data) {
+        setUser(res.data.data);
+        toast.success("Cập nhật ảnh thành công!");
+        const response = await api.get("/user/me");
+        dispatch(updateUser(response.data.data));
+        setIsAvatarModalVisible(false);
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Lỗi khi cập nhật ảnh!");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
   const handleCancel = () => setIsModalVisible(false);
+
+  const handleAvatarCancel = () => {
+    setIsAvatarModalVisible(false);
+    setSelectedFile(null);
+  };
 
   if (!user) {
     return <Card style={{ margin: 20 }}>Đang tải thông tin người dùng...</Card>;
@@ -112,7 +157,7 @@ const UserProfile = () => {
     },
     {
       key: "8",
-      label: "Tên cửa hàng",
+      label: "Social Media",
       value: user.role === "SELLER" ? user.socialMedia : null,
     },
   ].filter((item) => item.value !== null);
@@ -132,17 +177,6 @@ const UserProfile = () => {
       render: (text) => <span style={{ color: "#555" }}>{text}</span>,
     },
   ];
-
-  // // 📷 Upload avatar (lưu base64 hoặc URL)
-  // const handleUpload = (info) => {
-  //   const file = info.file.originFileObj;
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     form.setFieldValue("avatar", e.target.result); // gán base64
-  //     message.success("Ảnh đã được tải lên!");
-  //   };
-  //   reader.readAsDataURL(file);
-  // };
 
   return (
     <div
@@ -166,7 +200,6 @@ const UserProfile = () => {
           backgroundColor: "#fff",
         }}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -176,12 +209,28 @@ const UserProfile = () => {
           }}
         >
           <Space align="center">
-            <Avatar
-              size={100}
-              src={user.avatar}
-              icon={<UserOutlined />}
-              style={{ border: "2px solid #eee" }}
-            />
+            <div style={{ position: "relative" }}>
+              <Avatar
+                size={100}
+                src={user.avatar}
+                icon={<UserOutlined />}
+                style={{ border: "2px solid #eee" }}
+              />
+              <Button
+                shape="circle"
+                icon={<CameraOutlined />}
+                onClick={showAvatarModal}
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: "#1677ff",
+                  color: "#fff",
+                  border: "2px solid #fff",
+                }}
+                size="small"
+              />
+            </div>
             <div style={{ marginLeft: 20 }}>
               <h2 style={{ marginBottom: 4 }}>{user.fullName}</h2>
               <p style={{ color: "#888", marginBottom: 0 }}>{user.role}</p>
@@ -212,7 +261,6 @@ const UserProfile = () => {
           </Space>
         </div>
 
-        {/* Table */}
         <Table
           dataSource={data}
           columns={columns}
@@ -224,7 +272,7 @@ const UserProfile = () => {
           }}
         />
 
-        {/* Modal update */}
+        {/* Modal cập nhật thông tin */}
         <Modal
           title="Cập nhật thông tin người dùng"
           open={isModalVisible}
@@ -275,28 +323,42 @@ const UserProfile = () => {
                 placeholder="Nhập địa chỉ hiện tại của bạn"
               />
             </Form.Item>
+          </Form>
+        </Modal>
 
-            {/* <Form.Item
-            name="avatar"
-            label="Ảnh đại diện"
-            valuePropName="fileList"
-          >
+        {/* Modal cập nhật avatar */}
+        <Modal
+          title="Cập nhật ảnh đại diện"
+          open={isAvatarModalVisible}
+          onOk={handleAvatarOk}
+          onCancel={handleAvatarCancel}
+          okText="Cập nhật"
+          cancelText="Hủy"
+          centered
+          confirmLoading={avatarLoading}
+        >
+          <div style={{ textAlign: "center" }}>
+            <Avatar
+              src={previewUrl}
+              size={120}
+              icon={<UserOutlined />}
+              style={{ marginBottom: 20, border: "2px solid #eee" }}
+            />
+            <br />
             <Upload
               showUploadList={false}
               beforeUpload={() => false}
-              onChange={handleUpload}
+              onChange={handleFileChange}
+              accept="image/*"
             >
-              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+              <Button icon={<UploadOutlined />} type="primary">
+                Chọn ảnh mới
+              </Button>
             </Upload>
-            {form.getFieldValue("avatar") && (
-              <Avatar
-                src={form.getFieldValue("avatar")}
-                size={64}
-                style={{ marginTop: 10, border: "1px solid #eee" }}
-              />
-            )}
-          </Form.Item> */}
-          </Form>
+            <p style={{ marginTop: 10, color: "#888", fontSize: 12 }}>
+              Kích thước &lt; 2MB
+            </p>
+          </div>
         </Modal>
       </Card>
     </div>
