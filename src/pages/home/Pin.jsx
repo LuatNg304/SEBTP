@@ -1,190 +1,105 @@
-import React from 'react'
-import { Card } from 'antd';
-const { Meta } = Card;
+import React, { useEffect, useState } from "react";
+import { Card, Skeleton } from "antd";
 import { FiHeart } from "react-icons/fi";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import api from "../../config/axios";
+
 const Pin = () => {
-   const Navigate = useNavigate();
-   const bikes = [
-    
-  {
-    id: 1,
-    slug: "vinfast-theon-s",
-    name: "VinFast Theon S",
-    price: "69.900.000 VNĐ",
-    image:
-      "https://vinfastauto.com/sites/default/files/styles/images_1440_x_623/public/2023-07/theon-s-hinh-anh-gif_0.gif",
-    specs: {
-      range: "150 km",
-      maxSpeed: "90 km/h",
-      batteryCapacity: "3.5 kWh",
-      chargingTime: "6 giờ",
-    },
-    features: ["Khóa thông minh", "Định vị GPS", "Chống trộm"],
-    rating: 4.8,
-    status: "Còn hàng",
-    featured: true,
-  },
-  {
-    id: 2,
-    slug: "vinfast-klara-s",
-    name: "VinFast Klara S",
-    price: "39.900.000 VNĐ",
-    image:
-      "https://vinfastauto.com/sites/default/files/styles/images_1440_x_623/public/2023-07/klara-s-2022-hinh-anh-gif_0.gif",
-    specs: {
-      range: "120 km",
-      maxSpeed: "60 km/h",
-      batteryCapacity: "2.9 kWh",
-      chargingTime: "5 giờ",
-    },
-    features: ["Chống nước IP67", "Đèn LED", "Phanh ABS"],
-    rating: 4.5,
-    status: "Còn hàng",
-    featured: false,
-  },
-  {
-    id: 3,
-    slug: "yadea-g5",
-    name: "Yadea G5",
-    price: "35.900.000 VNĐ",
-    image:
-      "https://bizweb.dktcdn.net/100/440/241/products/xe-may-dien-yadea-g5-pro.jpg",
-    specs: {
-      range: "100 km",
-      maxSpeed: "55 km/h",
-      batteryCapacity: "2.4 kWh",
-      chargingTime: "4 giờ",
-    },
-    features: ["Màn hình LCD", "Khóa từ", "Phanh đĩa"],
-    rating: 4.3,
-    status: "Còn hàng",
-    featured: true,
-  },
-  {
-    id: 4,
-    slug: "dibao-jeek",
-    name: "Dibao Jeek",
-    price: "29.900.000 VNĐ",
-    image:
-      "https://dibamotors.com.vn/wp-content/uploads/2023/02/z4134419749880_73ab778e78ead824323c10ea42a4a8c4.jpg",
-    specs: {
-      range: "90 km",
-      maxSpeed: "50 km/h",
-      batteryCapacity: "2.0 kWh",
-      chargingTime: "4 giờ",
-    },
-    features: ["Đèn LED", "Khóa điện tử", "Phanh đĩa"],
-    rating: 4.2,
-    status: "Hết hàng",
-    featured: false,
-  },
-  {
-    id: 5,
-    slug: "pega-newtech",
-    name: "Pega NewTech",
-    price: "32.900.000 VNĐ",
-    image:
-      "https://xedienvietthanh.com/wp-content/uploads/2021/09/xe-may-dien-pega-newtech-mau-den.jpg",
-    specs: {
-      range: "110 km",
-      maxSpeed: "60 km/h",
-      batteryCapacity: "2.6 kWh",
-      chargingTime: "5 giờ",
-    },
-    features: ["Khóa chống trộm", "Đèn pha LED", "Phanh CBS"],
-    rating: 4.4,
-    status: "Còn hàng",
-    featured: true,
-  },
-  {
-    id: 6,
-    slug: "niu-nqi-gts",
-    name: "Niu NQi GTS",
-    price: "55.900.000 VNĐ",
-    image:
-      "https://niuvietnam.vn/wp-content/uploads/2023/05/xe-dien-niu-nqi-gts-pro-mau-den.jpg",
-    specs: {
-      range: "140 km",
-      maxSpeed: "75 km/h",
-      batteryCapacity: "3.1 kWh",
-      chargingTime: "5.5 giờ",
-    },
-    features: ["App kết nối", "Định vị GPS", "Chống trộm"],
-    rating: 4.7,
-    status: "Còn hàng",
-    featured: true,
-  },
-];
+  const Navigate = useNavigate();
+  const [bikes, setBikes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchbike = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/public/posts/priority");
+      setBikes(res.data.data);
+    } catch (error) {
+      toast.error("Lỗi rồi: " + error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchbike();
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
-          {/* Grid Xe máy điện */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {bikes.map((bike) => (
+      {/* Grid Xe máy điện */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading
+          ? // Skeleton loading
+            [1, 2, 3, 4, 5, 6].map((n) => (
+              <Card key={n} className="overflow-hidden">
+                <Skeleton.Image
+                  active
+                  style={{ width: "100%", height: "192px" }}
+                />
+                <div className="p-4">
+                  <Skeleton active paragraph={{ rows: 4 }} />
+                </div>
+              </Card>
+            ))
+          : // Actual data
+            bikes.map((bike) => (
               <div
                 key={bike.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                onClick={() => Navigate(`/view-product/${bike.slug}`)}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => Navigate(`/view-product/${bike.id}`)}
               >
                 {/* Ảnh sản phẩm */}
                 <div className="relative">
                   <img
-                    src={bike.image}
-                    alt={bike.name}
+                    src={bike.images?.[0]}
+                    alt={bike.title}
                     className="w-full h-48 object-cover"
-                    // onError={(e) => {
-                    //   e.target.src =
-                    //     "https://via.placeholder.com/400x300?text=Xe+máy+điện";
-                    // }}
                   />
-                  <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-green-50">
+                  <button
+                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-green-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <FiHeart className="h-5 w-5 text-green-500" />
                   </button>
-                  {bike.featured && (
+                  {bike.trusted && (
                     <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
                       Nổi bật
                     </span>
                   )}
                 </div>
-    
+
                 {/* Thông tin sản phẩm */}
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{bike.name}</h3>
-                  <p className="text-green-600 font-medium mb-2">{bike.price}</p>
-    
+                  <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                    {bike.title}
+                  </h3>
+                  <p className="text-green-600 font-medium text-xl mb-2">
+                    {bike.price?.toLocaleString("vi-VN")} VNĐ
+                  </p>
+
                   {/* Thông số kỹ thuật */}
                   <div className="space-y-2 mb-4">
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Quãng đường: </span>
-                      {bike.specs.range}
+                      <span className="font-medium">Hãng xe: </span>
+                      {bike.vehicleBrand || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Tốc độ tối đa: </span>
-                      {bike.specs.maxSpeed}
+                      <span className="font-medium">Model: </span>
+                      {bike.model || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Dung lượng pin: </span>
-                      {bike.specs.batteryCapacity}
+                      <span className="font-medium">Màu sắc: </span>
+                      {bike.color || "N/A"}
                     </p>
-                  </div>
-    
-                  {/* Tính năng */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {bike.features.map((feature, index) => (
-                      <span
-                        key={index}
-                        className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"
-                      >
-                        {feature}
-                      </span>
-                    ))}
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-  )
-}
+      </div>
+    </div>
+  );
+};
 
-export default Pin
+export default Pin;

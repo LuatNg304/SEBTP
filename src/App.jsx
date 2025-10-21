@@ -8,12 +8,6 @@ import Pin from "./pages/home/Pin";
 import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
-
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminPosts from "./pages/admin/AdminPosts";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/viewProduct";
 import UserProfile from "./pages/viewProfile";
 import UpgradeSeller from "./pages/ViewUpgrade";
