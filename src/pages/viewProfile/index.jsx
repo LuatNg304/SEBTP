@@ -355,9 +355,7 @@ const UserProfile = () => {
                 Chọn ảnh mới
               </Button>
             </Upload>
-            <p style={{ marginTop: 10, color: "#888", fontSize: 12 }}>
-              Kích thước &lt; 2MB
-            </p>
+            
           </div>
         </Modal>
       </Card>
