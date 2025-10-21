@@ -12,6 +12,8 @@ import { useSelector } from "react-redux";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { uploadFile } from "../../utils/upload";
+import ImageUpload from "../../components/Upload/ImageUploadArea";
 
 
 
@@ -20,6 +22,8 @@ export default function BatteryPost() {
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileList, setFileList] = useState([]);
   const user = useSelector((state) => state.account.user);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -85,7 +89,19 @@ export default function BatteryPost() {
   // handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
+      // 1. Lọc ra các File Object thực sự cần upload
+      const filesToUpload = fileList
+        .filter((f) => f.originFileObj)
+        .map((f) => f.originFileObj); // Kiểm tra bắt buộc
+
+      const uploadedImageUrls = await Promise.all(
+        filesToUpload.map(async (file) => {
+          const url = await uploadFile(file);
+          return url;
+        })
+      );
       const payload = {
         productType: formData.productType,
         title: formData.title,
@@ -98,6 +114,7 @@ export default function BatteryPost() {
         ),
         paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
         isUseWallet: formData.isUseWallet,
+        images: uploadedImageUrls,
 
         // --- Truyền thông tin pin ---
         batteryType: formData.batteryType,
@@ -113,12 +130,14 @@ export default function BatteryPost() {
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
       toast.error(error.response?.data?.message || "Có lỗi xảy ra.");
+    }finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-transparent dark:bg-gray-900 p-4 sm:p-8 font-sans">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <PostTypeToggle />
         <header>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -231,7 +250,11 @@ export default function BatteryPost() {
               onChange={handleChange}
               required
             />
-            <ImageUploadArea />
+            <ImageUpload
+              fileList={fileList}
+              setFileList={setFileList}
+              maxCount={10}
+            />
           </div>
 
           {/* Gói đề xuất */}
@@ -303,9 +326,14 @@ export default function BatteryPost() {
           <div className="flex justify-end pt-4">
             <button
               type="submit"
-              className="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white font-semibold rounded-full shadow-lg hover:bg-emerald-700 transition duration-300"
+              disabled={isSubmitting} // Ngăn double-click
+              className={`px-8 py-3 text-white rounded-full font-semibold transition duration-300 ${
+                isSubmitting
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
             >
-              Đăng Bài Ngay
+              {isSubmitting ? "Đang đăng..." : "Đăng Bài Ngay"}
             </button>
           </div>
         </form>

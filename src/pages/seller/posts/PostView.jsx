@@ -10,10 +10,14 @@ import {
   Button,
   Divider,
   Tag,
+  Upload,
+  Modal,
 } from "antd";
 import { toast } from "react-toastify";
 import { ArrowLeft, Save } from "lucide-react"; // Icon cho các nút
 import api from "../../../config/axios";
+import { uploadFile } from "../../../utils/upload";
+import ImageViewer from "./Imageview";
 
 // Helper để định dạng ngày tháng
 const formatDate = (dateString) => {
@@ -43,7 +47,27 @@ export default function PostView() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
+  //const [newImageFiles, setNewImageFiles] = useState([]);
+  const [fileListState, setFileListState] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
 
+  const getBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      // Đảm bảo file là File object, không phải file đã có URL
+      const fileObject = file.originFileObj || file;
+
+      if (fileObject instanceof File) {
+        reader.readAsDataURL(fileObject);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      } else {
+        // Trả về chính URL nếu nó không phải là File object (ảnh cũ)
+        resolve(file.url);
+      }
+    });
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
@@ -51,7 +75,22 @@ export default function PostView() {
         const res = await api.get(`/seller/posts/${id}`);
         const data = res.data.data || res.data;
         setPost(data);
-        form.setFieldsValue(data); // Điền toàn bộ dữ liệu vào form
+        const initialFileList =
+          data.images?.map((img, index) => ({
+            uid: img.id ? String(img.id) : `-${index + 1}`, // Dùng ID API hoặc ID tạm
+            name: `image-${img.id || index + 1}.jpg`,
+            status: "done",
+            url: img.imageUrl, // Đây là URL ảnh đã tồn tại
+            originalUrl: img.imageUrl, // Giữ lại URL gốc
+          })) || [];
+
+        setFileListState(initialFileList); // Set danh sách file ban đầu
+        const formData = {
+          ...data,
+          // Chuyển đổi mảng URL thành format mà Form.Item có thể hiểu (nếu cần)
+          images: initialFileList.map((f) => f.url),
+        };
+        form.setFieldsValue(formData); // Điền toàn bộ dữ liệu vào form
       } catch (err) {
         toast.error(err.response?.data?.message || "Không tìm thấy bài đăng");
         navigate("/seller"); // Quay về trang trước nếu có lỗi
@@ -67,14 +106,38 @@ export default function PostView() {
   const handleSave = async (values) => {
     setSaving(true);
     try {
+      const filesToUpload = fileListState
+        .filter((f) => f.originFileObj) // File mới được chọn từ máy tính
+        .map((f) => f.originFileObj);
+
+      const existingUrls = fileListState
+        .filter((f) => !f.originFileObj) // File đã có (chỉ có URL)
+        .map((f) => f.url);
+
+      // 2. Upload các file mới
+      let uploadedNewImageUrls = [];
+      if (filesToUpload.length > 0) {
+        toast.info(`Đang tải lên ${filesToUpload.length} ảnh mới...`);
+        uploadedNewImageUrls = await Promise.all(
+          filesToUpload.map((file) => uploadFile(file))
+        );
+      }
+
+      // 3. Kết hợp URLs ảnh cũ (còn lại) và URLs mới
+      const finalImageUrls = [...existingUrls, ...uploadedNewImageUrls];
+
+      // CẬP NHẬT PAYLOAD VÀ GỌI API
       await api.put(`/seller/posts/${id}`, {
         ...values,
-        productType: post.productType, // Giữ nguyên loại sản phẩm không cho sửa
+        productType: post.productType,
+        images: finalImageUrls,
       });
 
       toast.success("Cập nhật thành công!");
       navigate(-1);
-      setPost({ ...post, ...values }); // Cập nhật state để hiển thị ngay lập tức
+      // Cập nhật form/state (Quan trọng để hiển thị ảnh ngay lập tức nếu không navigate)
+      form.setFieldsValue({ ...values, images: finalImageUrls });
+      setPost({ ...post, ...values, images: finalImageUrls });
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi khi cập nhật");
     } finally {
@@ -180,14 +243,14 @@ export default function PostView() {
                     <Input />
                   </Form.Item>
                   <Form.Item label="Năm sản xuất" name="yearOfManufacture">
-                    <InputNumber className="w-full" />
+                    <InputNumber style={{ width: "100%" }} />
                   </Form.Item>
                   <Form.Item label="Màu sắc" name="color">
                     <Input />
                   </Form.Item>
                   <Form.Item label="Số KM đã đi" name="mileage">
                     <InputNumber
-                      className="w-full"
+                      style={{ width: "100%" }}
                       formatter={(value) =>
                         `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                       }
@@ -202,10 +265,10 @@ export default function PostView() {
                     <Input />
                   </Form.Item>
                   <Form.Item label="Dung lượng (Ah)" name="capacity">
-                    <InputNumber className="w-full" />
+                    <InputNumber style={{ width: "100%" }} />
                   </Form.Item>
                   <Form.Item label="Điện áp (V)" name="voltage">
-                    <InputNumber className="w-full" />
+                    <InputNumber style={{ width: "100%" }} />
                   </Form.Item>
                   <Form.Item label="Thương hiệu pin" name="batteryBrand">
                     <Input />
@@ -213,10 +276,6 @@ export default function PostView() {
                 </div>
               )}
 
-              {/* Vận chuyển & Hình ảnh */}
-              <h2 className="text-xl font-semibold text-gray-700 mt-6">
-                Vận chuyển & Hình ảnh
-              </h2>
               <Divider />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Form.Item label="Phương thức giao hàng" name="deliveryMethods">
@@ -237,8 +296,58 @@ export default function PostView() {
                   </Select>
                 </Form.Item>
               </div>
-              <Form.Item label="Link hình ảnh" name="images">
-                <Select mode="tags" placeholder="Dán link ảnh và nhấn Enter" />
+              <Form.Item label="Quản lý Hình ảnh">
+                
+                <Upload
+                  listType="picture-card"
+                  fileList={fileListState}
+                  multiple
+                  accept="image/*"
+                  beforeUpload={() => false}
+                  onRemove={(file) => {
+                    const newFileList = fileListState.filter(
+                      (item) => item.uid !== file.uid
+                    );
+                    setFileListState(newFileList);
+                  }}
+                  onChange={({ fileList: newFileList }) => {
+                    setFileListState(newFileList);
+                  }}
+                  // <<< THÊM prop ONPREVIEW VÀO ĐÂY >>>
+                  onPreview={async (file) => {
+                    const previewUrl = file.url || file.preview;
+                    let finalPreviewUrl = previewUrl;
+
+                    if (!previewUrl && file.originFileObj) {
+                      // Là file mới: Đọc file để lấy Data URL
+                      finalPreviewUrl = await getBase64(file);
+                    }
+
+                    setPreviewImage(finalPreviewUrl);
+                    setPreviewOpen(true);
+                    setPreviewTitle(file.name || "Ảnh xem trước");
+
+                    // Xóa file.preview nếu không dùng cơ chế mặc định
+                    delete file.preview;
+
+                    // THÊM LỆNH RETURN ĐỂ NGĂN UPLOAD TỰ MỞ MODAL
+                    return;
+                  }}
+                >
+                  {fileListState.length < 10 && (
+                    <div>
+                      <div className="text-xl mb-1">+</div>
+                      <div style={{ marginTop: 8 }}>Thêm ảnh</div>
+                    </div>
+                  )}
+                  
+                </Upload>
+                
+                <p className="text-xs text-gray-500 mt-1">
+                   Tối đa 10 ảnh. Bấm vào biểu tượng **X** để
+                  xóa ảnh, **bấm vào ảnh để xem lớn**. 
+                </p>{" "}
+                {" "}
               </Form.Item>
             </Form>
           </div>
@@ -317,6 +426,15 @@ export default function PostView() {
           </div>
         </div>
       </div>
+      <Modal
+        open={previewOpen}
+        title={previewTitle}
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+        centered
+      >
+        <img alt={previewTitle} style={{ width: "100%" }} src={previewImage} />
+      </Modal>
     </div>
   );
 }
