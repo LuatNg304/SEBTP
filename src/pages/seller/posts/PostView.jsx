@@ -276,7 +276,7 @@ export default function PostView() {
                   Nhãn Kiểm Duyệt
                 </span>
                 <Tag color={post.trusted ? "gold" : "default"}>
-                  {post.trusted ? "Premium" : "Thường"}
+                  {post.trusted ? "Premium" : "Normal"}
                 </Tag>
               </div>
               <Divider className="my-1" />

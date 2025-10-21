@@ -141,7 +141,7 @@ export default function SellerDashboard() {
       dataIndex: "trusted",
       key: "trusted",
       render: (v) =>
-        v ? <Tag color="green">Premium</Tag> : <Tag color="red">Nomal</Tag>,
+        v ? <Tag color="green">Premium</Tag> : <Tag color="red">Normal</Tag>,
     },
     // Thêm cột hành động
     
