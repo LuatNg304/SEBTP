@@ -12,6 +12,7 @@ import api from "../../config/axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { uploadFile } from "../../utils/upload";
 
 export default function VehiclePost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
@@ -38,6 +39,10 @@ export default function VehiclePost() {
     color: "",
     mileage: "",
   });
+  const [imageFiles, setImageFiles] = useState([]);
+  const handleImageChange = (files) => {
+    setImageFiles(files); // Cập nhật state imageFiles với mảng file mới
+  };
 
   // Fetch APIs
   useEffect(() => {
@@ -85,6 +90,14 @@ export default function VehiclePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+
+      const uploadedImageUrls = await Promise.all(
+        // <-- BẮT ĐẦU ĐOẠN CODE
+        imageFiles.map(async (file) => {
+          const url = await uploadFile(file); // Hàm uploadFile của bạn
+          return url;
+        })
+      );
       const payload = {
         productType: "VEHICLE",
         title: formData.title,
@@ -96,6 +109,7 @@ export default function VehiclePost() {
           m.replace(" ", "_").toUpperCase()
         ),
         paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
+        images: uploadedImageUrls,
 
         // Các trường vehicle
         vehicleBrand: formData.vehicleBrand,
@@ -104,6 +118,7 @@ export default function VehiclePost() {
         color: formData.color,
         mileage: Number(formData.mileage),
       };
+      
 
       const response = await api.post("/seller/posts", payload);
       navigate("/seller");
@@ -116,8 +131,8 @@ export default function VehiclePost() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent p-4 sm:p-8 font-sans">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-transparent p-8 sm:p-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-6">
         <PostTypeToggle />
         <header>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -225,7 +240,7 @@ export default function VehiclePost() {
               ))}
             </div>
           </div>
-          
+
           {/* Thông số kỹ thuật xe */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg space-y-5">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -300,9 +315,8 @@ export default function VehiclePost() {
               onChange={handleChange}
               required
             />
-            <ImageUploadArea />
+            <ImageUploadArea onImageFilesChange={handleImageChange} />
           </div>
-          
 
           <div className="flex justify-end">
             <button
