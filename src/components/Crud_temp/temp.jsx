@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Modal, Form } from "antd";
+import { Table, Button, Space, Modal, Form, Popconfirm } from "antd";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
 
@@ -16,23 +16,25 @@ const CrudTemp = ({
   const [modalFooter, setModalFooter] = useState(null);
   const [form] = Form.useForm();
 
-  // Fetch API
+  // 🧠 Hàm lấy dữ liệu
   const fetchData = async () => {
     setLoading(true);
     try {
       const res = await api.get(path);
-      setData(res.data);
+      setData(res.data.data || []);
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi tải dữ liệu");
+      setData([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (path) fetchData();
+  }, [path]);
 
+  // 🧩 Định nghĩa cột hành động
   const tableColumns = [
     ...columns,
     {
@@ -40,33 +42,79 @@ const CrudTemp = ({
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          {actions?.map((action) => {
+          {actions?.map((action, idx) => {
+            // Nếu có điều kiện hiển thị, check trước
             if (action.showIf && !action.showIf(record)) return null;
 
-            return (
+            const button = (
               <Button
-                key={action.label + record.id}
+                key={`${action.label}-${record.id}-${idx}`}
                 className={
                   typeof action.className === "function"
                     ? action.className(record)
                     : action.className
                 }
-                onClick={() =>
-                  // ✅ Truyền thêm setModalFooter vào đây
-                  action.onClick(
-                    record,
-                    form,
-                    setShowModal,
-                    fetchData,
-                    setModalFooter
-                  )
-                }
+                danger={action.danger}
+                type={action.type || "default"}
+                onClick={() => {
+                  if (typeof action.onClick === "function") {
+                    action.onClick(
+                      record,
+                      form,
+                      setShowModal,
+                      fetchData,
+                      setModalFooter
+                    );
+                  } else {
+                    console.warn(
+                      `⚠️ Action "${action.label}" không có hàm onClick`
+                    );
+                  }
+                }}
               >
                 {typeof action.label === "function"
                   ? action.label(record)
                   : action.label}
               </Button>
             );
+
+            // ✅ Nếu có xác nhận (confirm), bọc Popconfirm
+            if (action.confirm) {
+              return (
+                <Popconfirm
+                  key={`${action.label}-${record.id}-confirm`}
+                  title={
+                    typeof action.confirm.title === "function"
+                      ? action.confirm.title(record)
+                      : action.confirm.title || "Xác nhận"
+                  }
+                  description={
+                    typeof action.confirm.description === "function"
+                      ? action.confirm.description(record)
+                      : action.confirm.description
+                  }
+                  okText={action.confirm.okText || "OK"}
+                  cancelText={action.confirm.cancelText || "Hủy"}
+                  okType={action.confirm.okType || "primary"}
+                  onConfirm={() => {
+                    if (typeof action.onClick === "function") {
+                      action.onClick(
+                        record,
+                        form,
+                        setShowModal,
+                        fetchData,
+                        setModalFooter
+                      );
+                    }
+                  }}
+                >
+                  {button}
+                </Popconfirm>
+              );
+            }
+
+            // Không có confirm -> trả về nút bình thường
+            return button;
           })}
         </Space>
       ),
@@ -93,11 +141,12 @@ const CrudTemp = ({
           pagination={{ pageSize: 5 }}
         />
 
+        {/* Modal hiển thị form chi tiết / sửa nhanh */}
         <Modal
           open={showModal}
           onCancel={() => setShowModal(false)}
           title={modalTitle}
-          footer={modalFooter} 
+          footer={modalFooter}
         >
           <Form
             form={form}
