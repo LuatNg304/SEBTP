@@ -1,121 +1,200 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Modal, Form, Input, Button, message } from "antd";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import api from "../../config/axios";
-
-
-// Component icon Loader
-const Loader = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={`${className} animate-spin`}
-  >
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-);
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const ForgotPasswordPage = () => {
+  // State quản lý hiển thị modal
+  const [step, setStep] = useState(1); // 1: nhập email, 2: nhập OTP và password
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Hàm xử lý submit form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [form] = Form.useForm();
 
-   try {
-     const response = await api.get("/Category");
-     const users = response.data;
+  // Xử lý gửi email
+  const handleSendOTP = async (values) => {
+    setLoading(true);
+    try {
+      await api.post("/auth/forgot-password", values.email);
+      console.log("Gửi OTP đến:", values.email);
+      setEmail(values.email);
+      toast.success("Mã OTP đã được gửi!");
+      setStep(2);
+    } catch (error) {
+      toast.error("Có lỗi xảy ra!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-     const user = users.find((u) => u.email === email);
-     if (user) {
-       toast.success(`Đã gửi liên kết đặt lại mật khẩu đến ${email}`);
-       setTimeout(() => {
-        navigate("/otp", { state: { id: user.id, email: user.email, type: "forgot" } });
+  // Xử lý reset mật khẩu
+  const handleResetPassword = async (values) => {
+    setLoading(true);
+    try {
+      // Dữ liệu gửi lên server
+      const data = {
+        email: email,
+        otp: values.otp,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
+      };
+      await api.post("/auth/reset-password", data);
+      console.log("Dữ liệu reset:", data);
 
-       }, 1000);
-     } else {
-       toast.error("Email không tồn tại trong hệ thống");
-     }
-   } catch (error) {
-     toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
-   } finally {
-     setIsLoading(false);
-   }
- };
+      toast.success("Đặt lại mật khẩu thành công!");
+      form.resetFields();
+      navigate("/");
+    } catch (error) {
+      toast.error("Mã OTP không đúng!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      
-
+  // Hàm quay về trang chủ
+  const handleGoHome = () => {
+    navigate("/");
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-green-200">
-      <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-xl shadow-2xl transition-all duration-300">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="mt-4 text-3xl font-extrabold text-gray-800">
-            Quên Mật Khẩu
-          </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Nhập email của bạn để nhận liên kết đặt lại.
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Địa chỉ Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              placeholder="vidu@email.com"
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full flex justify-center items-center py-2 px-4 rounded-lg text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150 disabled:opacity-70`}
+    <>
+      <div
+        className="overflow-x-hidden"
+        style={{
+          backgroundImage: "url('/background.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          backgroundRepeat: "no-repeat",
+          minHeight: "100vh",
+        }}
+      >
+        {/* Bước 1: Nhập Email */}
+        {step === 1 && (
+          <Modal
+            title="Quên mật khẩu"
+            open={true}
+            footer={null}
+            closable={false}
+            width={400}
           >
-            {isLoading ? (
-              <>
-                <Loader className="h-5 w-5 mr-3" />
-                Đang Gửi...
-              </>
-            ) : (
-              "Gửi Liên Kết Đặt Lại"
-            )}
-          </button>
-        </form>
+            <p style={{ marginBottom: 20 }}>Nhập email để nhận mã OTP</p>
 
-        <div className="mt-6 text-center">
-          <button
-            className="text-sm font-medium text-green-600 hover:text-green-500 transition-colors duration-150"
-            onClick={() => navigate("/")}
+            <Form form={form} onFinish={handleSendOTP}>
+              <Form.Item
+                name="email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email!" },
+                  { type: "email", message: "Email không đúng định dạng!" },
+                ]}
+              >
+                <Input
+                  prefix={<MailOutlined />}
+                  placeholder="Email của bạn"
+                  size="large"
+                />
+              </Form.Item>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+              >
+                Gửi mã OTP
+              </Button>
+            </Form>
+
+            <div style={{ marginTop: 15, textAlign: "center" }}>
+              <a onClick={handleGoHome}>Quay về trang chủ</a>
+            </div>
+          </Modal>
+        )}
+
+        {/* Bước 2: Nhập OTP và Password mới */}
+        {step === 2 && (
+          <Modal
+            title="Đặt lại mật khẩu"
+            open={true}
+            footer={null}
+            closable={false}
+            width={400}
           >
-            ← Quay lại trang chủ
-          </button>
-        </div>
+            <p style={{ marginBottom: 20 }}>
+              Nhập mã OTP đã gửi đến <strong>{email}</strong>
+            </p>
+
+            <Form form={form} onFinish={handleResetPassword}>
+              {/* Nhập OTP */}
+              <Form.Item
+                name="otp"
+                rules={[{ required: true, message: "Vui lòng nhập OTP!" }]}
+              >
+                <Input placeholder="Mã OTP (6 số)" size="large" maxLength={6} />
+              </Form.Item>
+
+              {/* Mật khẩu mới */}
+              <Form.Item
+                name="newPassword"
+                rules={[
+                  { required: true, message: "Vui lòng nhập mật khẩu mới!" },
+                  { min: 8, message: "Mật khẩu tối thiểu 8 ký tự!" },
+                ]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined />}
+                  placeholder="Mật khẩu mới"
+                  size="large"
+                />
+              </Form.Item>
+
+              {/* Xác nhận mật khẩu */}
+              <Form.Item
+                name="confirmPassword"
+                rules={[
+                  { required: true, message: "Vui lòng xác nhận mật khẩu!" },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("newPassword") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error("Mật khẩu không khớp!"));
+                    },
+                  }),
+                ]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined />}
+                  placeholder="Xác nhận mật khẩu"
+                  size="large"
+                />
+              </Form.Item>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+              >
+                Đặt lại mật khẩu
+              </Button>
+            </Form>
+
+            <div style={{ marginTop: 15, textAlign: "center" }}>
+              <a onClick={() => setStep(1)} style={{ marginRight: 20 }}>
+                Gửi lại OTP
+              </a>
+              <a onClick={handleGoHome}>Quay về trang chủ</a>
+            </div>
+          </Modal>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 
