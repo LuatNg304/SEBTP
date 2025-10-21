@@ -7,7 +7,7 @@ import { logout } from "../../redux/accountSlice";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 import { LogOutIcon, Search, User, Wallet, Wallet2 } from "lucide-react";
-import { AiFillWallet } from "react-icons/ai";
+
 
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -65,7 +65,7 @@ const Header = () => {
         label: (
           <div
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => navigate("/wallet")}
+            onClick={() => navigate("/user/wallet")}
           >
             <Wallet2 className="text-green-700" />
             <span>Ví</span>

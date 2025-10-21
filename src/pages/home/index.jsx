@@ -72,7 +72,7 @@ const HomePage = () => {
         key: "2",
         label: (
           <div
-            onClick={() => navigate("/wallet")}
+            onClick={() => navigate("/user/wallet")}
             className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
           >
             <Wallet className="text-green-700 transition-transform duration-200 hover:scale-110" />

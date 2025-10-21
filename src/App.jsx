@@ -27,7 +27,7 @@ import PostAccept from "./pages/admin/post/PostAccept";
 import Posted from "./pages/admin/post/Posted";
 import PostPanding from "./pages/admin/post/PostPanding";
 import ViewWallet from "./pages/ViewWallet";
-import VNPayCallback from "./pages/ViewWallet/VNPayCallback";
+
 import PackagePage from "./pages/seller/packket/PackagePage";
 import PostView from "./pages/seller/posts/PostView";
 
@@ -58,17 +58,7 @@ const router = createBrowserRouter([
     ],
   },
 
-  // // Route admin
-  // {
-  //   path: "admin",
-  //   element: <AdminLayout />,
-  //   children: [
-  //     { index: true, element: <AdminDashboard /> }, // <= route mặc định
-  //     { path: "posts", element: <AdminPosts /> },
-  //     { path: "users", element: <AdminUsers /> },
-  //     { path: "settings", element: <AdminSettings /> },
-  //   ],
-  // },
+ 
   {
     path: "seller",
     element: <SellerLayout />, // layout chứa header + sidebar
@@ -119,7 +109,7 @@ const router = createBrowserRouter([
     element: <ViewProduct />,
   },
   {
-    path: "wallet",
+    path: "user/wallet",
     element: <ViewWallet />,
   },
   {
@@ -130,10 +120,11 @@ const router = createBrowserRouter([
     path: "upgrade-seller",
     element: <UpgradeSeller />,
   },
+  // {
+  //   path:"/user/wallet/",
+  //    element: <VNPayCallback />
+  // },
   {
-    path:"/user/wallet/vnpay-return/deposit",
-     element: <VNPayCallback />
-  },{
     path:"test",
     element:<DemoUp/>
   }
