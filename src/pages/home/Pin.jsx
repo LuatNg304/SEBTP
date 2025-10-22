@@ -13,7 +13,7 @@ const Pin = () => {
   const fetchbike = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/public/posts/priority");
+      const res = await api.get("/public/posts/type/BATTERY");
       setBikes(res.data.data);
     } catch (error) {
       toast.error("Lỗi rồi: " + error);
