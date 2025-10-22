@@ -13,11 +13,14 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { uploadFile } from "../../utils/upload";
+import ImageUpload from "../../components/Upload/ImageUploadArea";
 
 export default function VehiclePost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileList, setFileList] = useState([]);
   
   const user = useSelector((state) => state.account.user);
   const navigate = useNavigate();
@@ -39,14 +42,12 @@ export default function VehiclePost() {
     color: "",
     mileage: "",
   });
-  const [imageFiles, setImageFiles] = useState([]);
-  const handleImageChange = (files) => {
-    setImageFiles(files); // Cập nhật state imageFiles với mảng file mới
-  };
-
+  
+  
   // Fetch APIs
   useEffect(() => {
     const fetchAll = async () => {
+      
       try {
         const [pkgRes, payRes, delivRes] = await Promise.all([
           api.get("/seller/priority-packages"),
@@ -89,12 +90,22 @@ export default function VehiclePost() {
   // handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
+      // Lấy ra mảng File object (originFileObj)
+      const filesToUpload = fileList
+        .filter((f) => f.originFileObj)
+        .map((f) => f.originFileObj);
 
+      if (filesToUpload.length === 0) {
+        toast.warning("Vui lòng chọn ít nhất một ảnh sản phẩm.");
+        return;
+      }
+
+      // Upload chỉ các file object đã lọc
       const uploadedImageUrls = await Promise.all(
-        // <-- BẮT ĐẦU ĐOẠN CODE
-        imageFiles.map(async (file) => {
-          const url = await uploadFile(file); // Hàm uploadFile của bạn
+        filesToUpload.map(async (file) => {
+          const url = await uploadFile(file);
           return url;
         })
       );
@@ -118,7 +129,6 @@ export default function VehiclePost() {
         color: formData.color,
         mileage: Number(formData.mileage),
       };
-      
 
       const response = await api.post("/seller/posts", payload);
       navigate("/seller");
@@ -127,6 +137,8 @@ export default function VehiclePost() {
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
       toast.error(error.response?.data?.message || "Có lỗi xảy ra.");
+    } finally {
+      setIsSubmitting(false); // TẮT LOADING
     }
   };
 
@@ -194,7 +206,7 @@ export default function VehiclePost() {
                 <option value="">-- Không chọn --</option>
                 {priorityPackages.map((pkg) => (
                   <option key={pkg.id} value={pkg.id}>
-                    {pkg.type} - {pkg.price} VNĐ
+                    {pkg.durationDays} ngày - {pkg.type} - {pkg.price} VNĐ
                   </option>
                 ))}
               </select>
@@ -240,7 +252,6 @@ export default function VehiclePost() {
               ))}
             </div>
           </div>
-
           {/* Thông số kỹ thuật xe */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg space-y-5">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -300,30 +311,39 @@ export default function VehiclePost() {
             </div>
           </div>
 
-          {/* Mô tả & Hình ảnh */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg space-y-5">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               3. Mô tả & Hình ảnh
             </h2>
+
             <textarea
               id="description"
               name="description"
-              rows="5"
+              rows="5" // <-- Đã thay đổi từ rows="5" thành rows="10"
               className="block w-full rounded-lg border-gray-300 dark:bg-gray-700 dark:text-white p-3"
               placeholder="Mô tả chi tiết về xe..."
               value={formData.description}
               onChange={handleChange}
               required
             />
-            <ImageUploadArea onImageFilesChange={handleImageChange} />
-          </div>
 
+            <ImageUpload
+              fileList={fileList}
+              setFileList={setFileList}
+              maxCount={10}
+            />
+          </div>
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-8 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700"
+              disabled={isSubmitting} // Ngăn double-click
+              className={`px-8 py-3 text-white rounded-full font-semibold transition duration-300 ${
+                isSubmitting
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
             >
-              Đăng Bài Ngay
+              {isSubmitting ? "Đang đăng..." : "Đăng Bài Ngay"}
             </button>
           </div>
         </form>
