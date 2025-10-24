@@ -99,7 +99,7 @@ const router = createBrowserRouter([
   
 
   {
-    path: "view-product/:slug",
+    path: "view-product/:id",
     element: <ViewProduct />,
   },
   {

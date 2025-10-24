@@ -7,7 +7,7 @@ import api from "../../config/axios";
 
 const Bike = () => {
   const Navigate = useNavigate();
-  const [bikes, setBikes] = useState([]);
+  const [bikes, setBikes] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchbike = async () => {
@@ -30,7 +30,7 @@ const Bike = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Grid Xe máy điện */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading
+        {!bikes //tranh bi giật (flicker)
           ? // Skeleton loading
             [1, 2, 3, 4, 5, 6].map((n) => (
               <Card key={n} className="overflow-hidden">
