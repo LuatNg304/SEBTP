@@ -74,7 +74,7 @@ export default function BatteryPost() {
           pricingPayload,
           
         );
-        setSuggestedPrice(priceRes.data.suggestPrice);
+        setSuggestedPrice(priceRes.data.suggestedPrice);
       } catch (err) {
         console.error(
           "Lỗi khi fetch giá ước tính:",

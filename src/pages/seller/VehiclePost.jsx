@@ -76,7 +76,9 @@ export default function VehiclePost() {
           pricingPayload,
           
         );
-        setSuggestedPrice(priceRes.data.suggestPrice);
+        setSuggestedPrice(priceRes.data.suggestedPrice);
+        console.log(priceRes.data.suggestPrice);
+        
       } catch (err) {
         console.error(
           "Lỗi khi fetch giá ước tính:",
