@@ -1,12 +1,4 @@
 import React, { useEffect, useState } from "react";
-import {
-  LucideCalendar,
-  LucideCar,
-  LucideDollarSign,
-  LucideRuler,
-  WeightIcon,
-} from "lucide-react";
-
 import { FormInput } from "../../components/Upload/FormInput";
 import PostTypeToggle from "../../components/Upload/PostTypeToggle";
 import api from "../../config/axios";
@@ -81,7 +73,8 @@ export default function VehiclePost() {
       try {
         const priceRes = await api.post(
           "/seller/ai/suggest-price",
-          pricingPayload
+          pricingPayload,
+          
         );
         setSuggestedPrice(priceRes.data.suggestPrice);
       } catch (err) {
@@ -226,7 +219,7 @@ export default function VehiclePost() {
               name="title"
               label="Tiêu đề bài đăng"
               placeholder="Ví dụ: Honda Wave RSX 2020, Màu đỏ"
-              icon={LucideCar}
+              
               value={formData.title}
               onChange={handleChange}
               required
@@ -332,7 +325,7 @@ export default function VehiclePost() {
                 label="Năm sản xuất"
                 type="number"
                 placeholder="2020"
-                icon={LucideCalendar}
+                
                 value={formData.yearOfManufacture}
                 onChange={handleChange}
                 required
@@ -352,7 +345,7 @@ export default function VehiclePost() {
                 label="Số km đã đi"
                 type="number"
                 placeholder="5000"
-                icon={LucideRuler}
+                
                 value={formData.mileage}
                 onChange={handleChange}
                 unit="km"
@@ -364,7 +357,7 @@ export default function VehiclePost() {
                 label="Trọng lượng xe"
                 type="number"
                 placeholder="100"
-                icon={WeightIcon}
+                
                 value={formData.weight}
                 onChange={handleChange}
                 unit="kg"
@@ -378,7 +371,7 @@ export default function VehiclePost() {
               label="Giá bán"
               type="number"
               placeholder="10,000,000"
-              icon={LucideDollarSign}
+              
               value={formData.price}
               onChange={handleChange}
               unit="VNĐ"
