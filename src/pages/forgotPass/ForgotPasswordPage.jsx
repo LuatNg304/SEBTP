@@ -18,13 +18,16 @@ const ForgotPasswordPage = () => {
   const handleSendOTP = async (values) => {
     setLoading(true);
     try {
-      await api.post("/auth/forgot-password", values.email);
+      const res = await api.post("/auth/forgot-password", values.email);
       console.log("Gửi OTP đến:", values.email);
       setEmail(values.email);
       toast.success("Mã OTP đã được gửi!");
       setStep(2);
     } catch (error) {
-      toast.error("Có lỗi xảy ra!");
+      console.log(error);
+      const errMsg =
+      error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!";
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }

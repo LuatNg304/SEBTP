@@ -37,7 +37,7 @@ const Dashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     dispatch(logout());
-    navigate("/login");
+    navigate("/");
   };
 
   const userMenu = (

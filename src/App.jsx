@@ -8,12 +8,6 @@ import Pin from "./pages/home/Pin";
 import AllProduct from "./pages/home/AllProduct";
 import ForgotPasswordPage from "./pages/forgotPass/ForgotPasswordPage";
 import OTPPage from "./pages/forgotPass/Otp";
-
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminPosts from "./pages/admin/AdminPosts";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/viewProduct";
 import UserProfile from "./pages/viewProfile";
 import UpgradeSeller from "./pages/ViewUpgrade";
@@ -27,7 +21,7 @@ import PostAccept from "./pages/admin/post/PostAccept";
 import Posted from "./pages/admin/post/Posted";
 import PostPanding from "./pages/admin/post/PostPanding";
 import ViewWallet from "./pages/ViewWallet";
-import VNPayCallback from "./pages/ViewWallet/VNPayCallback";
+
 import PackagePage from "./pages/seller/packket/PackagePage";
 import PostView from "./pages/seller/posts/PostView";
 
@@ -58,17 +52,7 @@ const router = createBrowserRouter([
     ],
   },
 
-  // // Route admin
-  // {
-  //   path: "admin",
-  //   element: <AdminLayout />,
-  //   children: [
-  //     { index: true, element: <AdminDashboard /> }, // <= route mặc định
-  //     { path: "posts", element: <AdminPosts /> },
-  //     { path: "users", element: <AdminUsers /> },
-  //     { path: "settings", element: <AdminSettings /> },
-  //   ],
-  // },
+ 
   {
     path: "seller",
     element: <SellerLayout />, // layout chứa header + sidebar
@@ -115,11 +99,11 @@ const router = createBrowserRouter([
   
 
   {
-    path: "view-product/:slug",
+    path: "view-product/:id",
     element: <ViewProduct />,
   },
   {
-    path: "wallet",
+    path: "user/wallet",
     element: <ViewWallet />,
   },
   {
@@ -130,10 +114,11 @@ const router = createBrowserRouter([
     path: "upgrade-seller",
     element: <UpgradeSeller />,
   },
+  // {
+  //   path:"/user/wallet/",
+  //    element: <VNPayCallback />
+  // },
   {
-    path:"/user/wallet/vnpay-return/deposit",
-     element: <VNPayCallback />
-  },{
     path:"test",
     element:<DemoUp/>
   }

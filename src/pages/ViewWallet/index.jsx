@@ -9,7 +9,7 @@ import {
   ArrowDownOutlined, WalletOutlined 
 } from "@ant-design/icons";
 import api from "../../config/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Home } from "lucide-react";
 
 const { Content } = Layout;
@@ -22,6 +22,7 @@ const ViewWallet = () => {
   const [transactionType, setTransactionType] = useState("");
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Fetch balance
   const fetchBalance = async () => {
@@ -50,25 +51,38 @@ const ViewWallet = () => {
   };
 
   useEffect(() => {
-    // Load dữ liệu lần đầu
-    fetchWalletData();
-
-    // Tạo BroadcastChannel để nhận thông báo từ tab callback
-    const channel = new BroadcastChannel('wallet_channel');
+    // Kiểm tra xem URL có query parameter paymentStatus không
+    const paymentStatus = searchParams.get('paymentStatus');
     
-    channel.onmessage = (event) => {
-      if (event.data.type === 'PAYMENT_SUCCESS') {
-        // Reload dữ liệu khi thanh toán thành công
-        fetchWalletData();
-        message.success('Nạp tiền thành công!');
-      }
-    };
-
-    // Cleanup khi component unmount
-    return () => {
-      channel.close();
-    };
-  }, []);
+    if (paymentStatus === 'success') {
+      // Hiển thị modal thông báo thanh toán thành công
+      Modal.success({
+        title: 'Nạp tiền thành công!',
+        content: 'Giao dịch của bạn đã được xử lý thành công.',
+        onOk: () => {
+          // Xóa query parameter khỏi URL sau khi đóng modal
+          searchParams.delete('paymentStatus');
+          setSearchParams(searchParams);
+        }
+      });
+      
+      // Reload dữ liệu ví
+      fetchWalletData();
+    } else if (paymentStatus === 'failed') {
+      // Hiển thị modal thông báo thanh toán thất bại
+      Modal.error({
+        title: 'Thanh toán thất bại',
+        content: 'Giao dịch của bạn không thành công. Vui lòng thử lại.',
+        onOk: () => {
+          searchParams.delete('paymentStatus');
+          setSearchParams(searchParams);
+        }
+      });
+    } else {
+      // Load dữ liệu bình thường nếu không có paymentStatus
+      fetchWalletData();
+    }
+  }, [searchParams]);
 
   const showModal = (type) => {
     setTransactionType(type);
@@ -85,12 +99,11 @@ const ViewWallet = () => {
         });
 
         if (response.data.success) {
-          // Mở trang VNPay trong tab mới
-          window.open(response.data.data, '_blank');
+          // Chuyển hướng đến trang VNPay trong cùng tab
+          window.location.href = response.data.data;
           
           setIsModalVisible(false);
           form.resetFields();
-          message.info("Vui lòng hoàn tất thanh toán trên tab mới");
         }
       } else {
         await api.post('/user/wallet/withdraw', {
@@ -116,87 +129,84 @@ const ViewWallet = () => {
     form.resetFields();
   };
 
- const columns = [
-  {
-    title: "Thời gian",
-    dataIndex: "createdAt",
-    key: "createdAt",
-    width: 180,
-    render: (date) => new Date(date).toLocaleString('vi-VN')
-  },
-  {
-    title: "Loại giao dịch",
-    dataIndex: "type",
-    key: "type",
-    width: 160,
-    render: (type) => (
-      <Space>
-        {type === "DEPOSIT" ? (
-          <>
-            {/* NẠP TIỀN - Icon mũi tên LÊN */}
-            <Avatar 
-              size={32} 
-              style={{ backgroundColor: '#e6f7e6', color: '#52c41a' }}
-              icon={<ArrowUpOutlined />}
-            />
-            <Text>Nạp tiền</Text>
-          </>
-        ) : (
-          <>
-            {/* RÚT TIỀN - Icon mũi tên XUỐNG */}
-            <Avatar 
-              size={32} 
-              style={{ backgroundColor: '#ffe6e6', color: '#ff4d4f' }}
-              icon={<ArrowDownOutlined />}
-            />
-            <Text>Rút tiền</Text>
-          </>
-        )}
-      </Space>
-    )
-  },
-  {
-    title: "Mô tả",
-    dataIndex: "description",
-    key: "description",
-  },
-  {
-    title: "Trạng thái",
-    dataIndex: "status",
-    key: "status",
-    width: 120,
-    render: (status) => {
-      let color = 'default';
-      let text = status;
-      
-      if (status === 'SUCCESS') {
-        color = 'success';
-        text = 'Thành công';
-      } else if (status === 'PENDING') {
-        color = 'processing';
-        text = 'Đang xử lý';
-      } else if (status === 'FAILED') {
-        color = 'error';
-        text = 'Thất bại';
+  const columns = [
+    {
+      title: "Thời gian",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      width: 180,
+      render: (date) => new Date(date).toLocaleString('vi-VN')
+    },
+    {
+      title: "Loại giao dịch",
+      dataIndex: "type",
+      key: "type",
+      width: 160,
+      render: (type) => (
+        <Space>
+          {type === "DEPOSIT" ? (
+            <>
+              <Avatar 
+                size={32} 
+                style={{ backgroundColor: '#e6f7e6', color: '#52c41a' }}
+                icon={<ArrowUpOutlined />}
+              />
+              <Text>Nạp tiền</Text>
+            </>
+          ) : (
+            <>
+              <Avatar 
+                size={32} 
+                style={{ backgroundColor: '#ffe6e6', color: '#ff4d4f' }}
+                icon={<ArrowDownOutlined />}
+              />
+              <Text>Rút tiền</Text>
+            </>
+          )}
+        </Space>
+      )
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      render: (status) => {
+        let color = 'default';
+        let text = status;
+        
+        if (status === 'SUCCESS') {
+          color = 'success';
+          text = 'Thành công';
+        } else if (status === 'PENDING') {
+          color = 'processing';
+          text = 'Đang xử lý';
+        } else if (status === 'FAILED') {
+          color = 'error';
+          text = 'Thất bại';
+        }
+        
+        return <Tag color={color}>{text}</Tag>;
       }
-      
-      return <Tag color={color}>{text}</Tag>;
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      width: 150,
+      align: 'right',
+      render: (amount, record) => (
+        <Text strong style={{ color: record.type === "DEPOSIT" ? '#52c41a' : '#ff4d4f' }}>
+          {record.type === "DEPOSIT" ? '+' : '-'}{amount.toLocaleString()} VND
+        </Text>
+      ),
     }
-  },
-  {
-    title: "Số tiền",
-    dataIndex: "amount",
-    key: "amount",
-    width: 150,
-    align: 'right',
-    render: (amount, record) => (
-      <Text strong style={{ color: record.type === "DEPOSIT" ? '#52c41a' : '#ff4d4f' }}>
-        {record.type === "DEPOSIT" ? '+' : '-'}{amount.toLocaleString()} VND
-      </Text>
-    ),
-  }
-];
-
+  ];
 
   return (
     <ConfigProvider
@@ -214,22 +224,23 @@ const ViewWallet = () => {
           <div style={{ maxWidth: 1400, margin: "0 auto" }}>
             <Space direction="vertical" size={24} style={{ width: '100%' }}>
               <Button 
-                        icon={<Home />}
-                        onClick={() => navigate("/")}
-                        size="large"
-                        style={{ 
-                          background: 'rgba(79, 126, 32, 0.88)',
-                          color: 'white',
-                          border: '1px solid rgba(255,255,255,0.3)',
-                          height: 48,
-                          paddingLeft: 24,
-                          paddingRight: 24,
-                          fontSize: 16,
-                          fontWeight: 500
-                        }}
-                      >
-                        HOME
-                      </Button>
+                icon={<Home />}
+                onClick={() => navigate("/")}
+                size="large"
+                style={{ 
+                  background: 'rgba(79, 126, 32, 0.88)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  height: 48,
+                  paddingLeft: 24,
+                  paddingRight: 24,
+                  fontSize: 16,
+                  fontWeight: 500
+                }}
+              >
+                HOME
+              </Button>
+
               {/* Balance Card */}
               <Card 
                 style={{ 
@@ -273,7 +284,7 @@ const ViewWallet = () => {
                       </Button>
                       <Button 
                         icon={<MinusOutlined />}
-                        onClick={() => navigate("/")}
+                        onClick={() => showModal("withdraw")}
                         size="large"
                         style={{ 
                           background: 'rgba(255,255,255,0.2)',
@@ -288,7 +299,6 @@ const ViewWallet = () => {
                       >
                         Rút tiền
                       </Button>
-                      
                     </Space>
                   </Col>
                 </Row>

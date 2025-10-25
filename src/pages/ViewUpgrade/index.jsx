@@ -51,18 +51,20 @@ const UpgradeSeller = () => {
         shopName: values.shopName,
         shopDescription: values.shopDescription,
         socialMedia: values.socialMedia,
+        ghnToken: values.ghnToken_1,
+        ghnShopId: values.ghnShopId_1,
       });
-      //  Gọi lại /user/me để lấy role mới
+
       const response = await api.get("/user/me");
       const updatedUser = response.data.data;
-      dispatch(updateUser(updatedUser)); // ✅ Cập nhật Redux
+      dispatch(updateUser(updatedUser));
+
       toast.success("Nâng cấp tài khoản seller thành công!");
       setIsModalVisible(false);
       form.resetFields();
-      navigate("/seller"); // Điều hướng đến trang seller
+      navigate("/seller");
     } catch (error) {
       toast.error(error.response?.data?.message || "Nâng cấp thất bại");
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,12 @@ const UpgradeSeller = () => {
           Vui lòng điền thông tin cửa hàng của bạn để hoàn tất đăng ký
         </p>
 
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          autoComplete="off"
+        >
           <Form.Item
             name="shopName"
             label="Tên cửa hàng"
@@ -151,6 +158,46 @@ const UpgradeSeller = () => {
             <Input
               placeholder="https://facebook.com/your-page"
               prefix={<InfoCircleOutlined />}
+            />
+          </Form.Item>
+          {/* ✅ Đổi thứ tự: ShopID trước, Token sau */}
+          <Form.Item
+            name="ghnShopId_1"
+            label="GHN Shop ID"
+            rules={[
+              { required: true, message: "Vui lòng nhập Shop ID!" },
+              { pattern: /^\d+$/, message: "Shop ID phải là số!" },
+            ]}
+          >
+            <Input
+              placeholder="Nhập Shop ID từ GHN"
+              prefix={<ShopOutlined />}
+              autoComplete="off"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="ghnToken_1"
+            label="GHN Token API"
+            rules={[{ required: true, message: "Vui lòng nhập GHN Token!" }]}
+            extra={
+              <span>
+                Xem hướng dẫn lấy Shop ID và Shop ID{" "}
+                <a
+                  href="https://api.ghn.vn/home/docs/detail"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#1890ff" }}
+                >
+                  tại đây
+                </a>
+              </span>
+            }
+          >
+            <Input.Password
+              placeholder="Nhập Token API từ GHN"
+              prefix={<InfoCircleOutlined />}
+              autoComplete="new-password"
             />
           </Form.Item>
 

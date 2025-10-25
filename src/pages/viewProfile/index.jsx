@@ -9,6 +9,7 @@ import {
   Avatar,
   Upload,
   Space,
+  Select,
 } from "antd";
 import {
   UserOutlined,
@@ -16,6 +17,8 @@ import {
   HomeOutlined,
   UploadOutlined,
   CameraOutlined,
+  ShopOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/axios";
@@ -24,6 +27,7 @@ import { useDispatch } from "react-redux";
 import { updateUser } from "../../redux/accountSlice";
 import { uploadFile } from "../../utils/upload";
 
+const { TextArea } = Input;
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -36,6 +40,11 @@ const UserProfile = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   const fetchUser = async () => {
     try {
@@ -51,18 +60,91 @@ const UserProfile = () => {
     }
   };
 
+  const fetchProvinces = async () => {
+    try {
+      const res = await api.get("/user/ghn/address/provinces");
+      setProvinces(res.data);
+    } catch (err) {
+      toast.error("Không thể tải danh sách tỉnh!");
+    }
+  };
+
+  const handleProvinceChange = async (provinceId) => {
+    setSelectedProvince(provinceId);
+    setSelectedDistrict(null);
+    setDistricts([]);
+    setWards([]);
+    form.setFieldsValue({ districtId: undefined, wardCode: undefined });
+
+    try {
+      const res = await api.get(`/user/ghn/address/districts/${provinceId}`);
+      setDistricts(res.data);
+    } catch (err) {
+      toast.error("Không thể tải danh sách quận/huyện!");
+    }
+  };
+
+  const handleDistrictChange = async (districtId) => {
+    setSelectedDistrict(districtId);
+    setWards([]);
+    form.setFieldsValue({ wardCode: undefined });
+
+    try {
+      const res = await api.get(`/user/ghn/address/wards/${districtId}`);
+      setWards(res.data);
+    } catch (err) {
+      toast.error("Không thể tải danh sách phường/xã!");
+    }
+  };
+
   useEffect(() => {
     fetchUser();
+    fetchProvinces();
   }, []);
 
-  const showModal = () => {
-    setIsModalVisible(true);
-    form.setFieldsValue({
-      fullName: user.fullName,
-      phone: user.phone,
-      address: user.address,
-    });
-  };
+ const showModal = async () => {
+  setIsModalVisible(true);
+  
+  // ✅ Set form values trước
+  form.setFieldsValue({
+    fullName: user.fullName,
+    phone: user.phone,
+    streetAddress: user.streetAddress,
+    provinceId: user.provinceId,
+    districtId: user.districtId,
+    wardCode: user.wardCode,
+    ...(user.role === "SELLER" && {
+      storeName: user.storeName,
+      storeDescription: user.storeDescription,
+      socialMedia: user.socialMedia,
+      ghnToken: user.ghnToken,
+      ghnShopId: user.ghnShopId,
+    }),
+  });
+
+  // ✅ Load districts nếu đã có provinceId
+  if (user.provinceId) {
+    setSelectedProvince(user.provinceId);
+    try {
+      const res = await api.get(`/user/ghn/address/districts/${user.provinceId}`);
+      setDistricts(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // ✅ Load wards nếu đã có districtId
+  if (user.districtId) {
+    setSelectedDistrict(user.districtId);
+    try {
+      const res = await api.get(`/user/ghn/address/wards/${user.districtId}`);
+      setWards(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+};
+
 
   const showAvatarModal = () => {
     setIsAvatarModalVisible(true);
@@ -80,13 +162,25 @@ const UserProfile = () => {
         toast.success("Cập nhật thông tin thành công!");
         const response = await api.get("/user/me");
         dispatch(updateUser(response.data.data));
+
+        // Reset form và state
+        form.resetFields();
+        setSelectedProvince(null);
+        setSelectedDistrict(null);
+        setDistricts([]);
+        setWards([]);
+
         setIsModalVisible(false);
       } else {
         toast.error("Cập nhật thất bại!");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Vui lòng kiểm tra lại thông tin!");
+      if (error.errorFields) {
+        toast.error("Vui lòng kiểm tra lại thông tin!");
+      } else {
+        toast.error("Lỗi khi cập nhật!");
+      }
     } finally {
       setLoading(false);
     }
@@ -109,9 +203,9 @@ const UserProfile = () => {
 
     try {
       setAvatarLoading(true);
-      const url = await uploadFile(selectedFile)
-      console.log(url);
-      const res = await api.patch("/user/avatar",  url );
+      const url = await uploadFile(selectedFile);
+      const res = await api.patch("/user/avatar", { avatar: url });
+
       if (res.data?.data) {
         setUser(res.data.data);
         toast.success("Cập nhật ảnh thành công!");
@@ -128,11 +222,19 @@ const UserProfile = () => {
     }
   };
 
-  const handleCancel = () => setIsModalVisible(false);
+  const handleCancel = () => {
+    form.resetFields();
+    setSelectedProvince(null);
+    setSelectedDistrict(null);
+    setDistricts([]);
+    setWards([]);
+    setIsModalVisible(false);
+  };
 
   const handleAvatarCancel = () => {
     setIsAvatarModalVisible(false);
     setSelectedFile(null);
+    setPreviewUrl(user.avatar);
   };
 
   if (!user) {
@@ -144,23 +246,41 @@ const UserProfile = () => {
     { key: "2", label: "Họ và tên", value: user.fullName },
     { key: "3", label: "Vai trò", value: user.role },
     { key: "4", label: "Số điện thoại", value: user.phone || "Chưa cập nhật" },
-    { key: "5", label: "Địa chỉ", value: user.address || "Chưa cập nhật" },
     {
-      key: "6",
-      label: "Tên cửa hàng",
-      value: user.role === "SELLER" ? user.storeName : null,
+      key: "5",
+      label: "Địa chỉ",
+      value: user.address ? user.address : "Chưa cập nhật",
     },
-    {
-      key: "7",
-      label: "Description",
-      value: user.role === "SELLER" ? user.storeDescription : null,
-    },
-    {
-      key: "8",
-      label: "Social Media",
-      value: user.role === "SELLER" ? user.socialMedia : null,
-    },
-  ].filter((item) => item.value !== null);
+    ...(user.role === "SELLER"
+      ? [
+          {
+            key: "6",
+            label: "Tên cửa hàng",
+            value: user.storeName || "Chưa cập nhật",
+          },
+          {
+            key: "7",
+            label: "Mô tả cửa hàng",
+            value: user.storeDescription || "Chưa cập nhật",
+          },
+          {
+            key: "8",
+            label: "Mạng xã hội",
+            value: user.socialMedia || "Chưa cập nhật",
+          },
+          {
+            key: "9",
+            label: "GHN Shop ID",
+            value: user.ghnShopId || "••••••••••",
+          },
+          {
+            key: "10",
+            label: "GHN Token",
+            value: user.ghnToken ? "••••••••••" : "••••••••••",
+          },
+        ]
+      : []),
+  ];
 
   const columns = [
     {
@@ -234,7 +354,10 @@ const UserProfile = () => {
             <div style={{ marginLeft: 20 }}>
               <h2 style={{ marginBottom: 4 }}>{user.fullName}</h2>
               <p style={{ color: "#888", marginBottom: 0 }}>{user.role}</p>
+              <p style={{ color: "#888", marginBottom: 0 }}>Bài đăng còn lại: {user.remainingPosts}</p>
+              <p style={{ color: "#888", marginBottom: 0 }}>Gói bán hàng: {user.sellerPackageId ? user.sellerPackageId : "Chưa có"}  </p>
             </div>
+            
           </Space>
 
           <Space>
@@ -282,8 +405,10 @@ const UserProfile = () => {
           cancelText="Hủy"
           centered
           confirmLoading={loading}
+          destroyOnClose
+          width={user.role === "SELLER" ? 700 : 600}
         >
-          <Form layout="vertical" form={form}>
+          <Form layout="vertical" form={form} autoComplete="off">
             <Form.Item
               name="fullName"
               label="Họ và tên"
@@ -293,7 +418,7 @@ const UserProfile = () => {
                 { max: 50, message: "Tên không được vượt quá 50 ký tự!" },
               ]}
             >
-              <Input placeholder="Nhập họ và tên đầy đủ" />
+              <Input placeholder="Nhập họ và tên đầy đủ" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
@@ -307,22 +432,201 @@ const UserProfile = () => {
                 },
               ]}
             >
-              <Input placeholder="VD: 0912345678" />
+              <Input placeholder="VD: 0912345678" autoComplete="off" />
+            </Form.Item>
+
+            {/* Conditional fields cho SELLER */}
+            {user.role === "SELLER" && (
+              <>
+                <Form.Item
+                  name="storeName"
+                  label="Tên cửa hàng"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên cửa hàng!" },
+                    {
+                      min: 3,
+                      message: "Tên cửa hàng phải có ít nhất 3 ký tự!",
+                    },
+                    {
+                      max: 100,
+                      message: "Tên cửa hàng không được quá 100 ký tự!",
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="Nhập tên cửa hàng"
+                    prefix={<ShopOutlined />}
+                    autoComplete="off"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="storeDescription"
+                  label="Mô tả cửa hàng"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập mô tả cửa hàng!",
+                    },
+                    { min: 10, message: "Mô tả phải có ít nhất 10 ký tự!" },
+                    { max: 500, message: "Mô tả không được quá 500 ký tự!" },
+                  ]}
+                >
+                  <TextArea
+                    rows={3}
+                    placeholder="Mô tả về cửa hàng, sản phẩm bạn bán..."
+                    showCount
+                    maxLength={500}
+                    autoComplete="off"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="socialMedia"
+                  label="Mạng xã hội"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập liên kết mạng xã hội!",
+                    },
+                    {
+                      type: "url",
+                      message:
+                        "Vui lòng nhập URL hợp lệ (bắt đầu với http:// hoặc https://)",
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="https://facebook.com/your-page"
+                    prefix={<InfoCircleOutlined />}
+                    autoComplete="off"
+                  />
+                </Form.Item>
+              </>
+            )}
+
+            <Form.Item
+              name="streetAddress"
+              label="Số nhà, tên đường"
+              rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+            >
+              <Input placeholder="Ví dụ: 123 Nguyễn Trãi" autoComplete="off" />
             </Form.Item>
 
             <Form.Item
-              name="address"
-              label="Địa chỉ"
-              rules={[
-                { required: true, message: "Vui lòng nhập địa chỉ!" },
-                { min: 5, message: "Địa chỉ phải có ít nhất 5 ký tự!" },
-              ]}
+              name="provinceId"
+              label="Tỉnh/Thành phố"
+              rules={[{ required: true, message: "Vui lòng chọn tỉnh!" }]}
             >
-              <Input.TextArea
-                rows={2}
-                placeholder="Nhập địa chỉ hiện tại của bạn"
-              />
+              <Select
+                placeholder="Chọn tỉnh/thành phố"
+                onChange={handleProvinceChange}
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {provinces.map((item) => (
+                  <Select.Option key={item.provinceId} value={item.provinceId}>
+                    {item.provinceName}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
+
+            <Form.Item
+              name="districtId"
+              label="Quận/Huyện"
+              rules={[{ required: true, message: "Vui lòng chọn quận!" }]}
+            >
+              <Select
+                placeholder="Chọn quận/huyện"
+                onChange={handleDistrictChange}
+                disabled={!selectedProvince}
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {districts.map((item) => (
+                  <Select.Option key={item.districtId} value={item.districtId}>
+                    {item.districtName}
+                    
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="wardCode"
+              label="Phường/Xã"
+              rules={[{ required: true, message: "Vui lòng chọn phường!" }]}
+            >
+              <Select
+                placeholder="Chọn phường/xã"
+                disabled={!selectedDistrict}
+                showSearch
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {wards.map((item) => (
+                  <Select.Option key={item.wardCode} value={item.wardCode}>
+                    {item.wardName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* GHN Integration cho SELLER */}
+            {user.role === "SELLER" && (
+              <>
+                <Form.Item
+                  name="ghnShopId"
+                  label="GHN Shop ID"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập Shop ID!" },
+                    { pattern: /^\d+$/, message: "Shop ID phải là số!" },
+                  ]}
+                  
+                >
+                  <Input
+                    placeholder="Nhập Shop ID từ GHN"
+                    prefix={<ShopOutlined />}
+                    autoComplete="off"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="ghnToken"
+                  label="GHN Token API"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập GHN Token!" },
+                    { min: 20, message: "Token phải có ít nhất 20 ký tự!" },
+                  ]}
+                  extra={
+                    <span style={{ fontSize: "12px", color: "#888" }}>
+                       Xem hướng dẫn lấy Token và Shop ID{" "}
+                      <a
+                        href="https://api.ghn.vn/home/docs/detail"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#1890ff", fontWeight: 500 }}
+                      >
+                        tại đây
+                      </a>
+                    </span>
+                  }
+                >
+                  <Input.Password
+                    placeholder="Nhập Token API từ GHN"
+                    prefix={<InfoCircleOutlined />}
+                    visibilityToggle
+                    autoComplete="new-password"
+                  />
+                </Form.Item>
+              </>
+            )}
           </Form>
         </Modal>
 
@@ -336,6 +640,7 @@ const UserProfile = () => {
           cancelText="Hủy"
           centered
           confirmLoading={avatarLoading}
+          destroyOnClose
         >
           <div style={{ textAlign: "center" }}>
             <Avatar
@@ -355,7 +660,6 @@ const UserProfile = () => {
                 Chọn ảnh mới
               </Button>
             </Upload>
-            
           </div>
         </Modal>
       </Card>
