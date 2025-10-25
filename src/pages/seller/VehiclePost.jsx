@@ -81,8 +81,7 @@ export default function VehiclePost() {
       try {
         const priceRes = await api.post(
           "/seller/ai/suggest-price",
-          pricingPayload,
-          { timeout: 10000 }
+          pricingPayload
         );
         setSuggestedPrice(priceRes.data.suggestPrice);
       } catch (err) {
