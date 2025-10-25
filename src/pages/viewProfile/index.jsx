@@ -354,7 +354,10 @@ const UserProfile = () => {
             <div style={{ marginLeft: 20 }}>
               <h2 style={{ marginBottom: 4 }}>{user.fullName}</h2>
               <p style={{ color: "#888", marginBottom: 0 }}>{user.role}</p>
+              <p style={{ color: "#888", marginBottom: 0 }}>Bài đăng còn lại: {user.remainingPosts}</p>
+              <p style={{ color: "#888", marginBottom: 0 }}>Gói bán hàng: {user.sellerPackageId ? user.sellerPackageId : "Chưa có"}  </p>
             </div>
+            
           </Space>
 
           <Space>

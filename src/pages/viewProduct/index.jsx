@@ -119,7 +119,10 @@ const ViewProduct = () => {
     let displayValue = value;
     if (label === "Màu sắc" && typeof value === "string") {
       displayValue = (
-        <Tag color={value.toLowerCase()} className="font-medium text-base !text-black">
+        <Tag
+          color={value.toLowerCase()}
+          className="font-medium text-base !text-black"
+        >
           {value}
         </Tag>
       );
@@ -243,9 +246,9 @@ const ViewProduct = () => {
                     ? new Date(postData.postDate).toLocaleDateString("vi-VN")
                     : null
                 )}
-                
+
                 <div className="sm:col-span-2 lg:col-span-2">
-                  {renderInfoItem("Địa chỉ", postData.address)}
+                  {renderInfoItem("Địa chỉ", postData.user.address)}
                 </div>
               </div>
 
@@ -269,7 +272,7 @@ const ViewProduct = () => {
           {/* === CỘT BÊN PHẢI (Hành động & Người bán) === */}
           <div className="lg:col-span-1 space-y-6">
             {/* Card 1: Chứa Thông tin, Giá, Nút bấm */}
-            <Card bordered={false} className="shadow-2xl rounded-xl p-6">
+            <Card bordered={false} className="shadow-2xl rounded-xl p-6 !mb-2">
               <Title
                 level={2}
                 className="text-gray-900 font-extrabold mb-2 leading-tight"
@@ -296,44 +299,25 @@ const ViewProduct = () => {
                     Đã kiểm duyệt
                   </Tag>
                 )}
-                {postData.status === "PENDING" && (
-                  <Tag
-                    color="orange"
-                    className="text-base font-semibold border-0 py-1 px-3 rounded-full"
-                  >
-                    Đang chờ duyệt
-                  </Tag>
-                )}
               </Space>
 
               {/* Phần Giá Nổi Bật */}
-              <div className="bg-red-50 p-5 rounded-xl border-l-4 border-red-600 my-5 flex items-baseline justify-between">
+              <div className="bg-green-50 p-5 rounded-xl border-l-4 border-green-600 my-5 flex items-baseline justify-between">
                 <div>
                   <Text type="secondary" className="block text-lg mb-1">
                     Giá bán:
                   </Text>
                   <Text
                     strong
-                    style={{ fontSize: "48px", color: "#cf1322" }}
+                    style={{ fontSize: "30px", color: "#259446d8" }}
                     className="font-extrabold"
                   >
                     {postData.price && typeof postData.price === "number"
                       ? postData.price.toLocaleString("vi-VN")
                       : "Liên hệ"}{" "}
-                    <span className="text-3xl">VNĐ</span>
+                    <span className="text-2xl">VNĐ</span>
                   </Text>
                 </div>
-                {postData.suggestPrice > 0 && (
-                  <div className="text-right">
-                    <Text
-                      type="secondary"
-                      className="block text-md line-through"
-                    >
-                      Giá đề xuất:{" "}
-                      {postData.suggestPrice.toLocaleString("vi-VN")} VNĐ
-                    </Text>
-                  </div>
-                )}
               </div>
 
               <Divider className="my-6" />
@@ -348,33 +332,20 @@ const ViewProduct = () => {
                     height: "58px",
                     fontSize: "19px",
                     padding: "0 45px",
-                    background: "#cf1322",
-                    borderColor: "#cf1322",
+                    background: "#33bd24c5",
+                    borderColor: "#dededeff",
                     borderRadius: "10px",
                   }}
                   className="hover:bg-red-700 transition-colors shadow-lg"
                 >
                   Đặt hàng ngay
                 </Button>
-                <Button
-                  size="large"
-                  icon={<SolutionOutlined />}
-                  style={{
-                    height: "58px",
-                    fontSize: "19px",
-                    padding: "0 30px",
-                    borderRadius: "10px",
-                  }}
-                  className="hover:border-blue-500 hover:text-blue-500 transition-colors shadow-lg"
-                >
-                  Liên hệ người bán
-                </Button>
               </Space>
             </Card>
 
             {/* Card 2: Chứa Thông tin người bán */}
             {postData.user && (
-              <Card bordered={false} className="shadow-2xl rounded-xl p-4">
+              <Card bordered={false} className="shadow-2xl rounded-xl p-4 ">
                 <Title
                   level={3}
                   className="mb-4 flex items-center text-gray-800"
