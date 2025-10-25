@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  LucideBattery,
-  LucideDollarSign,
-  LucideZap,
-  LucideRuler,
-  Weight,
-  WeightIcon,
-} from "lucide-react";
-import ImageUploadArea from "../../components/Upload/ImageUploadArea";
+
 import PostTypeToggle from "../../components/Upload/PostTypeToggle";
 import { FormInput } from "../../components/Upload/FormInput";
 import { useSelector } from "react-redux";
@@ -80,7 +72,7 @@ export default function BatteryPost() {
         const priceRes = await api.post(
           "/seller/ai/suggest-price",
           pricingPayload,
-          { timeout: 10000 }
+          
         );
         setSuggestedPrice(priceRes.data.suggestPrice);
       } catch (err) {
@@ -225,7 +217,7 @@ export default function BatteryPost() {
               name="title"
               label="Tiêu đề bài đăng"
               placeholder="Ví dụ: Bộ Pin LFP 60kWh, SOH 95%"
-              icon={LucideBattery}
+              
               value={formData.title}
               onChange={handleChange}
               required
@@ -272,7 +264,7 @@ export default function BatteryPost() {
                 label="Dung lượng"
                 type="number"
                 placeholder="60 (Ah hoặc Wh)"
-                icon={LucideRuler}
+                
                 value={formData.capacity}
                 onChange={handleChange}
                 required
@@ -282,7 +274,7 @@ export default function BatteryPost() {
                 name="voltage"
                 label="Điện áp định mức"
                 placeholder="48V, 60V..."
-                icon={LucideZap}
+                
                 value={formData.voltage}
                 onChange={handleChange}
                 required
@@ -292,7 +284,7 @@ export default function BatteryPost() {
                 name="weight"
                 label="Trong lượng pin"
                 placeholder="50 (kg)"
-                icon={WeightIcon}
+                
                 value={formData.weight}
                 onChange={handleChange}
                 required
@@ -304,7 +296,7 @@ export default function BatteryPost() {
               label="Giá bán"
               type="number"
               placeholder="15,000,000"
-              icon={LucideDollarSign}
+              
               value={formData.price}
               onChange={handleChange}
               unit="VNĐ"
