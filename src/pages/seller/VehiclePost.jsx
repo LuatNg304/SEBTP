@@ -4,8 +4,9 @@ import {
   LucideCar,
   LucideDollarSign,
   LucideRuler,
+  WeightIcon,
 } from "lucide-react";
-import ImageUploadArea from "../../components/Upload/ImageUploadArea";
+
 import { FormInput } from "../../components/Upload/FormInput";
 import PostTypeToggle from "../../components/Upload/PostTypeToggle";
 import api from "../../config/axios";
@@ -21,7 +22,7 @@ export default function VehiclePost() {
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileList, setFileList] = useState([]);
-  
+
   const user = useSelector((state) => state.account.user);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -41,13 +42,78 @@ export default function VehiclePost() {
     yearOfManufacture: "",
     color: "",
     mileage: "",
+    weight: "",
   });
-  
-  
+  // state để lưu giá ước tính
+  const [suggestedPrice, setSuggestedPrice] = useState(null);
+  //  state để kiểm soát việc gọi API
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+
+  // Thay thế đoạn useEffect hiện tại bằng đoạn này
+  useEffect(() => {
+    const fetchSuggestedPrice = async () => {
+      // 1. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA XE (theo swagger tối thiểu)
+      if (
+        !formData.vehicleBrand ||
+        !formData.model ||
+        !formData.yearOfManufacture ||
+        !formData.mileage
+      ) {
+        setSuggestedPrice(null);
+        return;
+      }
+
+      setIsFetchingPrice(true);
+      setSuggestedPrice(null);
+
+      // 2. TẠO PAYLOAD CHỈ VỚI THÔNG TIN CƠ BẢN CỦA XE
+      const pricingPayload = {
+        productType: "VEHICLE",
+        vehicleBrand: formData.vehicleBrand,
+        model: formData.model,
+        color: formData.color,
+        yearOfManufacture: Number(formData.yearOfManufacture),
+        mileage: Number(formData.mileage),
+        // Đã loại bỏ: batteryType, capacity, voltage, batteryBrand
+        // Đã loại bỏ: description, weight
+      };
+
+      try {
+        const priceRes = await api.post(
+          "/seller/ai/suggest-price",
+          pricingPayload,
+          { timeout: 10000 }
+        );
+        setSuggestedPrice(priceRes.data.suggestPrice);
+      } catch (err) {
+        console.error(
+          "Lỗi khi fetch giá ước tính:",
+          err.response?.data?.message || err.message
+        );
+        setSuggestedPrice(null);
+      } finally {
+        setIsFetchingPrice(false);
+      }
+    };
+
+    const handler = setTimeout(() => {
+      fetchSuggestedPrice();
+    }, 800);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [
+    formData.vehicleBrand,
+    formData.model,
+    formData.yearOfManufacture,
+    formData.mileage,
+    formData.color, // Thêm color vào dependency nếu bạn gửi nó
+    // Đã loại bỏ các trường Pin khỏi dependency array
+  ]);
   // Fetch APIs
   useEffect(() => {
     const fetchAll = async () => {
-      
       try {
         const [pkgRes, payRes, delivRes] = await Promise.all([
           api.get("/seller/priority-packages"),
@@ -69,23 +135,20 @@ export default function VehiclePost() {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-      
-        //  Checkbox dạng mảng
-        if (checked) {
-          setFormData((prev) => ({ ...prev, [name]: [...prev[name], value] }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: prev[name].filter((v) => v !== value),
-          }));
-        }
-      
+      //  Checkbox dạng mảng
+      if (checked) {
+        setFormData((prev) => ({ ...prev, [name]: [...prev[name], value] }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: prev[name].filter((v) => v !== value),
+        }));
+      }
     } else {
       //  Input text, number, select...
       setFormData({ ...formData, [name]: value });
     }
   };
-
 
   // handle submit
   const handleSubmit = async (e) => {
@@ -128,6 +191,7 @@ export default function VehiclePost() {
         yearOfManufacture: Number(formData.yearOfManufacture),
         color: formData.color,
         mileage: Number(formData.mileage),
+        weight: Number(formData.weight) * 1000,
       };
 
       const response = await api.post("/seller/posts", payload);
@@ -170,26 +234,13 @@ export default function VehiclePost() {
             />
 
             <FormInput
-              id="price"
-              name="price"
-              label="Giá bán"
-              type="number"
-              placeholder="10,000,000"
-              icon={LucideDollarSign}
-              value={formData.price}
-              onChange={handleChange}
-              unit="VNĐ"
-              required
-            />
-
-            <FormInput
               id="address"
               name="address"
               label="Địa chỉ"
               placeholder="Nhập địa chỉ"
               value={formData.address}
               onChange={handleChange}
-              required
+              readOnly
             />
 
             {/* Gói đề xuất */}
@@ -308,7 +359,49 @@ export default function VehiclePost() {
                 unit="km"
                 required
               />
+              <FormInput
+                id="weight"
+                name="weight"
+                label="Trọng lượng xe"
+                type="number"
+                placeholder="100"
+                icon={WeightIcon}
+                value={formData.weight}
+                onChange={handleChange}
+                unit="kg"
+                required
+              />
             </div>
+            <FormInput
+              style={{ width: "100%" }}
+              id="price"
+              name="price"
+              label="Giá bán"
+              type="number"
+              placeholder="10,000,000"
+              icon={LucideDollarSign}
+              value={formData.price}
+              onChange={handleChange}
+              unit="VNĐ"
+              required
+            />
+            {isFetchingPrice && (
+              <p className="mt-2 text-blue-500">Đang ước tính giá...</p>
+            )}
+            {suggestedPrice !== null && !isFetchingPrice && (
+              <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
+                ChatGPT Giá gợi ý:{" "}
+                <span className="font-bold">
+                  {Number(suggestedPrice).toLocaleString("vi-VN")} VNĐ
+                </span>
+              </p>
+            )}
+            {/* Nếu không có giá gợi ý và không đang loading, có thể thêm hướng dẫn */}
+            {suggestedPrice === null && !isFetchingPrice && (
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Điền đủ thông số xe để nhận giá gợi ý.
+              </p>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg space-y-5">

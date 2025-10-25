@@ -256,6 +256,14 @@ export default function PostView() {
                       }
                     />
                   </Form.Item>
+                  <Form.Item label="Trọng lượng(g)" name="weight">
+                    <InputNumber
+                      style={{ width: "100%" }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                    />
+                  </Form.Item>
                 </div>
               )}
 
@@ -272,6 +280,14 @@ export default function PostView() {
                   </Form.Item>
                   <Form.Item label="Thương hiệu pin" name="batteryBrand">
                     <Input />
+                  </Form.Item>
+                  <Form.Item label="Trọng lượng(g)" name="weight">
+                    <InputNumber
+                      style={{ width: "100%" }}
+                      formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                    />
                   </Form.Item>
                 </div>
               )}
@@ -297,7 +313,6 @@ export default function PostView() {
                 </Form.Item>
               </div>
               <Form.Item label="Quản lý Hình ảnh">
-                
                 <Upload
                   listType="picture-card"
                   fileList={fileListState}
@@ -340,14 +355,11 @@ export default function PostView() {
                       <div style={{ marginTop: 8 }}>Thêm ảnh</div>
                     </div>
                   )}
-                  
                 </Upload>
-                
                 <p className="text-xs text-gray-500 mt-1">
-                   Tối đa 10 ảnh. Bấm vào biểu tượng **X** để
-                  xóa ảnh, **bấm vào ảnh để xem lớn**. 
+                  Tối đa 10 ảnh. Bấm vào biểu tượng **X** để xóa ảnh, **bấm vào
+                  ảnh để xem lớn**.
                 </p>{" "}
-                {" "}
               </Form.Item>
             </Form>
           </div>
