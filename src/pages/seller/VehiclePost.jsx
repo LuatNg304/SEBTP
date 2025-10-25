@@ -44,7 +44,7 @@ export default function VehiclePost() {
   // Thay thế đoạn useEffect hiện tại bằng đoạn này
   useEffect(() => {
     const fetchSuggestedPrice = async () => {
-      // 1. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA XE (theo swagger tối thiểu)
+      // 1. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA XE (theo swagger tối thiểu) 
       if (
         !formData.vehicleBrand ||
         !formData.model ||
@@ -76,7 +76,9 @@ export default function VehiclePost() {
           pricingPayload,
           
         );
-        setSuggestedPrice(priceRes.data.suggestPrice);
+        setSuggestedPrice(priceRes.data.suggestedPrice);
+        console.log(priceRes.data.suggestedPrice);
+        
       } catch (err) {
         console.error(
           "Lỗi khi fetch giá ước tính:",

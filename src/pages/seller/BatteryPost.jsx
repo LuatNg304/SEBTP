@@ -9,8 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { uploadFile } from "../../utils/upload";
 import ImageUpload from "../../components/Upload/ImageUploadArea";
 
-
-
 export default function BatteryPost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
@@ -37,10 +35,10 @@ export default function BatteryPost() {
     batteryBrand: "",
     weight: "",
   });
-   // state để lưu giá ước tính
-   const [suggestedPrice, setSuggestedPrice] = useState(null);
-   //  state để kiểm soát việc gọi API
-   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+  // state để lưu giá ước tính
+  const [suggestedPrice, setSuggestedPrice] = useState(null);
+  //  state để kiểm soát việc gọi API
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
 
   useEffect(() => {
     const fetchSuggestedPrice = async () => {
@@ -71,10 +69,9 @@ export default function BatteryPost() {
       try {
         const priceRes = await api.post(
           "/seller/ai/suggest-price",
-          pricingPayload,
-          
+          pricingPayload
         );
-        setSuggestedPrice(priceRes.data.suggestPrice);
+        setSuggestedPrice(priceRes.data.suggestedPrice);
       } catch (err) {
         console.error(
           "Lỗi khi fetch giá ước tính:",
@@ -217,7 +214,6 @@ export default function BatteryPost() {
               name="title"
               label="Tiêu đề bài đăng"
               placeholder="Ví dụ: Bộ Pin LFP 60kWh, SOH 95%"
-              
               value={formData.title}
               onChange={handleChange}
               required
@@ -264,7 +260,6 @@ export default function BatteryPost() {
                 label="Dung lượng"
                 type="number"
                 placeholder="60 (Ah hoặc Wh)"
-                
                 value={formData.capacity}
                 onChange={handleChange}
                 required
@@ -274,7 +269,6 @@ export default function BatteryPost() {
                 name="voltage"
                 label="Điện áp định mức"
                 placeholder="48V, 60V..."
-                
                 value={formData.voltage}
                 onChange={handleChange}
                 required
@@ -284,7 +278,6 @@ export default function BatteryPost() {
                 name="weight"
                 label="Trong lượng pin"
                 placeholder="50 (kg)"
-                
                 value={formData.weight}
                 onChange={handleChange}
                 required
@@ -296,7 +289,6 @@ export default function BatteryPost() {
               label="Giá bán"
               type="number"
               placeholder="15,000,000"
-              
               value={formData.price}
               onChange={handleChange}
               unit="VNĐ"
