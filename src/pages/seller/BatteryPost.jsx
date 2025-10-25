@@ -4,6 +4,8 @@ import {
   LucideDollarSign,
   LucideZap,
   LucideRuler,
+  Weight,
+  WeightIcon,
 } from "lucide-react";
 import ImageUploadArea from "../../components/Upload/ImageUploadArea";
 import PostTypeToggle from "../../components/Upload/PostTypeToggle";
@@ -22,7 +24,7 @@ export default function BatteryPost() {
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
   const [deliveryMethodsOptions, setDeliveryMethodsOptions] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileList, setFileList] = useState([]);
   const user = useSelector((state) => state.account.user);
   const navigate = useNavigate();
@@ -35,14 +37,77 @@ export default function BatteryPost() {
     priorityPackageId: "",
     deliveryMethods: [],
     paymentTypes: [],
-   
 
     // --- Thông tin pin ---
     batteryType: "",
     capacity: "",
     voltage: "",
     batteryBrand: "",
+    weight: "",
   });
+   // state để lưu giá ước tính
+   const [suggestedPrice, setSuggestedPrice] = useState(null);
+   //  state để kiểm soát việc gọi API
+   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+
+  useEffect(() => {
+    const fetchSuggestedPrice = async () => {
+      // 1. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA PIN/ẮC QUY
+      if (
+        !formData.batteryType ||
+        !formData.capacity ||
+        !formData.voltage ||
+        !formData.batteryBrand ||
+        Number(formData.capacity) <= 0 // Thêm kiểm tra giá trị số hợp lệ
+      ) {
+        setSuggestedPrice(null);
+        return;
+      }
+
+      setIsFetchingPrice(true);
+      setSuggestedPrice(null);
+
+      // 2. TẠO PAYLOAD CHỈ VỚI THÔNG TIN CƠ BẢN CỦA PIN
+      const pricingPayload = {
+        productType: "BATTERY",
+        batteryType: formData.batteryType,
+        capacity: Number(formData.capacity),
+        voltage: formData.voltage,
+        batteryBrand: formData.batteryBrand,
+      };
+
+      try {
+        const priceRes = await api.post(
+          "/seller/ai/suggest-price",
+          pricingPayload,
+          { timeout: 10000 }
+        );
+        setSuggestedPrice(priceRes.data.suggestPrice);
+      } catch (err) {
+        console.error(
+          "Lỗi khi fetch giá ước tính:",
+          err.response?.data?.message || err.message
+        );
+        setSuggestedPrice(null);
+      } finally {
+        setIsFetchingPrice(false);
+      }
+    };
+
+    const handler = setTimeout(() => {
+      fetchSuggestedPrice();
+    }, 800);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [
+    // 💡 DEPENDENCY ARRAY CHỈ CHỨA CÁC TRƯỜNG PIN
+    formData.batteryType,
+    formData.capacity,
+    formData.voltage,
+    formData.batteryBrand,
+  ]);
 
   // Fetch APIs
   useEffect(() => {
@@ -81,7 +146,7 @@ export default function BatteryPost() {
           ? [...prev.paymentTypes, value]
           : prev.paymentTypes.filter((p) => p !== value),
       }));
-    }  else {
+    } else {
       setFormData({ ...formData, [name]: value });
     }
   };
@@ -121,6 +186,7 @@ export default function BatteryPost() {
         capacity: Number(formData.capacity),
         voltage: formData.voltage,
         batteryBrand: formData.batteryBrand,
+        weight: Number(formData.weight) * 1000,
       };
 
       const response = await api.post("/seller/posts", payload);
@@ -130,7 +196,7 @@ export default function BatteryPost() {
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
       toast.error(error.response?.data?.message || "Có lỗi xảy ra.");
-    }finally {
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -164,18 +230,7 @@ export default function BatteryPost() {
               onChange={handleChange}
               required
             />
-            <FormInput
-              id="price"
-              name="price"
-              label="Giá bán"
-              type="number"
-              placeholder="15,000,000"
-              icon={LucideDollarSign}
-              value={formData.price}
-              onChange={handleChange}
-              unit="VNĐ"
-              required
-            />
+
             <FormInput
               id="address"
               name="address"
@@ -183,7 +238,7 @@ export default function BatteryPost() {
               placeholder="Nhập địa chỉ"
               value={formData.address}
               onChange={handleChange}
-              required
+              readOnly
             />
           </div>
 
@@ -232,7 +287,46 @@ export default function BatteryPost() {
                 onChange={handleChange}
                 required
               />
+              <FormInput
+                id="weight"
+                name="weight"
+                label="Trong lượng pin"
+                placeholder="50 (kg)"
+                icon={WeightIcon}
+                value={formData.weight}
+                onChange={handleChange}
+                required
+              />
             </div>
+            <FormInput
+              id="price"
+              name="price"
+              label="Giá bán"
+              type="number"
+              placeholder="15,000,000"
+              icon={LucideDollarSign}
+              value={formData.price}
+              onChange={handleChange}
+              unit="VNĐ"
+              required
+            />
+            {isFetchingPrice && (
+              <p className="mt-2 text-blue-500">Đang ước tính giá...</p>
+            )}
+            {suggestedPrice !== null && !isFetchingPrice && (
+              <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
+                ChatGPT Giá gợi ý:{" "}
+                <span className="font-bold">
+                  {Number(suggestedPrice).toLocaleString("vi-VN")} VNĐ
+                </span>
+              </p>
+            )}
+            {/* Nếu không có giá gợi ý và không đang loading, có thể thêm hướng dẫn */}
+            {suggestedPrice === null && !isFetchingPrice && (
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Điền đủ thông số xe để nhận giá gợi ý.
+              </p>
+            )}
           </div>
 
           {/* Mô tả & Hình ảnh */}
