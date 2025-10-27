@@ -27,7 +27,6 @@ import PostView from "./pages/seller/posts/PostView";
 
 import DemoUp from "./utils/demoUp";
 
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -52,7 +51,6 @@ const router = createBrowserRouter([
     ],
   },
 
- 
   {
     path: "seller",
     element: <SellerLayout />, // layout chứa header + sidebar
@@ -90,13 +88,11 @@ const router = createBrowserRouter([
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
   },
-  
 
   {
     path: "otp",
     element: <OTPPage />, // trang nhập mã OTP hiển thị trong layout ngoài
   },
-  
 
   {
     path: "view-product/:id",
@@ -119,9 +115,9 @@ const router = createBrowserRouter([
   //    element: <VNPayCallback />
   // },
   {
-    path:"test",
-    element:<DemoUp/>
-  }
+    path: "test",
+    element: <DemoUp />,
+  },
 ]);
 
 function App() {

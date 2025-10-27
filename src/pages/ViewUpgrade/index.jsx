@@ -52,7 +52,7 @@ const UpgradeSeller = () => {
         shopDescription: values.shopDescription,
         socialMedia: values.socialMedia,
         ghnToken: values.ghnToken_1,
-        ghnShopId: values.ghnShopId_1,
+        ghnShopId: Number(values.ghnShopId_1),
       });
 
       const response = await api.get("/user/me");
@@ -160,7 +160,7 @@ const UpgradeSeller = () => {
               prefix={<InfoCircleOutlined />}
             />
           </Form.Item>
-          {/* ✅ Đổi thứ tự: ShopID trước, Token sau */}
+
           <Form.Item
             name="ghnShopId_1"
             label="GHN Shop ID"

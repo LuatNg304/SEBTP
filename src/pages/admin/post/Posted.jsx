@@ -1,6 +1,8 @@
 import React from 'react'
 
 const Posted = () => {
+  
+
   return (
     <div>
       PostReject

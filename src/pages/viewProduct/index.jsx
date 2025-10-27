@@ -26,6 +26,7 @@ import {
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import api from "../../config/axios";
+import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
 
@@ -46,6 +47,7 @@ const contentStyle = {
 const ViewProduct = () => {
   const [item, setItem] = useState(null);
   const { id } = useParams();
+  const [replateProduct, setPreplateProduct] = useState([]);
 
   useEffect(() => {
     const fetchitem = async () => {
@@ -58,7 +60,16 @@ const ViewProduct = () => {
         console.log("Lỗi tải chi tiết sản phẩm:", error);
       }
     };
+    const fetchPorduct = async () => {
+      try {
+        const res = api.get(`/public/posts/type/${postData.productType}`);
+        setPreplateProduct(res.data);
+      } catch (error) {
+        toast.error(error.response.data.message);
+      }
+    };
     fetchitem();
+    fetchPorduct();
   }, [id]);
 
   const postData = item?.data;
@@ -377,6 +388,112 @@ const ViewProduct = () => {
         </div>
       </main>
       {/* === KẾT THÚC LAYOUT 2 CỘT === */}
+
+      {/* sản phẩm liên quan */}
+      {/* Sản phẩm liên quan */}
+      {replateProduct?.data?.length > 0 && (
+        <div className="max-w-[1200px] mx-auto px-4 py-8 mb-8">
+          <Card bordered={false} className="shadow-2xl rounded-xl p-6">
+            <Title level={3} className="mb-6 flex items-center text-gray-800">
+              <ThunderboltOutlined className="mr-3 text-blue-600 text-3xl" />
+              Sản phẩm liên quan
+            </Title>
+
+            <Carousel
+              arrows
+              autoplay
+              autoplaySpeed={3000}
+              dots={true}
+              slidesToShow={4}
+              responsive={[
+                {
+                  breakpoint: 1024,
+                  settings: {
+                    slidesToShow: 3,
+                    slidesToScroll: 1,
+                  },
+                },
+                {
+                  breakpoint: 768,
+                  settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 1,
+                  },
+                },
+                {
+                  breakpoint: 480,
+                  settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                  },
+                },
+              ]}
+              className="related-products-carousel"
+            >
+              {replateProduct.data.map((product) => (
+                <div key={product.id} className="px-2">
+                  <Card
+                    hoverable
+                    className="h-full shadow-md rounded-lg overflow-hidden"
+                    cover={
+                      <div className="relative h-48 bg-gray-100">
+                        <img
+                          alt={product.title}
+                          src={product.images?.[0] || "/placeholder.png"}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/placeholder.png";
+                          }}
+                        />
+                        {product.trusted && (
+                          <Tag
+                            color="green"
+                            icon={<CrownOutlined />}
+                            className="absolute top-2 right-2"
+                          >
+                            Đã kiểm duyệt
+                          </Tag>
+                        )}
+                      </div>
+                    }
+                    onClick={() =>
+                      (window.location.href = `/product/${product.id}`)
+                    }
+                  >
+                    <Card.Meta
+                      title={
+                        <div className="truncate text-base font-semibold">
+                          {product.title}
+                        </div>
+                      }
+                      description={
+                        <div className="space-y-2">
+                          <div className="text-green-600 font-bold text-lg">
+                            {product.price?.toLocaleString("vi-VN")} VNĐ
+                          </div>
+                          <div className="flex items-center text-gray-500 text-sm">
+                            <CalendarOutlined className="mr-1" />
+                            {new Date(product.postDate).toLocaleDateString(
+                              "vi-VN"
+                            )}
+                          </div>
+                          {product.productType === "VEHICLE" &&
+                            product.mileage && (
+                              <div className="flex items-center text-gray-500 text-sm">
+                                <DashboardOutlined className="mr-1" />
+                                {product.mileage.toLocaleString("vi-VN")} km
+                              </div>
+                            )}
+                        </div>
+                      }
+                    />
+                  </Card>
+                </div>
+              ))}
+            </Carousel>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
