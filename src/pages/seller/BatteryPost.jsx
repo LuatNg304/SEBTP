@@ -94,7 +94,7 @@ export default function BatteryPost() {
       clearTimeout(handler);
     };
   }, [
-    // 💡 DEPENDENCY ARRAY CHỈ CHỨA CÁC TRƯỜNG PIN
+    //  DEPENDENCY ARRAY CHỈ CHỨA CÁC TRƯỜNG PIN
     formData.batteryType,
     formData.capacity,
     formData.voltage,
