@@ -26,6 +26,7 @@ import PackagePage from "./pages/seller/packket/PackagePage";
 import PostView from "./pages/seller/posts/PostView";
 
 import DemoUp from "./utils/demoUp";
+import Order from "./pages/seller/Order";
 
 
 const router = createBrowserRouter([
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
       { path: "post/vehicle", element: <VehiclePost /> },
       { path: "post/battery", element: <BatteryPost /> },
       { path: "/seller/posts/view/:id", element: <PostView /> },
+      { path: "/seller/order", element: <Order/>},
       {
         path: "package",
         element: <PackagePage />,

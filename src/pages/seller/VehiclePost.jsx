@@ -66,8 +66,7 @@ export default function VehiclePost() {
         color: formData.color,
         yearOfManufacture: Number(formData.yearOfManufacture),
         mileage: Number(formData.mileage),
-        // Đã loại bỏ: batteryType, capacity, voltage, batteryBrand
-        // Đã loại bỏ: description, weight
+ 
       };
 
       try {
