@@ -24,9 +24,10 @@ import {
   CrownOutlined,
   // BatteryChargingOutlined, // (Bạn chưa import icon này, nhưng tôi thêm vào cho mục Pin)
 } from "@ant-design/icons";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
+import { FiHeart } from "react-icons/fi";
 
 const { Title, Text } = Typography;
 
@@ -47,8 +48,9 @@ const contentStyle = {
 const ViewProduct = () => {
   const [item, setItem] = useState(null);
   const { id } = useParams();
-  const [replateProduct, setPreplateProduct] = useState([]);
-
+  const [replateProduct, setPreplateProduct] = useState(null);
+  const postData = item?.data;
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchitem = async () => {
       try {
@@ -56,23 +58,38 @@ const ViewProduct = () => {
           `/public/posts/post-detail?postId=${id}`
         );
         setItem(response.data);
+        console.log("✅ Load sản phẩm chính:", response.data);
       } catch (error) {
-        console.log("Lỗi tải chi tiết sản phẩm:", error);
-      }
-    };
-    const fetchPorduct = async () => {
-      try {
-        const res = api.get(`/public/posts/type/${postData.productType}`);
-        setPreplateProduct(res.data);
-      } catch (error) {
-        toast.error(error.response.data.message);
+        console.log("❌ Lỗi:", error);
+        toast.error("Không thể tải sản phẩm");
       }
     };
     fetchitem();
-    fetchPorduct();
   }, [id]);
 
-  const postData = item?.data;
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!postData?.productType) {
+        console.log(" Chưa có productType");
+        return;
+      }
+
+      try {
+        console.log(`🔍 Fetch loại: ${postData.productType}`);
+        const res = await api.get(`/public/posts/type/${postData.productType}`);
+        setPreplateProduct(res.data);
+        console.log(" Sản phẩm liên quan:", res.data);
+      } catch (error) {
+        console.log(" Lỗi:", error);
+        toast.error(
+          error.response?.data?.message || "Lỗi tải sản phẩm liên quan"
+        );
+      }
+    };
+
+    fetchProduct();
+  }, [postData?.productType]);
+
   const images = postData?.images || [];
 
   const ModernLoading = () => (
@@ -166,7 +183,7 @@ const ViewProduct = () => {
       <Header />
 
       {/* === BẮT ĐẦU LAYOUT 2 CỘT MỚI === */}
-      <main className="max-w-[1200px] mx-auto px-4 py-6">
+      <main className="max-w-[1200px] mx-auto px-2 py-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* === CỘT BÊN TRÁI (Nội dung chính) === */}
           <div className="lg:col-span-2 space-y-1 ">
@@ -210,7 +227,7 @@ const ViewProduct = () => {
             <Card bordered={false} className="shadow-2xl rounded-xl p-4">
               {/* Thông số kỹ thuật chính */}
               <Title
-                level={3}
+                level={4}
                 className="mb-6 border-b pb-3 flex items-center text-gray-800"
               >
                 Thông tin chi tiết sản phẩm
@@ -266,8 +283,7 @@ const ViewProduct = () => {
               <Divider className="my-8" />
 
               {/* Mô tả sản phẩm */}
-              <Title level={3} className="mb-4 flex items-center text-gray-800">
-                <SolutionOutlined className="mr-3 text-purple-600 text-3xl" />{" "}
+              <Title level={4} className="mb-4 flex items-center text-gray-800">
                 Mô tả sản phẩm
               </Title>
               <div className="p-6 bg-gray-50 rounded-lg border border-gray-100 shadow-inner">
@@ -348,6 +364,7 @@ const ViewProduct = () => {
                     borderRadius: "10px",
                   }}
                   className="hover:bg-red-700 transition-colors shadow-lg"
+                  onClick={() => navigate(`/payment/${postData.id}`)}
                 >
                   Đặt hàng ngay
                 </Button>
@@ -358,10 +375,9 @@ const ViewProduct = () => {
             {postData.user && (
               <Card bordered={false} className="shadow-2xl rounded-xl p-4 ">
                 <Title
-                  level={3}
+                  level={4}
                   className="mb-4 flex items-center text-gray-800"
                 >
-                  <CrownOutlined className="mr-3 text-orange-500 text-3xl" />{" "}
                   Thông tin người bán
                 </Title>
 
@@ -389,108 +405,208 @@ const ViewProduct = () => {
       </main>
       {/* === KẾT THÚC LAYOUT 2 CỘT === */}
 
-      {/* sản phẩm liên quan */}
       {/* Sản phẩm liên quan */}
-      {replateProduct?.data?.length > 0 && (
-        <div className="max-w-[1200px] mx-auto px-4 py-8 mb-8">
+      {replateProduct && (
+        <div className="max-w-[1200px] mx-auto px-2 py-2 mb-8">
           <Card bordered={false} className="shadow-2xl rounded-xl p-6">
-            <Title level={3} className="mb-6 flex items-center text-gray-800">
-              <ThunderboltOutlined className="mr-3 text-blue-600 text-3xl" />
+            <Title level={4} className="mb-6 flex items-center text-gray-800">
               Sản phẩm liên quan
             </Title>
 
-            <Carousel
-              arrows
-              autoplay
-              autoplaySpeed={3000}
-              dots={true}
-              slidesToShow={4}
-              responsive={[
-                {
-                  breakpoint: 1024,
-                  settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 1,
-                  },
-                },
-                {
-                  breakpoint: 768,
-                  settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                  },
-                },
-                {
-                  breakpoint: 480,
-                  settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                  },
-                },
-              ]}
-              className="related-products-carousel"
-            >
-              {replateProduct.data.map((product) => (
-                <div key={product.id} className="px-2">
-                  <Card
-                    hoverable
-                    className="h-full shadow-md rounded-lg overflow-hidden"
-                    cover={
-                      <div className="relative h-48 bg-gray-100">
-                        <img
-                          alt={product.title}
-                          src={product.images?.[0] || "/placeholder.png"}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src = "/placeholder.png";
-                          }}
-                        />
-                        {product.trusted && (
-                          <Tag
-                            color="green"
-                            icon={<CrownOutlined />}
-                            className="absolute top-2 right-2"
-                          >
-                            Đã kiểm duyệt
-                          </Tag>
-                        )}
-                      </div>
-                    }
+            {replateProduct.data.length < 3 ? (
+              // Nếu ít hơn 3 sản phẩm, hiển thị dạng grid thông thường
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {replateProduct.data.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                     onClick={() =>
-                      (window.location.href = `/product/${product.id}`)
+                      (window.location.href = `/view-product/${product.id}`)
                     }
                   >
-                    <Card.Meta
-                      title={
-                        <div className="truncate text-base font-semibold">
-                          {product.title}
-                        </div>
-                      }
-                      description={
-                        <div className="space-y-2">
-                          <div className="text-green-600 font-bold text-lg">
-                            {product.price?.toLocaleString("vi-VN")} VNĐ
-                          </div>
-                          <div className="flex items-center text-gray-500 text-sm">
-                            <CalendarOutlined className="mr-1" />
-                            {new Date(product.postDate).toLocaleDateString(
-                              "vi-VN"
-                            )}
-                          </div>
-                          {product.productType === "VEHICLE" &&
-                            product.mileage && (
-                              <div className="flex items-center text-gray-500 text-sm">
-                                <DashboardOutlined className="mr-1" />
-                                {product.mileage.toLocaleString("vi-VN")} km
+                    {/* Ảnh sản phẩm */}
+                    <div className="relative">
+                      <img
+                        src={product.images?.[0] || "/placeholder.png"}
+                        alt={product.title}
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          e.target.src = "/placeholder.png";
+                        }}
+                      />
+                      <button
+                        className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-green-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FiHeart className="h-5 w-5 text-green-500" />
+                      </button>
+                      {product.trusted && (
+                        <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
+                          Nổi bật
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Thông tin sản phẩm */}
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                        {product.title}
+                      </h3>
+                      <p className="text-green-600 font-medium text-xl mb-2">
+                        {product.price?.toLocaleString("vi-VN")} VNĐ
+                      </p>
+
+                      {/* Thông số kỹ thuật */}
+                      <div className="space-y-2 mb-4">
+                        {product.productType === "VEHICLE" ? (
+                          <>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Hãng xe: </span>
+                              {product.vehicleBrand || "N/A"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Model: </span>
+                              {product.model || "N/A"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Màu sắc: </span>
+                              {product.color || "N/A"}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Loại: </span>
+                              {product.batteryType || "N/A"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Thương hiệu: </span>
+                              {product.batteryBrand || "N/A"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Dung lượng: </span>
+                              {product.capacity
+                                ? `${product.capacity} Ah`
+                                : "N/A"}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Carousel cho nhiều sản phẩm
+              <Carousel
+                arrows
+                dots={true}
+                infinite={true}
+                className="related-products-carousel"
+              >
+                {Array.from({
+                  length: Math.ceil(replateProduct.data.length / 3),
+                }).map((_, slideIndex) => (
+                  <div key={slideIndex}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-2">
+                      {replateProduct.data
+                        // .slice(slideIndex * 4, (slideIndex + 1) * 4)
+                        .map((product) => (
+                          <div
+                            key={product.id}
+                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                            onClick={() =>
+                              (window.location.href = `/view-product/${product.id}`)
+                            }
+                          >
+                            {/* Ảnh sản phẩm */}
+                            <div className="relative">
+                              <img
+                                src={product.images?.[0] || "/placeholder.png"}
+                                alt={product.title}
+                                className="w-full h-48 object-cover"
+                                onError={(e) => {
+                                  e.target.src = "/placeholder.png";
+                                }}
+                              />
+                              <button
+                                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-green-50"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <FiHeart className="h-5 w-5 text-green-500" />
+                              </button>
+                              {product.trusted && (
+                                <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
+                                  Nổi bật
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Thông tin sản phẩm */}
+                            <div className="p-4">
+                              <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                                {product.title}
+                              </h3>
+                              <p className="text-green-600 font-medium text-xl mb-2">
+                                {product.price?.toLocaleString("vi-VN")} VNĐ
+                              </p>
+
+                              {/* Thông số kỹ thuật */}
+                              <div className="space-y-2 mb-4">
+                                {product.productType === "VEHICLE" ? (
+                                  <>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">
+                                        Hãng xe:{" "}
+                                      </span>
+                                      {product.vehicleBrand || "N/A"}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">
+                                        Model:{" "}
+                                      </span>
+                                      {product.model || "N/A"}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">
+                                        Màu sắc:{" "}
+                                      </span>
+                                      {product.color || "N/A"}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">
+                                        Loại:{" "}
+                                      </span>
+                                      {product.batteryType || "N/A"}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">
+                                        Thương hiệu:{" "}
+                                      </span>
+                                      {product.batteryBrand || "N/A"}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">
+                                        Dung lượng:{" "}
+                                      </span>
+                                      {product.capacity
+                                        ? `${product.capacity} Ah`
+                                        : "N/A"}
+                                    </p>
+                                  </>
+                                )}
                               </div>
-                            )}
-                        </div>
-                      }
-                    />
-                  </Card>
-                </div>
-              ))}
-            </Carousel>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </Carousel>
+            )}
           </Card>
         </div>
       )}

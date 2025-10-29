@@ -21,11 +21,11 @@ import PostAccept from "./pages/admin/post/PostAccept";
 import Posted from "./pages/admin/post/Posted";
 import PostPanding from "./pages/admin/post/PostPanding";
 import ViewWallet from "./pages/ViewWallet";
-
 import PackagePage from "./pages/seller/packket/PackagePage";
 import PostView from "./pages/seller/posts/PostView";
-
 import DemoUp from "./utils/demoUp";
+import Payment from "./pages/payment";
+import Orders from "./pages/orders";
 
 const router = createBrowserRouter([
   {
@@ -99,6 +99,10 @@ const router = createBrowserRouter([
     element: <ViewProduct />,
   },
   {
+    path: "/payment/:id",
+    element: <Payment />,
+  },
+  {
     path: "user/wallet",
     element: <ViewWallet />,
   },
@@ -117,6 +121,10 @@ const router = createBrowserRouter([
   {
     path: "test",
     element: <DemoUp />,
+  },
+  {
+    path: "orders",
+    element: <Orders />,
   },
 ]);
 
