@@ -29,6 +29,7 @@ export default function BatteryPost() {
     priorityPackageId: "",
     deliveryMethods: [],
     paymentTypes: [],
+    wantsTrustedLabel: false,
 
     // --- Thông tin pin ---
     batteryType: "",
@@ -37,10 +38,10 @@ export default function BatteryPost() {
     batteryBrand: "",
     weight: "",
   });
-   // state để lưu giá ước tính
-   const [suggestedPrice, setSuggestedPrice] = useState(null);
-   //  state để kiểm soát việc gọi API
-   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+  // state để lưu giá ước tính
+  const [suggestedPrice, setSuggestedPrice] = useState(null);
+  //  state để kiểm soát việc gọi API
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
 
   useEffect(() => {
     const fetchSuggestedPrice = async () => {
@@ -71,8 +72,7 @@ export default function BatteryPost() {
       try {
         const priceRes = await api.post(
           "/seller/ai/suggest-price",
-          pricingPayload,
-          
+          pricingPayload
         );
         setSuggestedPrice(priceRes.data.suggestedPrice);
       } catch (err) {
@@ -121,24 +121,31 @@ export default function BatteryPost() {
   }, []);
 
   // handle input change
+  // handle change input
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    if (type === "checkbox" && name === "deliveryMethods") {
-      setFormData((prev) => ({
-        ...prev,
-        deliveryMethods: checked
-          ? [...prev.deliveryMethods, value]
-          : prev.deliveryMethods.filter((m) => m !== value),
-      }));
-    } else if (type === "checkbox" && name === "paymentTypes") {
-      setFormData((prev) => ({
-        ...prev,
-        paymentTypes: checked
-          ? [...prev.paymentTypes, value]
-          : prev.paymentTypes.filter((p) => p !== value),
-      }));
+    if (type === "checkbox") {
+      // 1. Xử lý checkbox dạng boolean (bật/tắt)
+      if (name === "wantsTrustedLabel" || name === "isUseWallet") {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: checked, // Cập nhật bằng true hoặc false
+        }));
+      } else {
+        // 2. Xử lý checkbox dạng mảng (chọn nhiều)
+        if (checked) {
+          setFormData((prev) => ({ ...prev, [name]: [...prev[name], value] }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: prev[name].filter((v) => v !== value),
+          }));
+        }
+      }
+      // --- KẾT THÚC THAY ĐỔI ---
     } else {
+      // Input text, number, select...
       setFormData({ ...formData, [name]: value });
     }
   };
@@ -172,6 +179,7 @@ export default function BatteryPost() {
         paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
         isUseWallet: formData.isUseWallet,
         images: uploadedImageUrls,
+        wantsTrustedLabel: formData.wantsTrustedLabel,
 
         // --- Truyền thông tin pin ---
         batteryType: formData.batteryType,
@@ -217,7 +225,6 @@ export default function BatteryPost() {
               name="title"
               label="Tiêu đề bài đăng"
               placeholder="Ví dụ: Bộ Pin LFP 60kWh, SOH 95%"
-              
               value={formData.title}
               onChange={handleChange}
               required
@@ -264,7 +271,6 @@ export default function BatteryPost() {
                 label="Dung lượng"
                 type="number"
                 placeholder="60 (Ah hoặc Wh)"
-                
                 value={formData.capacity}
                 onChange={handleChange}
                 required
@@ -274,7 +280,6 @@ export default function BatteryPost() {
                 name="voltage"
                 label="Điện áp định mức"
                 placeholder="48V, 60V..."
-                
                 value={formData.voltage}
                 onChange={handleChange}
                 required
@@ -284,7 +289,6 @@ export default function BatteryPost() {
                 name="weight"
                 label="Trong lượng pin"
                 placeholder="50 (kg)"
-                
                 value={formData.weight}
                 onChange={handleChange}
                 required
@@ -296,7 +300,6 @@ export default function BatteryPost() {
               label="Giá bán"
               type="number"
               placeholder="15,000,000"
-              
               value={formData.price}
               onChange={handleChange}
               unit="VNĐ"
@@ -319,6 +322,23 @@ export default function BatteryPost() {
                 Điền đủ thông số xe để nhận giá gợi ý.
               </p>
             )}
+            <div>
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="wantsTrustedLabel"
+                  checked={formData.wantsTrustedLabel}
+                  onChange={handleChange}
+                  className="form-checkbox h-5 w-5 text-emerald-600 rounded"
+                />
+                <span className="ml-3 text-gray-700 dark:text-gray-300">
+                  Bạn có muốn thêm nhãn kiểm định ?
+                </span>
+              </label>
+              <p className="text-sm text-gray-500 dark:text-gray-400 ml-8">
+                Sản phẩm của bạn sẽ được kiểm định bởi chuyên gia và gắn nhãn
+              </p>
+            </div>
           </div>
 
           {/* Mô tả & Hình ảnh */}

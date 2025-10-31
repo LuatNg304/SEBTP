@@ -12,6 +12,7 @@ import {
   Tag,
   Upload,
   Modal,
+  Checkbox,
 } from "antd";
 import { toast } from "react-toastify";
 import { ArrowLeft, Save } from "lucide-react"; // Icon cho các nút
@@ -186,21 +187,23 @@ export default function PostView() {
         const data = res.data.data || res.data;
         setPost(data);
         const initialFileList =
-          data.images?.map((img, index) => ({
-            uid: img.id ? String(img.id) : `-${index + 1}`, // Dùng ID API hoặc ID tạm
-            name: `image-${img.id || index + 1}.jpg`,
+          data.images?.map((imageUrl, index) => ({
+          
+            uid: `-${index + 1}`, // Dùng index làm uid tạm
+            name: `image-${index + 1}.jpg`,
             status: "done",
-            url: img.imageUrl, // Đây là URL ảnh đã tồn tại
-            originalUrl: img.imageUrl, // Giữ lại URL gốc
+            url: imageUrl, // <-- SỬA Ở ĐÂY: Dùng trực tiếp URL
+            originalUrl: imageUrl, // <-- SỬA Ở ĐÂY
           })) || [];
 
-        setFileListState(initialFileList); // Set danh sách file ban đầu
+        setFileListState(initialFileList);
+
         const formData = {
-          ...data,
-          // Chuyển đổi mảng URL thành format mà Form.Item có thể hiểu (nếu cần)
-          images: initialFileList.map((f) => f.url),
+          ...data, // images: initialFileList.map((f) => f.url), // Dòng này không cần thiết cho Form.Item <Upload>
+          wantsTrustedLabel: data.wantsTrustedLabel || false,
+          images: data.images, // Cứ giữ nguyên mảng string từ API cho setFieldsValue
         };
-        form.setFieldsValue(formData); // Điền toàn bộ dữ liệu vào form
+        form.setFieldsValue(formData);
       } catch (err) {
         toast.error(err.response?.data?.message || "Không tìm thấy bài đăng");
         navigate("/seller"); // Quay về trang trước nếu có lỗi
@@ -332,7 +335,15 @@ export default function PostView() {
                 </Form.Item>
 
                 <div className="md:col-span-1">
-                  {/* Thẻ trống để giữ vị trí dưới Tiêu đề */}
+                  <Form.Item
+                    name="wantsTrustedLabel"
+                    valuePropName="checked"
+                    className="mt-2"
+                  >
+                    <Checkbox>
+                      Yêu cầu kiểm định và gắn nhãn "Trusted Label"
+                    </Checkbox>
+                  </Form.Item>
                 </div>
 
                 <>

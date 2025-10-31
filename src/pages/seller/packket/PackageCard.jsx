@@ -77,7 +77,7 @@ const PackageCard = ({ packageData }) => {
         <h2 className="text-2xl font-bold mb-1">{type} Package</h2>
         <p className="text-4xl font-extrabold border-b border-white border-opacity-30 pb-3">
           {price.toLocaleString("vi-VN")}₫{" "}
-          <span className="text-xl font-medium">/ {durationDays} ngày</span>
+          
         </p>
       </div>
 
