@@ -33,14 +33,11 @@ const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAvatarModalVisible, setIsAvatarModalVisible] = useState(false);
-  const [isGhnModalVisible, setIsGhnModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
-  const [ghnLoading, setGhnLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [form] = Form.useForm();
-  const [ghnForm] = Form.useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [provinces, setProvinces] = useState([]);
@@ -152,14 +149,6 @@ const UserProfile = () => {
     setPreviewUrl(user.avatar);
   };
 
-  const showGhnModal = () => {
-    setIsGhnModalVisible(true);
-    ghnForm.setFieldsValue({
-      ghnShopId: user.ghnShopId,
-      ghnToken: user.ghnToken,
-    });
-  };
-
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
@@ -231,37 +220,6 @@ const UserProfile = () => {
     }
   };
 
-  const handleGhnOk = async () => {
-    try {
-      const values = await ghnForm.validateFields();
-      setGhnLoading(true);
-
-      // Chỉ gửi 2 trường GHN
-      const res = await api.put("/user/me", {
-        ghnShopId: values.ghnShopId,
-        ghnToken: values.ghnToken,
-      });
-
-      if (res.data?.data) {
-        setUser(res.data.data);
-        toast.success("Cập nhật thông tin GHN thành công!");
-        const response = await api.get("/user/me");
-        dispatch(updateUser(response.data.data));
-        setIsGhnModalVisible(false);
-        ghnForm.resetFields();
-      }
-    } catch (error) {
-      console.error(error);
-      if (error.errorFields) {
-        toast.error("Vui lòng kiểm tra lại thông tin GHN!");
-      } else {
-        toast.error("Lỗi khi cập nhật GHN!");
-      }
-    } finally {
-      setGhnLoading(false);
-    }
-  };
-
   const handleCancel = () => {
     form.resetFields();
     setSelectedProvince(null);
@@ -275,11 +233,6 @@ const UserProfile = () => {
     setIsAvatarModalVisible(false);
     setSelectedFile(null);
     setPreviewUrl(user.avatar);
-  };
-
-  const handleGhnCancel = () => {
-    ghnForm.resetFields();
-    setIsGhnModalVisible(false);
   };
 
   if (!user) {
@@ -313,16 +266,6 @@ const UserProfile = () => {
             label: "Mạng xã hội",
             value: user.socialMedia || "Chưa cập nhật",
           },
-          // {
-          //   key: "9",
-          //   label: "GHN Shop ID",
-          //   value: user.ghnShopId || "Chưa cập nhật",
-          // },
-          // {
-          //   key: "10",
-          //   label: "GHN Token",
-          //   value: user.ghnToken ? "••••••••••" : "Chưa cập nhật",
-          // },
         ]
       : []),
   ];
@@ -422,20 +365,6 @@ const UserProfile = () => {
             >
               Quay về Home
             </Button>
-            {user.role === "SELLER" && (
-              <Button
-                type="primary"
-                icon={<ShopOutlined />}
-                onClick={showGhnModal}
-                style={{
-                  borderRadius: 8,
-                  background: "#1677ff",
-                  fontWeight: 500,
-                }}
-              >
-                Cập nhật GHN
-              </Button>
-            )}
             <Button
               type="primary"
               icon={<EditOutlined />}
@@ -677,66 +606,6 @@ const UserProfile = () => {
               </Button>
             </Upload>
           </div>
-        </Modal>
-
-        {/* Modal cập nhật GHN Settings */}
-        <Modal
-          title="Cập nhật Giao Hàng Nhanh (GHN)"
-          open={isGhnModalVisible}
-          onOk={handleGhnOk}
-          onCancel={handleGhnCancel}
-          okText="Cập nhật"
-          cancelText="Hủy"
-          centered
-          confirmLoading={ghnLoading}
-          destroyOnClose
-          width={600}
-        >
-          <Form layout="vertical" form={ghnForm} autoComplete="off">
-            <Form.Item
-              name="ghnShopId"
-              label="GHN Shop ID"
-              rules={[
-                { required: true, message: "Vui lòng nhập Shop ID!" },
-                { pattern: /^\d+$/, message: "Shop ID phải là số!" },
-              ]}
-            >
-              <Input
-                placeholder="Nhập Shop ID từ GHN"
-                prefix={<ShopOutlined />}
-                autoComplete="off"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="ghnToken"
-              label="GHN Token API"
-              rules={[
-                { required: true, message: "Vui lòng nhập GHN Token!" },
-                { min: 20, message: "Token phải có ít nhất 20 ký tự!" },
-              ]}
-              extra={
-                <span style={{ fontSize: "12px", color: "#888" }}>
-                  Xem hướng dẫn lấy Token và Shop ID{" "}
-                  <a
-                    href="https://api.ghn.vn/home/docs/detail"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#1890ff", fontWeight: 500 }}
-                  >
-                    tại đây
-                  </a>
-                </span>
-              }
-            >
-              <Input.Password
-                placeholder="Nhập Token API từ GHN"
-                prefix={<InfoCircleOutlined />}
-                visibilityToggle
-                autoComplete="new-password"
-              />
-            </Form.Item>
-          </Form>
         </Modal>
       </Card>
     </div>

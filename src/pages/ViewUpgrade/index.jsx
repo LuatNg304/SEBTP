@@ -12,7 +12,7 @@ const { TextArea } = Input;
 const UpgradeSeller = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(true); // Đặt true để tự động mở
+  const [isModalVisible, setIsModalVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const dispatch = useDispatch();
@@ -35,13 +35,13 @@ const UpgradeSeller = () => {
     } catch (error) {
       toast.error("Không thể lấy thông tin người dùng");
       console.error(error);
-      navigate(-1); // Quay lại trang trước nếu có lỗi
+      navigate(-1);
     }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
-    navigate(-1); // Quay lại trang trước khi đóng modal
+    navigate(-1);
   };
 
   const handleSubmit = async (values) => {
@@ -51,8 +51,6 @@ const UpgradeSeller = () => {
         shopName: values.shopName,
         shopDescription: values.shopDescription,
         socialMedia: values.socialMedia,
-        ghnToken: values.ghnToken_1,
-        ghnShopId: Number(values.ghnShopId_1),
       });
 
       const response = await api.get("/user/me");
@@ -158,46 +156,6 @@ const UpgradeSeller = () => {
             <Input
               placeholder="https://facebook.com/your-page"
               prefix={<InfoCircleOutlined />}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="ghnShopId_1"
-            label="GHN Shop ID"
-            rules={[
-              { required: true, message: "Vui lòng nhập Shop ID!" },
-              { pattern: /^\d+$/, message: "Shop ID phải là số!" },
-            ]}
-          >
-            <Input
-              placeholder="Nhập Shop ID từ GHN"
-              prefix={<ShopOutlined />}
-              autoComplete="off"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="ghnToken_1"
-            label="GHN Token API"
-            rules={[{ required: true, message: "Vui lòng nhập GHN Token!" }]}
-            extra={
-              <span>
-                Xem hướng dẫn lấy Shop ID và Shop ID{" "}
-                <a
-                  href="https://api.ghn.vn/home/docs/detail"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "#1890ff" }}
-                >
-                  tại đây
-                </a>
-              </span>
-            }
-          >
-            <Input.Password
-              placeholder="Nhập Token API từ GHN"
-              prefix={<InfoCircleOutlined />}
-              autoComplete="new-password"
             />
           </Form.Item>
 
