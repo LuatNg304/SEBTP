@@ -1,10 +1,26 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Table, Tag, Space, Button, Popconfirm, Card, Statistic } from "antd";
-import { Archive, Clock, Truck, PackageCheck } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Table,
+  Tag,
+  Space,
+  Button,
+  Popconfirm,
+  Segmented, // Thêm Segmented
+  Statistic, // Giữ lại Statistic
+} from "antd";
+// 1. Thêm FileText
+import {
+  Archive,
+  Clock,
+  Truck,
+  PackageCheck,
+  FileText, // <-- THÊM
+} from "lucide-react";
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
-import api from "../../config/axios"; // 1. Dùng instance 'api'
+import api from "../../config/axios";
+import { useNavigate } from "react-router-dom";
 
 // --- MOCK STATS DATA ---
 const orderStats = {
@@ -15,7 +31,8 @@ const orderStats = {
 };
 
 // --- HELPER COMPONENTS ---
-const getStatusTag = (status) => {
+
+const getOrderStatusTag = (status) => {
   let color = "gray";
   let text = "KHÔNG RÕ";
   const upperStatus = status?.toUpperCase();
@@ -25,22 +42,45 @@ const getStatusTag = (status) => {
       color = "orange";
       text = "Đang Chờ Xử Lý";
       break;
-    case "CONFIRMED":
-      color = "blue";
+    case "APPROVED":
+      color = "green";
       text = "Đã Xác Nhận";
       break;
-    case "SHIPPING":
-      color = "cyan";
-      text = "Đang Vận Chuyển";
-      break;
-    case "DELIVERED":
+    case "DONE":
       color = "green";
-      text = "Đã Giao Hàng";
+      text = "Hoàn tất";
       break;
-    case "REJECTED": // Thêm trạng thái REJECTED
-    case "CANCELLED":
+    case "REJECTED":
       color = "red";
       text = "Đã Hủy/Từ chối";
+      break;
+    case "DEPOSITED":
+      color = "red";
+      text = "Đã đặt cọc";
+      break;
+    default:
+      text = status || "Không rõ";
+  }
+  return <Tag color={color}>{text.toUpperCase()}</Tag>;
+};
+
+const getContractStatusTag = (status) => {
+  let color = "gray";
+  let text = "KHÔNG RÕ";
+  const upperStatus = status?.toUpperCase();
+
+  switch (upperStatus) {
+    case "PENDING":
+      color = "orange";
+      text = "Chờ Ký";
+      break;
+    case "SIGNED":
+      color = "blue";
+      text = "Đã Ký";
+      break;
+    case "CANCELLED":
+      color = "red";
+      text = "Đã Hủy";
       break;
     default:
       text = status || "Không rõ";
@@ -63,23 +103,23 @@ const Order = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [view, setView] = useState("orders"); // 'orders' hoặc 'contracts'
+  const navigate = useNavigate();
 
-  // --- FETCH ORDERS ---
-  const fetchData = async () => {
+  // --- FETCH DATA ---
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get("/seller/orders");
       let incomingData =
         res.data?.data || (Array.isArray(res.data) ? res.data : []);
-
       const processedData = incomingData.map((item, index) => ({
         ...item,
         key: item.orderId || item.id || index,
       }));
-
       setData(processedData);
     } catch (err) {
-      console.error("Fetch Error:", err);
+      console.error("Fetch Orders Error:", err);
       toast.error(
         err.response?.data?.message || "Không thể tải dữ liệu đơn hàng."
       );
@@ -87,98 +127,142 @@ const Order = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
 
+  const fetchContracts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/seller/contracts");
+      let incomingData =
+        res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      const processedData = incomingData.map((item, index) => ({
+        ...item,
+        key: item.contractId || item.id || index,
+      }));
+      setData(processedData);
+    } catch (err) {
+      console.error("Fetch Contracts Error:", err);
+      toast.error(
+        err.response?.data?.message || "Không thể tải dữ liệu hợp đồng."
+      );
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === "orders") {
+      fetchOrders();
+    } else if (view === "contracts") {
+      fetchContracts();
+    }
+  }, [view, fetchOrders, fetchContracts]);
+
   // --- VIEW DETAILS ---
-  const handleView = (record) => {
-    toast.info(
-      `Mã Đơn: ${record.orderId}, Khách: ${record.buyerName}, Trạng Thái: ${
-        record.status || "N/A"
-      }`
-    );
+  const handleViewOrder = (record) => {
+    navigate(`/seller/order/view/${record.id}`);
+  };
+  const handleViewContract = (record) => {
+    navigate(`/seller/contract/view/${record.id}`);
   };
 
-  // --- (XÓA HÀM callOrderActionApi CŨ) ---
-
-  // --- HÀM MỚI: Phê duyệt (Approve) ---
+  // --- ORDER ACTIONS ---
   const handleApprove = async (record) => {
-    const { orderId } = record;
-    if (!orderId) {
-      toast.error("Không có 'orderId' để phê duyệt.");
+    const { id } = record;
+    if (!id) {
+      toast.error("Không có 'id' để phê duyệt.");
       return;
     }
-
     setIsUpdating(true);
     try {
-      // Dùng POST (không phải GET) và gửi orderId trong body
-      await api.get(`/seller/orders/approve?orderId=${orderId}`);
-
-      toast.success(`Phê duyệt đơn hàng ${orderId} thành công!`);
-      fetchData(); // Tải lại data
+      await api.get(`/seller/orders/approve?orderId=${id}`);
+      toast.success(`Phê duyệt đơn hàng ${id} thành công!`);
+      fetchOrders(); // <-- 2. SỬA LỖI: Thêm ()
     } catch (err) {
       console.error(`Update Error (Approve):`, err);
       toast.error(
-        err.response?.data?.message || `Lỗi khi Phê duyệt đơn hàng ${orderId}`
+        err.response?.data?.message || `Lỗi khi Phê duyệt đơn hàng ${id}`
       );
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // --- HÀM MỚI: Từ chối (Reject) ---
   const handleReject = async (record) => {
-    const { orderId } = record;
-    if (!orderId) {
+    const { id } = record;
+    if (!id) {
       toast.error("Không có 'orderId' để từ chối.");
       return;
     }
-    console.log("Đang từ chối orderId:", orderId);
+    // Sửa lỗi typo IDBIndex -> id
+    console.log("Đang từ chối orderId:", id);
     setIsUpdating(true);
     try {
-      // Dùng POST và gửi orderId trong body theo yêu cầu
-      await api.post(
-        "/seller/orders/reject",
-        
-        {
-          id: parseInt(orderId),
-          reason: "tu chou",
-        }
-      );
-   
-    
-      toast.success(`Từ chối đơn hàng ${orderId} thành công!`);
-      fetchData(); // Tải lại data
+      await api.post("/seller/orders/reject", {
+        id: parseInt(id),
+        reason: "tu chou",
+      });
+      toast.success(`Từ chối đơn hàng ${id} thành công!`);
+      fetchOrders(); // <-- 2. SỬA LỖI: Thêm ()
     } catch (err) {
       console.error(`Update Error (Reject):`, err);
       toast.error(
-        err.response?.data?.message || `Lỗi khi Từ chối đơn hàng ${orderId}`
+        err.response?.data?.message || `Lỗi khi Từ chối đơn hàng ${id}`
       );
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // Tương tự, bạn sẽ cần tạo hàm cho 'ship' và 'deliver'
-  // const handleShip = async (record) => { ... }
-  // const handleDeliver = async (record) => { ... }
+  // -
 
-  // --- TABLE COLUMNS (ĐÃ CẬP NHẬT) ---
-  const columns = [
-    // ... (các cột Mã Đơn Hàng, Tên Khách, v.v. giữ nguyên) ...
+  // 3. DI CHUYỂN contractColumns ra ngoài
+  const contractColumns = [
     {
-      title: "Mã Đơn Hàng",
-      dataIndex: "orderId",
-      key: "orderId",
-      render: (text) => <a className="font-medium">{text}</a>,
+      title: "Mã Hợp Đồng",
+      dataIndex: "id", // Giả sử là 'id'
+      key: "id",
+      render: (text) => <a className="font-medium">#{text}</a>,
     },
     {
       title: "Tên Khách Hàng",
-      dataIndex: "buyerName",
+      dataIndex: "buyerName", // Giả sử
       key: "buyerName",
+    },
+    
+    {
+      title: "Trạng Thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => getContractStatusTag(status), // Dùng helper của Contract
+    },
+    {
+      title: "Hành Động",
+      key: "action",
+      fixed: "right",
+      width: 100,
+      render: (_, record) => (
+        <Space size="small">
+          <Button type="link" onClick={() => handleViewContract(record)}>
+            Xem Chi Tiết
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const orderColumns = [
+    {
+      title: "Hãng xe",
+      dataIndex: "vehicleBrand",
+      key: "vehicleBrand",
+      render: (text) => <a className="font-medium">{text}</a>,
+    },
+    {
+      title: "Model",
+      dataIndex: "model",
+      key: "model",
     },
     {
       title: "Phương thức TT",
@@ -203,7 +287,7 @@ const Order = () => {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => getStatusTag(status),
+      render: (status) => getOrderStatusTag(status),
     },
     {
       title: "Hành Động",
@@ -213,18 +297,21 @@ const Order = () => {
       render: (_, record) => {
         const currentStatus = record.status?.toUpperCase();
 
+        // 3. XÓA BỎ contractColumns lồng bên trong
+
         return (
           <Space size="small">
-            <Button type="link" onClick={() => handleView(record)}>
+            <Button type="link" onClick={() => handleViewOrder(record)}>
+              {" "}
+              {/* 4. SỬA LỖI: handleView -> handleViewOrder */}
               Xem
             </Button>
 
-            {/* CẬP NHẬT onConfirm ĐỂ GỌI HÀM MỚI */}
             {currentStatus === "PENDING" && (
               <>
                 <Popconfirm
                   title="Xác nhận đơn hàng này?"
-                  onConfirm={() => handleApprove(record)} // <-- SỬA
+                  onConfirm={() => handleApprove(record)}
                   okText="Xác nhận"
                   cancelText="Hủy"
                   disabled={isUpdating}
@@ -235,7 +322,7 @@ const Order = () => {
                 </Popconfirm>
                 <Popconfirm
                   title="Bạn có chắc muốn từ chối?"
-                  onConfirm={() => handleReject(record)} // <-- SỬA
+                  onConfirm={() => handleReject(record)}
                   okText="Từ chối"
                   cancelText="Không"
                   disabled={isUpdating}
@@ -247,81 +334,79 @@ const Order = () => {
                 </Popconfirm>
               </>
             )}
-
-            {currentStatus === "CONFIRMED" && (
-              <Popconfirm
-                title="Giao hàng cho đơn này?"
-                // onConfirm={() => handleShip(record)} // <-- Bạn cần tạo hàm này
-                okText="Giao hàng"
-                cancelText="Hủy"
-                disabled={isUpdating}
-              >
-                <Button typeF="link" loading={isUpdating}>
-                  Giao hàng
-                </Button>
-              </Popconfirm>
-            )}
-
-            {currentStatus === "SHIPPING" && (
-              <Popconfirm
-                title="Đã giao hàng thành công?"
-                // onConfirm={() => handleDeliver(record)} // <-- Bạn cần tạo hàm này
-                okText="Đã giao"
-                cancelText="Hủy"
-                disabled={isUpdating}
-              >
-                <Button type="link" loading={isUpdating}>
-                  Đã giao
-                </Button>
-              </Popconfirm>
-            )}
           </Space>
         );
       },
     },
   ];
 
-  // --- RENDER JSX (Không thay đổi) ---
+  // --- RENDER JSX ---
   return (
-    <div className="min-h-screen bg-transparent">
-      {/* Thẻ thống kê */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard
-          title="Tổng Đơn Hàng"
-          value={orderStats.totalOrders}
-          icon={<Archive className="w-6 h-6" />}
-          colorClass="text-blue-600"
-        />
-        <StatCard
-          title="Đang Chờ Xử Lý"
-          value={orderStats.pendingOrders}
-          icon={<Clock className="w-6 h-6" />}
-          colorClass="text-orange-600"
-        />
-        <StatCard
-          title="Đang Vận Chuyển"
-          value={orderStats.shippedOrders}
-          icon={<Truck className="w-6 h-6" />}
-          colorClass="text-cyan-600"
-        />
-        <StatCard
-          title="Đã Giao Thành Công"
-          value={orderStats.deliveredOrders}
-          icon={<PackageCheck className="w-6 h-6" />}
-          colorClass="text-green-600"
+    <div className="min-h-screen bg-transparent space-y-6">
+      {/* Bộ lọc Segmented */}
+      <div className="bg-white p-4 rounded-xl shadow-md">
+        <Segmented
+          options={[
+            {
+              label: "Quản lý Đơn Hàng",
+              value: "orders",
+              icon: <Archive className="w-4 h-4" />,
+            },
+            {
+              label: "Quản lý Hợp Đồng",
+              value: "contracts",
+              icon: <FileText className="w-4 h-4" />,
+            },
+          ]}
+          value={view}
+          onChange={setView}
+          block
+          size="large"
         />
       </div>
 
+      {/* Ẩn thống kê khi xem hợp đồng */}
+      {view === "orders" && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Tổng Đơn Hàng"
+            value={orderStats.totalOrders}
+            icon={<Archive className="w-6 h-6" />}
+            colorClass="text-blue-600"
+          />
+          <StatCard
+            title="Đang Chờ Xử Lý"
+            value={orderStats.pendingOrders}
+            icon={<Clock className="w-6 h-6" />}
+            colorClass="text-orange-600"
+          />
+          <StatCard
+            title="Đang Vận Chuyển"
+            value={orderStats.shippedOrders}
+            icon={<Truck className="w-6 h-6" />}
+            colorClass="text-cyan-600"
+          />
+          <StatCard
+            title="Đã Giao Thành Công"
+            value={orderStats.deliveredOrders}
+            icon={<PackageCheck className="w-6 h-6" />}
+            colorClass="text-green-600"
+            // 5. XÓA 'WANNAFIX'
+          />
+        </div>
+      )}
+
       {/* Bảng dữ liệu */}
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <h3 className="text-xl font-semibold mb-4">Quản lý tin đăng</h3>
+        <h3 className="text-xl font-semibold mb-4">
+          {view === "orders" ? "Danh sách Đơn hàng" : "Danh sách Hợp đồng"}
+        </h3>
 
         <Table
-          columns={columns}
+          columns={view === "orders" ? orderColumns : contractColumns}
           dataSource={data}
-          loading={loading}
+          loading={loading || (view === "orders" && isUpdating)}
           rowKey="key"
-          pagination={{ pageSize: 10, showSizeChanger: true }}
           scroll={{ x: "max-content" }}
         />
       </div>
