@@ -27,6 +27,8 @@ export default function VehiclePost() {
     deliveryMethods: [],
     paymentTypes: [],
     isUseWallet: false,
+    wantsTrustedLabel: false,
+    
 
     // Thông tin xe
     vehicleBrand: "",
@@ -66,19 +68,15 @@ export default function VehiclePost() {
         color: formData.color,
         yearOfManufacture: Number(formData.yearOfManufacture),
         mileage: Number(formData.mileage),
-        // Đã loại bỏ: batteryType, capacity, voltage, batteryBrand
-        // Đã loại bỏ: description, weight
       };
 
       try {
         const priceRes = await api.post(
           "/seller/ai/suggest-price",
-          pricingPayload,
-          
+          pricingPayload
         );
         setSuggestedPrice(priceRes.data.suggestedPrice);
-        console.log(priceRes.data.suggestedPrice);
-        
+        console.log(priceRes.data.suggestPrice);
       } catch (err) {
         console.error(
           "Lỗi khi fetch giá ước tính:",
@@ -129,17 +127,28 @@ export default function VehiclePost() {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-      //  Checkbox dạng mảng
-      if (checked) {
-        setFormData((prev) => ({ ...prev, [name]: [...prev[name], value] }));
-      } else {
+     
+
+      // 1. Xử lý checkbox dạng boolean (bật/tắt)
+      if (name === "wantsTrustedLabel" || name === "isUseWallet") {
         setFormData((prev) => ({
           ...prev,
-          [name]: prev[name].filter((v) => v !== value),
+          [name]: checked, // Cập nhật bằng true hoặc false
         }));
+      } else {
+        // 2. Xử lý checkbox dạng mảng (chọn nhiều)
+        if (checked) {
+          setFormData((prev) => ({ ...prev, [name]: [...prev[name], value] }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: prev[name].filter((v) => v !== value),
+          }));
+        }
       }
+      // --- KẾT THÚC THAY ĐỔI ---
     } else {
-      //  Input text, number, select...
+      // Input text, number, select...
       setFormData({ ...formData, [name]: value });
     }
   };
@@ -178,6 +187,7 @@ export default function VehiclePost() {
         ),
         paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
         images: uploadedImageUrls,
+        wantsTrustedLabel: formData.wantsTrustedLabel,
 
         // Các trường vehicle
         vehicleBrand: formData.vehicleBrand,
@@ -221,7 +231,6 @@ export default function VehiclePost() {
               name="title"
               label="Tiêu đề bài đăng"
               placeholder="Ví dụ: Honda Wave RSX 2020, Màu đỏ"
-              
               value={formData.title}
               onChange={handleChange}
               required
@@ -296,7 +305,26 @@ export default function VehiclePost() {
                 </label>
               ))}
             </div>
+
+            <div>
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="wantsTrustedLabel"
+                  checked={formData.wantsTrustedLabel}
+                  onChange={handleChange}
+                  className="form-checkbox h-5 w-5 text-emerald-600 rounded"
+                />
+                <span className="ml-3 text-gray-700 dark:text-gray-300">
+                  Bạn có muốn thêm nhãn kiểm định ?
+                </span>
+              </label>
+              <p className="text-sm text-gray-500 dark:text-gray-400 ml-8">
+                Sản phẩm của bạn sẽ được kiểm định bởi chuyên gia và gắn nhãn
+              </p>
+            </div>
           </div>
+
           {/* Thông số kỹ thuật xe */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg space-y-5">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -327,7 +355,6 @@ export default function VehiclePost() {
                 label="Năm sản xuất"
                 type="number"
                 placeholder="2020"
-                
                 value={formData.yearOfManufacture}
                 onChange={handleChange}
                 required
@@ -347,7 +374,6 @@ export default function VehiclePost() {
                 label="Số km đã đi"
                 type="number"
                 placeholder="5000"
-                
                 value={formData.mileage}
                 onChange={handleChange}
                 unit="km"
@@ -359,7 +385,6 @@ export default function VehiclePost() {
                 label="Trọng lượng xe"
                 type="number"
                 placeholder="100"
-                
                 value={formData.weight}
                 onChange={handleChange}
                 unit="kg"
@@ -373,7 +398,6 @@ export default function VehiclePost() {
               label="Giá bán"
               type="number"
               placeholder="10,000,000"
-              
               value={formData.price}
               onChange={handleChange}
               unit="VNĐ"

@@ -8,6 +8,7 @@ import {
   BarChart3,
   MessageCircle,
   Gauge,
+  ShoppingBag,
 } from "lucide-react";
 import Header from "../../components/header";
 import { useSelector } from "react-redux";
@@ -29,7 +30,7 @@ const SellerLayout = () => {
       tooltip: "Đăng bán Pin",
     },
     { icon: Paperclip, path: "/seller/package", tooltip: "Gói đăng tin" },
-    { icon: BarChart3, path: "/seller/stats", tooltip: "Thống kê" },
+    { icon: ShoppingBag, path: "/seller/order", tooltip: "Đặt hàng" },
     { icon: MessageCircle, path: "/seller/messages", tooltip: "Tin nhắn" },
   ];
 

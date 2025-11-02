@@ -12,12 +12,12 @@ import {
   Tag,
   Upload,
   Modal,
+  Checkbox,
 } from "antd";
 import { toast } from "react-toastify";
 import { ArrowLeft, Save } from "lucide-react"; // Icon cho các nút
 import api from "../../../config/axios";
 import { uploadFile } from "../../../utils/upload";
-import ImageViewer from "./Imageview";
 
 // Helper để định dạng ngày tháng
 const formatDate = (dateString) => {
@@ -52,6 +52,117 @@ export default function PostView() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
+  // state để lưu giá ước tính
+  const [suggestedPrice, setSuggestedPrice] = useState(null);
+  //  state để kiểm soát việc gọi API
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+
+  // **BƯỚC THÊM MỚI:** useEffect để gọi API gợi ý giá
+  useEffect(() => {
+    // Chỉ chạy nếu post đã có và productType là VEHICLE HOẶC BATTERY
+    const isPricable =
+      post &&
+      (post.productType === "VEHICLE" || post.productType === "BATTERY");
+
+    if (!isPricable) {
+      setSuggestedPrice(null);
+      return;
+    }
+
+    const fetchSuggestedPrice = async () => {
+      // 1. LẤY GIÁ TRỊ TỪ FORM
+      const values = form.getFieldsValue();
+      let isMissingRequiredFields = false;
+      let pricingPayload = {};
+
+      // 2. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA XE (theo swagger tối thiểu)
+      if (post.productType === "VEHICLE") {
+        if (
+          !values.vehicleBrand ||
+          !values.model ||
+          !values.yearOfManufacture ||
+          !values.mileage
+        ) {
+          isMissingRequiredFields = true;
+        } else {
+          pricingPayload = {
+            productType: "VEHICLE",
+            vehicleBrand: values.vehicleBrand,
+            model: values.model,
+            color: values.color,
+            yearOfManufacture: Number(values.yearOfManufacture),
+            mileage: Number(values.mileage),
+          };
+        }
+      } else if (post.productType === "BATTERY") {
+        if (
+          !values.batteryType ||
+          !values.capacity ||
+          !values.voltage ||
+          !values.batteryBrand
+        ) {
+          isMissingRequiredFields = true;
+        } else {
+          pricingPayload = {
+            productType: "BATTERY",
+            batteryType: values.batteryType,
+            capacity: Number(values.capacity),
+            voltage: values.voltage,
+            batteryBrand: values.batteryBrand,
+          };
+        }
+      } else {
+        // Nếu không phải 2 loại này, không cần gợi ý giá
+        isMissingRequiredFields = true;
+      } // 2. THOÁT NẾU THIẾU TRƯỜNG HOẶC LOẠI SẢN PHẨM KHÔNG HỖ TRỢ
+
+      if (isMissingRequiredFields) {
+        setSuggestedPrice(null);
+        return;
+      }
+
+      setIsFetchingPrice(true);
+      setSuggestedPrice(null);
+
+      try {
+        const priceRes = await api.post(
+          "/seller/ai/suggest-price",
+          pricingPayload
+        );
+        setSuggestedPrice(priceRes.data.suggestedPrice);
+      } catch (err) {
+        console.error(
+          "Lỗi khi fetch giá ước tính:",
+          err.response?.data?.message || err.message
+        );
+        setSuggestedPrice(null);
+      } finally {
+        setIsFetchingPrice(false);
+      }
+    };
+
+    // Sử dụng debounce với setTimeout để tránh gọi API quá nhiều
+    const handler = setTimeout(() => {
+      fetchSuggestedPrice();
+    }, 800);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [
+    form,
+    post, // Quan trọng: cần đảm bảo form/post đã sẵn sàng
+    // Dùng form.getFieldsValue để lấy giá trị mới nhất của các trường cần theo dõi
+    form.getFieldValue("vehicleBrand"),
+    form.getFieldValue("model"),
+    form.getFieldValue("yearOfManufacture"),
+    form.getFieldValue("mileage"),
+    form.getFieldValue("color"),
+    form.getFieldValue("batteryType"),
+    form.getFieldValue("capacity"),
+    form.getFieldValue("voltage"),
+    form.getFieldValue("batteryBrand"),
+  ]);
 
   const getBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -76,21 +187,23 @@ export default function PostView() {
         const data = res.data.data || res.data;
         setPost(data);
         const initialFileList =
-          data.images?.map((img, index) => ({
-            uid: img.id ? String(img.id) : `-${index + 1}`, // Dùng ID API hoặc ID tạm
-            name: `image-${img.id || index + 1}.jpg`,
+          data.images?.map((imageUrl, index) => ({
+          
+            uid: `-${index + 1}`, // Dùng index làm uid tạm
+            name: `image-${index + 1}.jpg`,
             status: "done",
-            url: img.imageUrl, // Đây là URL ảnh đã tồn tại
-            originalUrl: img.imageUrl, // Giữ lại URL gốc
+            url: imageUrl, // <-- SỬA Ở ĐÂY: Dùng trực tiếp URL
+            originalUrl: imageUrl, // <-- SỬA Ở ĐÂY
           })) || [];
 
-        setFileListState(initialFileList); // Set danh sách file ban đầu
+        setFileListState(initialFileList);
+
         const formData = {
-          ...data,
-          // Chuyển đổi mảng URL thành format mà Form.Item có thể hiểu (nếu cần)
-          images: initialFileList.map((f) => f.url),
+          ...data, // images: initialFileList.map((f) => f.url), // Dòng này không cần thiết cho Form.Item <Upload>
+          wantsTrustedLabel: data.wantsTrustedLabel || false,
+          images: data.images, // Cứ giữ nguyên mảng string từ API cho setFieldsValue
         };
-        form.setFieldsValue(formData); // Điền toàn bộ dữ liệu vào form
+        form.setFieldsValue(formData);
       } catch (err) {
         toast.error(err.response?.data?.message || "Không tìm thấy bài đăng");
         navigate("/seller"); // Quay về trang trước nếu có lỗi
@@ -220,12 +333,45 @@ export default function PostView() {
                     parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
                   />
                 </Form.Item>
+
+                <div className="md:col-span-1">
+                  <Form.Item
+                    name="wantsTrustedLabel"
+                    valuePropName="checked"
+                    className="mt-2"
+                  >
+                    <Checkbox>
+                      Yêu cầu kiểm định và gắn nhãn "Trusted Label"
+                    </Checkbox>
+                  </Form.Item>
+                </div>
+
+                <>
+                  {isFetchingPrice && (
+                    <p className="mt-[-10px] text-blue-500 text-sm flex justify-end">
+                      Đang ước tính giá...
+                    </p>
+                  )}
+                  {suggestedPrice !== null && !isFetchingPrice && (
+                    <p className=" mt-[-10px] text-sm text-green-600 flex justify-end">
+                      Giá AI gợi ý:{" "}
+                      <span className="font-bold">
+                        {Number(suggestedPrice).toLocaleString("vi-VN")} VNĐ
+                      </span>
+                    </p>
+                  )}
+                  {suggestedPrice === null && !isFetchingPrice && (
+                    <p className="mt-[-10px] text-sm text-gray-500 flex justify-end">
+                      Điền đủ thông số sản phẩm để nhận giá gợi ý.
+                    </p>
+                  )}
+                </>
               </div>
               <Form.Item label="Mô tả" name="description">
                 <Input.TextArea rows={4} />
               </Form.Item>
               <Form.Item label="Địa chỉ" name="address">
-                <Input />
+                <Input readOnly />
               </Form.Item>
 
               {/* Chi tiết sản phẩm */}

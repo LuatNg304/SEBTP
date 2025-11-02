@@ -26,6 +26,12 @@ import PostView from "./pages/seller/posts/PostView";
 import DemoUp from "./utils/demoUp";
 import Payment from "./pages/payment";
 import Orders from "./pages/orders";
+import Order from "./pages/seller/Order";
+import OrderView from "./pages/seller/posts/OrderVIew";
+import Contract from "./pages/seller/posts/Contract";
+import SignOtp from "./pages/seller/posts/OtpContrac";
+import ContractView from "./pages/seller/posts/ContractView";
+
 
 const router = createBrowserRouter([
   {
@@ -59,6 +65,11 @@ const router = createBrowserRouter([
       { path: "post/vehicle", element: <VehiclePost /> },
       { path: "post/battery", element: <BatteryPost /> },
       { path: "/seller/posts/view/:id", element: <PostView /> },
+      { path: "/seller/order/view/:id", element: <OrderView /> },
+      { path: "/seller/contract/create/:id", element: <Contract /> },
+      { path: "/seller/contract/view/:id", element: <ContractView /> },
+      { path: "/seller/contract/sign-otp/:id", element: <SignOtp /> },
+      { path: "/seller/order", element: <Order /> },
       {
         path: "package",
         element: <PackagePage />,
