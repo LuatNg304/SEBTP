@@ -167,6 +167,11 @@ const Order = () => {
     navigate(`/seller/contract/view/${record.id}`);
   };
 
+  const handleGoToDelivery = (record) => {
+    // Điều hướng đến trang chi tiết giao hàng với ID của đơn hàng
+    navigate(`/seller/order-deliveries/${record.id}`);
+  };
+
   // --- ORDER ACTIONS ---
   const handleApprove = async (record) => {
     const { id } = record;
@@ -297,7 +302,7 @@ const Order = () => {
       render: (_, record) => {
         const currentStatus = record.status?.toUpperCase();
 
-        // 3. XÓA BỎ contractColumns lồng bên trong
+     
 
         return (
           <Space size="small">
@@ -334,6 +339,15 @@ const Order = () => {
                 </Popconfirm>
               </>
             )}
+            {currentStatus === "APPROVED" && (
+              <Button
+                type="link"
+                onClick={() => handleGoToDelivery(record)}
+                className="text-blue-600"
+              >
+                Giao hàng
+              </Button>
+            )}
           </Space>
         );
       },
@@ -344,18 +358,18 @@ const Order = () => {
   return (
     <div className="min-h-screen bg-transparent space-y-6">
       {/* Bộ lọc Segmented */}
-      <div className="bg-white p-4 rounded-xl shadow-md">
+      <div className="bg-dark p-5 rounded-xl ">
         <Segmented
           options={[
             {
               label: "Quản lý Đơn Hàng",
               value: "orders",
-              icon: <Archive className="w-4 h-4" />,
+              
             },
             {
               label: "Quản lý Hợp Đồng",
               value: "contracts",
-              icon: <FileText className="w-4 h-4" />,
+              
             },
           ]}
           value={view}

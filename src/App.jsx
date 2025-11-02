@@ -31,6 +31,7 @@ import OrderView from "./pages/seller/posts/OrderVIew";
 import Contract from "./pages/seller/posts/Contract";
 import SignOtp from "./pages/seller/posts/OtpContrac";
 import ContractView from "./pages/seller/posts/ContractView";
+import DeliveryView from "./pages/seller/posts/DeliveryView";
 
 
 const router = createBrowserRouter([
@@ -66,6 +67,7 @@ const router = createBrowserRouter([
       { path: "post/battery", element: <BatteryPost /> },
       { path: "/seller/posts/view/:id", element: <PostView /> },
       { path: "/seller/order/view/:id", element: <OrderView /> },
+      { path: "/seller/order-deliveries/:id", element: <DeliveryView /> },
       { path: "/seller/contract/create/:id", element: <Contract /> },
       { path: "/seller/contract/view/:id", element: <ContractView /> },
       { path: "/seller/contract/sign-otp/:id", element: <SignOtp /> },

@@ -68,14 +68,21 @@ export default function ContractView() {
   };
 
   // Hàm điều hướng sang trang OTP
-  const handleGoToSign = () => {
+  const handleGoToSign = async () => {
     // Chuyển sang trang OTP (bạn phải tạo route cho trang này)
+    try {
+    await api.post(`/seller/contracts/${id}/sign/send-otp`);
+    toast.success("Đã  mã OTP thành công!");
     navigate(`/seller/contract/sign-otp/${id}`);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message;
+      toast.error(errorMessage +" chờ người mua xác nhận");
+    }
   };
 
   // --- LOGIC TẢI DỮ LIỆU ---
 
-  // 2. Tách hàm fetch ra, dùng api.get("/seller/contracts/ID")
+ 
   const fetchContract = useCallback(async () => {
     setLoading(true);
     try {
