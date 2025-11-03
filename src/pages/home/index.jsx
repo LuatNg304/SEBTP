@@ -11,7 +11,7 @@ import { logout } from "../../redux/accountSlice";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { PiFileZip } from "react-icons/pi";
-import { User, Wallet } from "lucide-react";
+import { ShoppingCart, User, Wallet } from "lucide-react";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -81,11 +81,26 @@ const HomePage = () => {
         ),
       },
     ];
+    //gio hang
+    if (account?.user?.role !== "SELLER") {
+      menuItems.push({
+        key: "3",
+        label: (
+          <div
+            onClick={() => navigate("/orders")}
+            className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
+          >
+            <ShoppingCart className="text-green-700 transition-transform duration-200 hover:scale-110" />
+            <span>Đơn hàng</span>
+          </div>
+        ),
+      });
+    }
 
     // Chỉ hiển thị "Đăng ký Seller" nếu user chưa phải là seller
     if (account?.user?.role !== "SELLER") {
       menuItems.push({
-        key: "3",
+        key: "4",
         label: (
           <div
             onClick={() => navigate("/upgrade-seller")}
@@ -97,13 +112,14 @@ const HomePage = () => {
         ),
       });
     }
+     
 
     menuItems.push(
       {
         type: "divider",
       },
       {
-        key: "4",
+        key: "5",
         label: (
           <div
             onClick={handleLogout}

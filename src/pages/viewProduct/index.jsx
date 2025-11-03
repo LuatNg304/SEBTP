@@ -503,14 +503,15 @@ const ViewProduct = () => {
                 dots={true}
                 infinite={true}
                 className="related-products-carousel"
+               
               >
                 {Array.from({
-                  length: Math.ceil(replateProduct.data.length / 3),
+                  length: Math.ceil(replateProduct.data.length / 4),
                 }).map((_, slideIndex) => (
                   <div key={slideIndex}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-2">
                       {replateProduct.data
-                        // .slice(slideIndex * 4, (slideIndex + 1) * 4)
+                        .slice(slideIndex * 4, (slideIndex + 1) * 4)
                         .map((product) => (
                           <div
                             key={product.id}

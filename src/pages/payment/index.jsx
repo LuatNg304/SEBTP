@@ -79,6 +79,15 @@ const Payment = () => {
             setSelectedService(response.data[0].service_type_id);
           }
         } catch (error) {
+          if (
+            error.response.data.message === "Người mua chưa cập nhật địa chỉ"
+          ) {
+            toast.error(error.response.data.message);
+            setTimeout(() => {
+              navigate("/view-profile");
+            }, 1000);
+            return;
+          }
           console.log("❌ Lỗi load service types:", error);
           toast.error("Không thể tải dịch vụ giao hàng");
         }
@@ -116,55 +125,58 @@ const Payment = () => {
 
   // Handle submit order
   const handleSubmitOrder = async () => {
-  try {
-    setSubmitting(true);
+    try {
+      setSubmitting(true);
 
-    // Validate
-    const postId = parseInt(id);
-    if (!postId || isNaN(postId)) {
-      toast.error("ID sản phẩm không hợp lệ");
-      return;
+      // Validate
+      const postId = parseInt(id);
+      if (!postId || isNaN(postId)) {
+        toast.error("ID sản phẩm không hợp lệ");
+        return;
+      }
+      if (!selectedDelivery) {
+        toast.error("Vui lòng chọn phương thức giao hàng");
+        return;
+      }
+      if (!selectedPayment) {
+        toast.error("Vui lòng chọn hình thức thanh toán");
+        return;
+      }
+
+      // ✅ Tạo params cho query string
+      const params = {
+        postId: postId,
+        deliveryMethod: selectedDelivery,
+        paymentType: selectedPayment,
+        serviceTypeId: selectedService,
+        wantDeposit: selectedPayment === "DEPOSIT" ? true : false,
+      };
+      // Thêm serviceTypeId nếu chọn GHN
+      if (selectedDelivery === "GHN" && selectedService) {
+        params.serviceTypeId = parseInt(selectedService);
+      }
+      console.log("📦 Order params:", params);
+
+      // ✅ POST request với params trong URL (KHÔNG phải body)
+      const response = await api.post("/buyer/orders/create", null, { params });
+      //                                                      ^^^^  ^^^^^^^^^
+      //                                                      body  query params
+      console.log("✅ Order created:", response.data);
+
+      toast.success("Đặt hàng thành công!");
+      navigate("/orders");
+    } catch (error) {
+      if(error.response.data.message==="Wallet has no balance"){
+        navigate("/user/wallet")
+        toast.error(error.response.data.message)
+        return;
+      }
+      console.error("❌ Error:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Không thể tạo đơn hàng");
+    } finally {
+      setSubmitting(false);
     }
-    if (!selectedDelivery) {
-      toast.error("Vui lòng chọn phương thức giao hàng");
-      return;
-    }
-    if (!selectedPayment) {
-      toast.error("Vui lòng chọn hình thức thanh toán");
-      return;
-    }
-
-    // ✅ Tạo params cho query string
-    const params = {
-      postId: postId,
-      deliveryMethod: selectedDelivery,
-      paymentType: selectedPayment,
-    };
-
-    // Thêm serviceTypeId nếu chọn GHN
-    if (selectedDelivery === "GHN" && selectedService) {
-      params.serviceTypeId = parseInt(selectedService);
-    }
-
-    console.log("📦 Order params:", params);
-
-    // ✅ POST request với params trong URL (KHÔNG phải body)
-    const response = await api.post("/buyer/orders/create", null, { params });
-    //                                                      ^^^^  ^^^^^^^^^
-    //                                                      body  query params
-    console.log("✅ Order created:", response.data);
-
-    toast.success("Đặt hàng thành công!");
-    navigate("/orders");
-  } catch (error) {
-    console.error("❌ Error:", error.response?.data || error.message);
-    toast.error(error.response?.data?.message || "Không thể tạo đơn hàng");
-  } finally {
-    setSubmitting(false);
-  }
-};
-
-
+  };
 
   // Delivery method options
   const deliveryOptions = [
@@ -546,8 +558,6 @@ const Payment = () => {
                     </Text>
                   </div>
                 )}
-
-                
 
                 {/* <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
                   <Text type="secondary" className="block mb-1">

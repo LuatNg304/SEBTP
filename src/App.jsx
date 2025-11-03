@@ -31,7 +31,7 @@ import OrderView from "./pages/seller/posts/OrderVIew";
 import Contract from "./pages/seller/posts/Contract";
 import SignOtp from "./pages/seller/posts/OtpContrac";
 import ContractView from "./pages/seller/posts/ContractView";
-
+import BuyerContract from "./pages/buyerContract";
 
 const router = createBrowserRouter([
   {
@@ -136,6 +136,10 @@ const router = createBrowserRouter([
   {
     path: "orders",
     element: <Orders />,
+  },
+  {
+    path: "contract/:id",
+    element: <BuyerContract />,
   },
 ]);
 
