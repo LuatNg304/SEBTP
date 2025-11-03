@@ -33,6 +33,7 @@ import SignOtp from "./pages/seller/posts/OtpContrac";
 import ContractView from "./pages/seller/posts/ContractView";
 import BuyerContract from "./pages/buyerContract";
 import DeliveryView from "./pages/seller/posts/DeliveryView";
+import OrderDelivery from "./pages/delivery";
 
 
 const router = createBrowserRouter([
@@ -143,7 +144,10 @@ const router = createBrowserRouter([
   {
     path: "contract/:id",
     element: <BuyerContract />,
-  },
+  },{
+    path: "delivery/:id",
+    element: <OrderDelivery />,
+  }
 ]);
 
 function App() {

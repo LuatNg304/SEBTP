@@ -20,7 +20,7 @@ import {
   TruckOutlined,
   DollarOutlined,
   CloseCircleOutlined,
-  FileTextOutlined, // ✅ Thêm icon hợp đồng
+  FileTextOutlined,
 } from "@ant-design/icons";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
@@ -37,8 +37,20 @@ const Orders = () => {
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelForm] = Form.useForm();
-  const [contractList, setContractList] = useState([]); // ✅ State lưu danh sách hợp đồng
+  const [contractList, setContractList] = useState([]);
+  const [deliveryList, setDeliveryList] = useState([]);
   const navigate = useNavigate();
+
+  // ✅ Fetch danh sách delivery
+  const fetchDeliveries = async () => {
+    try {
+      const response = await api.get("/buyer/order-deliveries");
+      setDeliveryList(response.data.data || []);
+      console.log("✅ Deliveries:", response.data.data);
+    } catch (error) {
+      console.error("❌ Error fetching deliveries:", error);
+    }
+  };
 
   // ✅ Fetch danh sách hợp đồng
   const fetchContracts = async () => {
@@ -55,11 +67,11 @@ const Orders = () => {
     try {
       setLoading(true);
       const response = await api.get("/buyer/orders");
-      
-      const sortedOrders = (response.data.data || []).sort((a, b) => 
-        new Date(b.createdAt) - new Date(a.createdAt)
+
+      const sortedOrders = (response.data.data || []).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
-      
+
       setOrderList(sortedOrders);
       console.log("✅ Orders:", sortedOrders);
     } catch (error) {
@@ -74,18 +86,32 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrder();
-    fetchContracts(); // ✅ Gọi API lấy hợp đồng
+    fetchContracts();
+    fetchDeliveries();
   }, []);
 
   // ✅ Hàm kiểm tra đơn hàng có hợp đồng không
   const hasContract = (orderId) => {
-    return contractList.some(contract => contract.orderId === orderId);
+    return contractList.some((contract) => contract.orderId === orderId);
   };
 
   // ✅ Hàm lấy contract ID từ orderId
   const getContractId = (orderId) => {
-    const contract = contractList.find(c => c.orderId === orderId);
+    const contract = contractList.find((c) => c.orderId === orderId);
     return contract?.id;
+  };
+
+  // ✅ Hàm lấy delivery ID từ orderId
+  const getDeliveryId = (orderId) => {
+    const delivery = deliveryList.find((d) => d.orderId === orderId.toString());
+    return delivery?.id;
+  };
+
+  // ✅ Hàm xử lý click nút Chi tiết
+  const handleViewDetail = (orderId) => {
+    const deliveryId = getDeliveryId(orderId);
+
+    navigate(`/delivery/${deliveryId}`);
   };
 
   const getStatusConfig = (status) => {
@@ -152,16 +178,14 @@ const Orders = () => {
       toast.success("Hủy đơn hàng thành công!");
       setIsCancelModalVisible(false);
       cancelForm.resetFields();
-      
+
       await fetchOrder();
     } catch (error) {
       if (error.errorFields) {
         toast.error("Vui lòng nhập lý do hủy đơn!");
       } else {
         console.error("❌ Error:", error);
-        toast.error(
-          error.response?.data?.message || "Không thể hủy đơn hàng"
-        );
+        toast.error(error.response?.data?.message || "Không thể hủy đơn hàng");
       }
     } finally {
       setCancelLoading(false);
@@ -212,7 +236,7 @@ const Orders = () => {
       title: "Tổng tiền",
       key: "total",
       width: 150,
-      sorter: (a, b) => (a.price + a.shippingFee) - (b.price + b.shippingFee),
+      sorter: (a, b) => a.price + a.shippingFee - (b.price + b.shippingFee),
       render: (_, record) => {
         const total = record.price + record.shippingFee;
         return (
@@ -273,19 +297,18 @@ const Orders = () => {
     {
       title: "Hành động",
       key: "action",
-      width: 250, // ✅ Tăng width để chứa thêm nút
+      width: 250,
       render: (_, record) => (
         <Space size="small">
           <Button
             type="primary"
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => navigate(`/view-product/${record.id}`)}
+            onClick={() => handleViewDetail(record.id)}
           >
             Chi tiết
           </Button>
-          
-          {/* ✅ Nút xem hợp đồng - chỉ hiện nếu có hợp đồng */}
+
           {hasContract(record.id) && (
             <Button
               type="default"
@@ -296,9 +319,10 @@ const Orders = () => {
               Hợp đồng
             </Button>
           )}
-          
-          {/* Nút Hủy - chỉ hiện nếu trạng thái là PENDING hoặc APPROVED */}
-          {(record.status === "PENDING" || record.status === "APPROVED") && (
+
+          {(record.status === "PENDING" ||
+            record.status === "APPROVED" ||
+            record.status === "DEPOSITED") && (
             <Button
               danger
               size="small"
@@ -485,10 +509,10 @@ const Orders = () => {
 
             {selectedOrder.paymentType === "DEPOSIT" && (
               <>
-                <Descriptions.Item label="Phần trăm đặt cọc">
+                <Descriptions.Item label="Phần trăm đặt cọc" span={2}>
                   {selectedOrder.depositPercentage}%
                 </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái đặt cọc">
+                <Descriptions.Item label="Trạng thái đặt cọc" span={2}>
                   {selectedOrder.depositPaid ? (
                     <Tag color="green" icon={<CheckCircleOutlined />}>
                       Đã đặt cọc
@@ -509,6 +533,7 @@ const Orders = () => {
                 </Descriptions.Item>
               </>
             )}
+
             <Descriptions.Item label="Trạng thái đơn hàng" span={2}>
               <Tag color={getStatusConfig(selectedOrder.status).color}>
                 {getStatusConfig(selectedOrder.status).text}
