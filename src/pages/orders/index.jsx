@@ -381,8 +381,8 @@ const Orders = () => {
           className="shadow-2xl rounded-xl"
           title={
             <div className="flex items-center gap-3">
-              <ShoppingCartOutlined className="text-2xl text-blue-600" />
-              <span className="text-2xl font-bold">Đơn hàng của tôi</span>
+              {/* <ShoppingCartOutlined className="text-2xl text-blue-600" /> */}
+              <span className="text-2xl ">Đơn hàng của tôi</span>
               <Tag color="blue" className="ml-2">
                 {orderList.length} đơn hàng
               </Tag>
