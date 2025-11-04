@@ -472,7 +472,7 @@ export default function ContractView() {
             <p className="font-bold text-lg mb-2">ĐẠI DIỆN BÊN A (BÊN BÁN)</p>
 
             {/* Giả sử backend trả về 'isSellerSigned' là true/false */}
-            {contract.isSellerSigned ? (
+            {contract.sellerSigned ? (
               // NẾU ĐÃ KÝ
               <>
                 <p className="italic mb-16 text-green-600 font-semibold">

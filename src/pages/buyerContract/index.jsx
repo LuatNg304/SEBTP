@@ -202,7 +202,7 @@ const BuyerContract = () => {
     >
       <Header />
 
-      <div className="max-w-[1200px] mx-auto px-4 py-8">
+      <div className="max-w-[1000px] mx-auto px-4 py-8">
         {/* Nút hành động phía trên */}
         <div className="flex justify-between items-center mb-6 print:hidden">
           <Button
@@ -267,13 +267,13 @@ const BuyerContract = () => {
           >
             {/* === PHẦN TIÊU ĐỀ === */}
             <div className="text-center mb-1">
-              <div style={{ fontSize: '13pt', fontWeight: 'bold' }}>
+              <div style={{ fontSize: '23pt', fontWeight: 'bold' }}>
                 CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
               </div>
             </div>
 
             <div className="text-center mb-3">
-              <div style={{ fontSize: '12pt', fontWeight: 'bold' }}>
+              <div style={{ fontSize: '18pt', fontWeight: 'bold' }}>
                 Độc lập – Tự do – Hạnh phúc
               </div>
             </div>
@@ -286,13 +286,13 @@ const BuyerContract = () => {
             {/* === MÃ HỢP ĐỒNG + NGÀY THÁNG === */}
             <div className="grid grid-cols-2 gap-8 mb-6">
               <div>
-                <div style={{ fontSize: '11pt' }}>
+                <div style={{ fontSize: '12pt' }}>
                   <span style={{ fontWeight: 'bold' }}>Số hợp đồng:</span>{' '}
                   {contract.contractCode}
                 </div>
               </div>
               <div className="text-right">
-                <div style={{ fontSize: '11pt', fontStyle: 'italic' }}>
+                <div style={{ fontSize: '12pt', fontStyle: 'italic' }}>
                   Ngày {new Date().getDate()} tháng{' '}
                   {new Date().getMonth() + 1} năm {new Date().getFullYear()}
                 </div>
@@ -316,7 +316,7 @@ const BuyerContract = () => {
             {/* === THÂN HỢP ĐỒNG === */}
 
             {/* 1. Các bên tham gia */}
-            <div className="mb-4" style={{ fontSize: '11pt' }}>
+            <div className="mb-4" style={{ fontSize: '12pt' }}>
               <div
                 style={{
                   fontWeight: 'bold',
@@ -357,7 +357,7 @@ const BuyerContract = () => {
             </div>
 
             {/* 2. Đối tượng hợp đồng */}
-            <div className="mb-4" style={{ fontSize: '11pt' }}>
+            <div className="mb-4" style={{ fontSize: '12pt' }}>
               <div
                 style={{
                   fontWeight: 'bold',
@@ -455,7 +455,7 @@ const BuyerContract = () => {
             </div>
 
             {/* 3. Giá trị hợp đồng */}
-            <div className="mb-4" style={{ fontSize: '11pt' }}>
+            <div className="mb-4" style={{ fontSize: '12pt' }}>
               <div
                 style={{
                   fontWeight: 'bold',
@@ -495,7 +495,7 @@ const BuyerContract = () => {
             </div>
 
             {/* 4. Phương thức thanh toán */}
-            <div className="mb-4" style={{ fontSize: '11pt' }}>
+            <div className="mb-4" style={{ fontSize: '12pt' }}>
               <div
                 style={{
                   fontWeight: 'bold',
@@ -519,7 +519,7 @@ const BuyerContract = () => {
             </div>
 
             {/* 5. Giao nhận hàng hóa */}
-            <div className="mb-6" style={{ fontSize: '11pt' }}>
+            <div className="mb-6" style={{ fontSize: '12pt' }}>
               <div
                 style={{
                   fontWeight: 'bold',
@@ -552,7 +552,7 @@ const BuyerContract = () => {
             </div>
 
             {/* 6. Cam kết */}
-            <div className="mb-8" style={{ fontSize: '11pt' }}>
+            <div className="mb-8" style={{ fontSize: '12pt' }}>
               <div
                 style={{
                   fontWeight: 'bold',
@@ -583,14 +583,14 @@ const BuyerContract = () => {
               <div className="text-center">
                 <div
                   style={{
-                    fontSize: '11pt',
+                    fontSize: '12pt',
                     fontWeight: 'bold',
                     marginBottom: '6pt',
                   }}
                 >
                   ĐẠI DIỆN BÊN A
                 </div>
-                <div style={{ fontSize: '10pt', marginBottom: '50pt' }}>
+                <div style={{ fontSize: '11pt', marginBottom: '50pt' }}>
                   (Ký và ghi rõ họ tên)
                 </div>
                 {contract.sellerSigned ? (
@@ -635,14 +635,14 @@ const BuyerContract = () => {
               <div className="text-center">
                 <div
                   style={{
-                    fontSize: '11pt',
+                    fontSize: '12pt',
                     fontWeight: 'bold',
                     marginBottom: '6pt',
                   }}
                 >
                   ĐẠI DIỆN BÊN B
                 </div>
-                <div style={{ fontSize: '10pt', marginBottom: '50pt' }}>
+                <div style={{ fontSize: '11pt', marginBottom: '50pt' }}>
                   (Ký và ghi rõ họ tên)
                 </div>
                 {contract.buyerSigned ? (
@@ -691,7 +691,7 @@ const BuyerContract = () => {
           <Card>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <FileTextOutlined className="text-3xl text-blue-600" />
+               
                 <div>
                   <div className="text-lg font-bold">
                     Trạng thái hợp đồng:{' '}
@@ -721,7 +721,7 @@ const BuyerContract = () => {
                     )}
                     {contract.buyerSigned && contract.sellerSigned && (
                       <span className="text-green-600 font-semibold">
-                        ✓ Cả hai bên đã ký hợp đồng
+                        Cả hai bên đã ký hợp đồng
                       </span>
                     )}
                   </div>
