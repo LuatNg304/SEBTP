@@ -312,33 +312,34 @@ const Order = () => {
               Xem
             </Button>
 
-            {currentStatus === "PENDING" && (
-              <>
-                <Popconfirm
-                  title="Xác nhận đơn hàng này?"
-                  onConfirm={() => handleApprove(record)}
-                  okText="Xác nhận"
-                  cancelText="Hủy"
-                  disabled={isUpdating}
-                >
-                  <Button type="link" loading={isUpdating}>
-                    Xác nhận
-                  </Button>
-                </Popconfirm>
-                <Popconfirm
-                  title="Bạn có chắc muốn từ chối?"
-                  onConfirm={() => handleReject(record)}
-                  okText="Từ chối"
-                  cancelText="Không"
-                  disabled={isUpdating}
-                  okType="danger"
-                >
-                  <Button type="link" danger loading={isUpdating}>
-                    Từ chối
-                  </Button>
-                </Popconfirm>
-              </>
-            )}
+            {(currentStatus === "PENDING" ||
+              currentStatus === "DEPOSITED") && (
+                <>
+                  <Popconfirm
+                    title="Xác nhận đơn hàng này?"
+                    onConfirm={() => handleApprove(record)}
+                    okText="Xác nhận"
+                    cancelText="Hủy"
+                    disabled={isUpdating}
+                  >
+                    <Button type="link" loading={isUpdating}>
+                      Xác nhận
+                    </Button>
+                  </Popconfirm>
+                  <Popconfirm
+                    title="Bạn có chắc muốn từ chối?"
+                    onConfirm={() => handleReject(record)}
+                    okText="Từ chối"
+                    cancelText="Không"
+                    disabled={isUpdating}
+                    okType="danger"
+                  >
+                    <Button type="link" danger loading={isUpdating}>
+                      Từ chối
+                    </Button>
+                  </Popconfirm>
+                </>
+              )}
             {currentStatus === "APPROVED" && (
               <Button
                 type="link"

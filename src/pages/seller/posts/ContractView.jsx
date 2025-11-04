@@ -475,7 +475,7 @@ export default function ContractView() {
             {contract.sellerSigned ? (
               // NẾU ĐÃ KÝ
               <>
-                <p className="italic mb-16 text-green-600 font-semibold">
+                <p className="italic mb-5 text-green-600 font-semibold">
                   (Đã ký điện tử)
                 </p>
                 <p className="font-bold">{formatText(contract.sellerName)}</p>
@@ -486,12 +486,12 @@ export default function ContractView() {
                 {/* Nút này chỉ hiển thị trên web (print:hidden) */}
                 <button
                   onClick={handleGoToSign}
-                  className="italic mb-16 text-blue-600 hover:text-blue-800 underline cursor-pointer print:hidden"
+                  className="italic mb-5 text-blue-600 hover:text-blue-800 underline cursor-pointer print:hidden"
                 >
                   (Nhấn để ký, ghi rõ họ tên)
                 </button>
                 {/* Chữ này chỉ hiển thị khi IN (hidden print:block) */}
-                <p className="italic mb-16 hidden print:block">
+                <p className="italic mb-5 hidden print:block">
                   (Ký, ghi rõ họ tên)
                 </p>
                 {/* Để trống tên khi chưa ký */}
@@ -503,11 +503,34 @@ export default function ContractView() {
           {/* BÊN B (BÊN MUA) - Giữ nguyên (hoặc thêm logic ký nếu cần) */}
           <div className="text-center">
             <p className="font-bold text-lg mb-2">ĐẠI DIỆN BÊN B (BÊN MUA)</p>
-            {/* TODO: Thêm logic ký cho bên B nếu cần
-              {contract.isBuyerSigned ? ... }
-            */}
-            <p className="italic mb-16">(Ký, ghi rõ họ tên)</p>
-   
+
+           
+            {contract.buyerSigned ? (
+              // NẾU ĐÃ KÝ
+              <>
+                <p className="italic mb-5 text-green-600 font-semibold">
+                  (Đã ký điện tử)
+                </p>
+                <p className="font-bold">{formatText(contract.buyerName)}</p>
+              </>
+            ) : (
+              // NẾU CHƯA KÝ
+              <>
+                {/* Nút này chỉ hiển thị trên web (print:hidden) */}
+                <button
+                  onClick={handleGoToSign}
+                  className="italic mb-5 text-blue-600 hover:text-blue-800 underline cursor-pointer print:hidden"
+                >
+                  (Nhấn để ký, ghi rõ họ tên)
+                </button>
+                {/* Chữ này chỉ hiển thị khi IN (hidden print:block) */}
+                <p className="italic mb-5 hidden print:block">
+                  (Ký, ghi rõ họ tên)
+                </p>
+                {/* Để trống tên khi chưa ký */}
+                <p className="font-bold h-6"> </p>
+              </>
+            )}
           </div>
         </section>
       </div>
