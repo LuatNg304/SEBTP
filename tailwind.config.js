@@ -5,7 +5,12 @@ export default {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+   extend: {
+      fontFamily: {
+        // Đặt tên cho font của bạn (ví dụ: 'font-signature')
+        'signature': ['"Dancing Script"', 'cursive'],
+      },
+    },
   },
   plugins: [],
 };

@@ -175,7 +175,7 @@ export default function SellerDashboard() {
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen bg-transparent ">
+    <div className="min-h-screen ">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
         <StatCard
           title="Lợi nhuận"
@@ -199,16 +199,19 @@ export default function SellerDashboard() {
         />
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md">
+      <div className="bg-white p-6 rounded-xl shadow-md flex-grow">
         <h3 className="text-xl font-semibold mb-4">Quản lý tin đăng</h3>
 
-        {/* 11. Thay CrudTemp bằng Table của Antd */}
         <Table
           columns={columns}
           dataSource={data}
           loading={loading}
           rowKey="id"
           pagination={{ pageSize: 5 }}
+          scroll={{
+            x: "max-content",
+  
+          }}
         />
       </div>
     </div>

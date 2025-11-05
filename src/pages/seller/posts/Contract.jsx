@@ -185,7 +185,7 @@ export default function Contract() {
   const totalAmount = (contract.price || 0) + (contract.shippingFee || 0);
 
   return (
-    <div className="bg-transparent min-h-screen font-sans p-4 sm:p-6 lg:p-8">
+    <div className="bg-transparent min-h-screen p-4 sm:p-6 lg:p-8">
       {/* Thanh điều hướng bên ngoài trang in */}
       <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center print:hidden">
         <button
@@ -214,7 +214,7 @@ export default function Contract() {
       {/* Giao diện hợp đồng */}
       <div
         id="contract-to-print"
-        className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8 sm:p-12 lg:p-16 font-serif text-gray-800"
+        className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8 sm:p-12 lg:p-16  text-gray-800"
       >
         {/* Tiêu đề */}
 
@@ -478,7 +478,7 @@ export default function Contract() {
 
         {/* === KHỐI GHI CHÚ MỚI (CHỈ HIỂN THỊ TRÊN WEB) === */}
         <section className="mb-8 print:hidden">
-          <h3 className="text-xl font-bold mb-4 font-serif">
+          <h3 className="text-xl font-bold mb-4 ">
             ĐIỀU 5: ĐIỀU KHOẢN BỔ SUNG
           </h3>
           <label

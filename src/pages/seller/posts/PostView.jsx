@@ -88,6 +88,7 @@ export default function PostView() {
           pricingPayload = {
             productType: "VEHICLE",
             vehicleBrand: values.vehicleBrand,
+           
             model: values.model,
             color: values.color,
             yearOfManufacture: Number(values.yearOfManufacture),
@@ -328,9 +329,9 @@ export default function PostView() {
                     style={{ width: "100%" }}
                     min={0}
                     formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
                     }
-                    parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    parser={(value) => value.replace(/\./g, "")}
                   />
                 </Form.Item>
 
@@ -370,9 +371,7 @@ export default function PostView() {
               <Form.Item label="Mô tả" name="description">
                 <Input.TextArea rows={4} />
               </Form.Item>
-              <Form.Item label="Địa chỉ" name="address">
-                <Input readOnly />
-              </Form.Item>
+          
 
               {/* Chi tiết sản phẩm */}
               <h2 className="text-xl font-semibold text-gray-700 mt-6">

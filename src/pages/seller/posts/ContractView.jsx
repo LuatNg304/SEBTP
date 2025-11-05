@@ -478,7 +478,9 @@ export default function ContractView() {
                 <p className="italic mb-5 text-green-600 font-semibold">
                   (Đã ký điện tử)
                 </p>
-                <p className="font-bold">{formatText(contract.sellerName)}</p>
+                <p className="signature-style ">
+                  {formatText(contract.sellerName)}
+                </p>
               </>
             ) : (
               // NẾU CHƯA KÝ
@@ -504,19 +506,19 @@ export default function ContractView() {
           <div className="text-center">
             <p className="font-bold text-lg mb-2">ĐẠI DIỆN BÊN B (BÊN MUA)</p>
 
-           
             {contract.buyerSigned ? (
               // NẾU ĐÃ KÝ
               <>
                 <p className="italic mb-5 text-green-600 font-semibold">
                   (Đã ký điện tử)
                 </p>
-                <p className="font-bold">{formatText(contract.buyerName)}</p>
+                <p className="signature-style">
+                  {formatText(contract.buyerName)}
+                </p>
               </>
             ) : (
               // NẾU CHƯA KÝ
               <>
-              
                 {/* Chữ này chỉ hiển thị khi IN (hidden print:block) */}
                 <p className="italic mb-5 hidden print:block">
                   (Ký, ghi rõ họ tên)

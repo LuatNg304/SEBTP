@@ -8,6 +8,20 @@ import { useNavigate } from "react-router-dom";
 import { uploadFile } from "../../utils/upload";
 import ImageUpload from "../../components/Upload/ImageUploadArea";
 
+
+const parseNumber = (value) => {
+  if (typeof value !== "string") return "";
+  return value.replace(/[^\d]/g, "");
+};
+
+
+const formatNumber = (value) => {
+  const rawValue = parseNumber(String(value)); // Luôn làm sạch trước
+  if (rawValue === "") return "";
+
+  // Sử dụng Intl.NumberFormat với locale "vi-VN" để có dấu chấm phân cách
+  return new Intl.NumberFormat("vi-VN").format(Number(rawValue));
+};
 export default function VehiclePost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
@@ -28,7 +42,6 @@ export default function VehiclePost() {
     paymentTypes: [],
     isUseWallet: false,
     wantsTrustedLabel: false,
-    
 
     // Thông tin xe
     vehicleBrand: "",
@@ -46,7 +59,7 @@ export default function VehiclePost() {
   // Thay thế đoạn useEffect hiện tại bằng đoạn này
   useEffect(() => {
     const fetchSuggestedPrice = async () => {
-      // 1. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA XE (theo swagger tối thiểu) 
+      // 1. CHỈ KIỂM TRA ĐIỀU KIỆN CƠ BẢN CỦA XE (theo swagger tối thiểu)
       if (
         !formData.vehicleBrand ||
         !formData.model ||
@@ -127,9 +140,6 @@ export default function VehiclePost() {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-     
-
-      // 1. Xử lý checkbox dạng boolean (bật/tắt)
       if (name === "wantsTrustedLabel" || name === "isUseWallet") {
         setFormData((prev) => ({
           ...prev,
@@ -146,10 +156,19 @@ export default function VehiclePost() {
           }));
         }
       }
-      // --- KẾT THÚC THAY ĐỔI ---
     } else {
-      // Input text, number, select...
-      setFormData({ ...formData, [name]: value });
+      // 1. Nếu là trường cần format số (price hoặc mileage)
+      if (name === "price" || name === "mileage") {
+        // Lấy giá trị số thô (loại bỏ dấu ".")
+        const numericValue = parseNumber(value);
+        if (!isNaN(Number(numericValue))) {
+          setFormData({ ...formData, [name]: numericValue });
+        }
+      } else {
+
+        setFormData({ ...formData, [name]: value });
+      }
+
     }
   };
 
@@ -372,9 +391,10 @@ export default function VehiclePost() {
                 id="mileage"
                 name="mileage"
                 label="Số km đã đi"
-                type="number"
-                placeholder="5000"
-                value={formData.mileage}
+                type="text"
+                inputMode="numeric" // <-- Thêm: Giữ bàn phím số trên di động
+                placeholder="5.000"
+                value={formatNumber(formData.mileage)} // <-- SỬ DỤNG HÀM FORMAT
                 onChange={handleChange}
                 unit="km"
                 required
@@ -396,9 +416,10 @@ export default function VehiclePost() {
               id="price"
               name="price"
               label="Giá bán"
-              type="number"
-              placeholder="10,000,000"
-              value={formData.price}
+              type="text" 
+              inputMode="numeric" 
+              placeholder="10.000.000" 
+              value={formatNumber(formData.price)} // <-- SỬ DỤNG HÀM FORMAT
               onChange={handleChange}
               unit="VNĐ"
               required

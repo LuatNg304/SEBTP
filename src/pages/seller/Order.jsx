@@ -357,7 +357,7 @@ const Order = () => {
 
   // --- RENDER JSX ---
   return (
-    <div className="min-h-screen bg-transparent space-y-6">
+    <div className="min-h-screen bg-transparent space-y-6 flex flex-col">
       {/* Bộ lọc Segmented */}
       <div className="bg-dark p-5 rounded-xl ">
         <Segmented
@@ -365,12 +365,10 @@ const Order = () => {
             {
               label: "Quản lý Đơn Hàng",
               value: "orders",
-              
             },
             {
               label: "Quản lý Hợp Đồng",
               value: "contracts",
-              
             },
           ]}
           value={view}
@@ -412,7 +410,7 @@ const Order = () => {
       )}
 
       {/* Bảng dữ liệu */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
+      <div className="bg-white p-6 rounded-xl shadow-md flex-grow">
         <h3 className="text-xl font-semibold mb-4">
           {view === "orders" ? "Danh sách Đơn hàng" : "Danh sách Hợp đồng"}
         </h3>
@@ -422,7 +420,10 @@ const Order = () => {
           dataSource={data}
           loading={loading || (view === "orders" && isUpdating)}
           rowKey="key"
-          scroll={{ x: "max-content" }}
+          scroll={{
+            x: "max-content",
+         
+          }}
         />
       </div>
     </div>
