@@ -200,9 +200,15 @@ const Order = () => {
   const handleViewContract = (record) => {
     navigate(`/seller/contract/view/${record.id}`);
   };
-
+   
+   
   const handleGoToDelivery = (record) => {
-    navigate(`/seller/order-deliveries/${record.id}`);
+    navigate(`/seller/order-deliveries/${record.id}`,
+      {
+        state: {
+          deliveryMethod: record.deliveryMethod,
+        }}
+    );
   };
 
   // --- ORDER ACTIONS ---

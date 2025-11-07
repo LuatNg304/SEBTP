@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   Descriptions,
@@ -18,15 +18,13 @@ import { toast } from "react-toastify";
 const STATUS_OPTIONS = [
   { value: "PREPARING", label: "Đang chuẩn bị" },
   { value: "READY", label: "Sẵn sàng giao" },
-  { value: "PICKUP_PENDING", label: "Chờ lấy hàng" },
+
   { value: "DELIVERING", label: "Đang giao hàng" },
+  { value: "PICKUP_PENDING", label: "Chờ lấy hàng" },
   { value: "DELIVERED", label: "Đã giao thành công" },
 ];
 
-// --- 2. TẠO STEP ITEMS TỪ OPTIONS (ĐỂ DÙNG TRONG COMPONENT STEPS) ---
-const stepItems = STATUS_OPTIONS.map((option) => ({
-  title: option.label,
-}));
+
 
 // --- HELPER: Định dạng Tag Trạng thái ---
 const getDeliveryStatusTag = (status) => {
@@ -68,15 +66,31 @@ export default function DeliveryView() {
 
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
+  const method = location.state?.deliveryMethod;
 
   const provider = deliveryInfo?.deliveryProvider?.toUpperCase();
   const orderId = deliveryInfo?.id;
   const isGhn = provider === "GHN";
 
-
+ console.log(method);
+ 
+ let availableStatusOptions; // Dùng 'let'
+ if (method === "BUYER_PICKUP") {
+   // Nếu là "BUYER_PICKUP", lọc bỏ "Đang giao hàng"
+   availableStatusOptions = STATUS_OPTIONS.filter(
+     (option) => option.value !== "DELIVERING"
+   );
+ } else {
+   // Mặc định trả về tất cả
+   availableStatusOptions = STATUS_OPTIONS;
+ }
+ const availableStepItems = availableStatusOptions.map((option) => ({
+   title: option.label,
+ }));
   const currentOptions = isGhn
-    ? STATUS_OPTIONS.filter((option) => option.value === "DELIVERED")
-    : STATUS_OPTIONS;
+    ? availableStatusOptions.filter((option) => option.value === "DELIVERED")
+    : availableStatusOptions;
 
   // --- HÀM TẢI DỮ LIỆU ---
   const fetchData = useCallback(async () => {
@@ -198,9 +212,10 @@ export default function DeliveryView() {
   }
 
   // --- 3. TÍNH TOÁN INDEX HIỆN TẠI CHO STEPS ---
-  const currentStepIndex = STATUS_OPTIONS.findIndex(
-    (option) => option.value === deliveryInfo.status
-  );
+ const currentStepIndex = availableStatusOptions.findIndex(
+   
+   (option) => option.value === deliveryInfo.status
+ );
 
   // --- GIAO DIỆN CHÍNH ---
   return (
@@ -228,7 +243,7 @@ export default function DeliveryView() {
           {/* Thêm khoảng cách dưới */}
           <Steps
             current={currentStepIndex}
-            items={stepItems}
+            items={availableStepItems}
             responsive={true} // Tự động thu gọn trên di động
           />
         </div>
