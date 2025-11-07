@@ -33,9 +33,7 @@ const formatPaymentType = (type) => {
   return type || "-";
 };
 
-/**
- * Chuyển đổi phương thức giao hàng
- */
+
 const formatDeliveryMethod = (method) => {
   if (method === "SELLER_DELIVERY") return "Người bán tự vận chuyển";
   if (method === "EXPRESS") return "Hỏa tốc";

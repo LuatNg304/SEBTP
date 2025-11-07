@@ -14,25 +14,9 @@ import api from "../../config/axios";
 import { useNavigate } from "react-router-dom";
 
 
-// --- MOCK DATA ---
-const sellerStats = {
-  profit: 15420.75,
-  profitChange: 12.4,
-  unitsSold: 430,
-  unitsChange: 8.2,
-  estimatedSales: 74500.6,
-  salesChange: 14.5,
-  ppcSpend: 3120.5,
-  ppcSpendChange: -4.2,
-};
 
-// --- HELPER ---
-const formatUSD = (num) =>
-  "$" +
-  num.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+
+
 
 // --- COMPONENTS ---
 const StatCard = ({ title, value, change }) => {
@@ -176,28 +160,7 @@ export default function SellerDashboard() {
   // --- RENDER ---
   return (
     <div className="min-h-screen ">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard
-          title="Lợi nhuận"
-          value={formatUSD(sellerStats.profit)}
-          change={sellerStats.profitChange}
-        />
-        <StatCard
-          title="Sản phẩm bán ra"
-          value={sellerStats.unitsSold}
-          change={sellerStats.unitsChange}
-        />
-        <StatCard
-          title="Doanh thu ước tính"
-          value={formatUSD(sellerStats.estimatedSales)}
-          change={sellerStats.salesChange}
-        />
-        <StatCard
-          title="Chi phí quảng cáo"
-          value={formatUSD(sellerStats.ppcSpend)}
-          change={sellerStats.ppcSpendChange}
-        />
-      </div>
+     
 
       <div className="bg-white p-6 rounded-xl shadow-md flex-grow">
         <h3 className="text-xl font-semibold mb-4">Quản lý tin đăng</h3>

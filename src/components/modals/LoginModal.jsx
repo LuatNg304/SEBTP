@@ -147,15 +147,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-                className="rounded border-gray-300 text-green-500 focus:ring-green-300"
-              />
-              Remember password
+            <label className="flex items-center ">
             </label>
             <button
               type="button"

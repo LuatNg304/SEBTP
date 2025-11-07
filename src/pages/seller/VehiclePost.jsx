@@ -249,7 +249,7 @@ export default function VehiclePost() {
               id="title"
               name="title"
               label="Tiêu đề bài đăng"
-              placeholder="Ví dụ: Honda Wave RSX 2020, Màu đỏ"
+              placeholder="Ví dụ: VinFast E34, màu xám ghi"
               value={formData.title}
               onChange={handleChange}
               required
@@ -354,7 +354,7 @@ export default function VehiclePost() {
                 id="vehicleBrand"
                 name="vehicleBrand"
                 label="Hãng xe"
-                placeholder="Honda"
+                placeholder="Tesla"
                 value={formData.vehicleBrand}
                 onChange={handleChange}
                 required
@@ -363,7 +363,7 @@ export default function VehiclePost() {
                 id="model"
                 name="model"
                 label="Dòng xe"
-                placeholder="Air Blade"
+                placeholder="E500"
                 value={formData.model}
                 onChange={handleChange}
                 required

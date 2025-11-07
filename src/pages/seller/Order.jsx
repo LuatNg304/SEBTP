@@ -6,32 +6,20 @@ import {
   Space,
   Button,
   Popconfirm,
-  Segmented, // Thêm Segmented
-  Statistic, // Giữ lại Statistic
+  Segmented,
+  Statistic,
 } from "antd";
-// 1. Thêm FileText
-import {
-  Archive,
-  Clock,
-  Truck,
-  PackageCheck,
-  FileText, // <-- THÊM
-} from "lucide-react";
+import { Archive, Clock, Truck, PackageCheck, FileText } from "lucide-react";
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
 import { useNavigate } from "react-router-dom";
 
-// --- MOCK STATS DATA ---
-const orderStats = {
-  totalOrders: 250,
-  pendingOrders: 15,
-  shippedOrders: 30,
-  deliveredOrders: 205,
-};
+// --- XÓA MOCK STATS DATA ---
+// const orderStats = { ... };
 
 // --- HELPER COMPONENTS ---
-
+// (Giữ nguyên getOrderStatusTag, getContractStatusTag, StatCard)
 const getOrderStatusTag = (status) => {
   let color = "gray";
   let text = "KHÔNG RÕ";
@@ -106,7 +94,16 @@ const Order = () => {
   const [view, setView] = useState("orders"); // 'orders' hoặc 'contracts'
   const navigate = useNavigate();
 
+  // --- THÊM STATE CHO STATS ---
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    pendingOrders: 0, // Sẽ bao gồm PENDING và DEPOSITED
+    approvedOrders: 0,
+    doneOrders: 0,
+  });
+
   // --- FETCH DATA ---
+  // (Giữ nguyên fetchOrders, fetchContracts)
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
@@ -159,6 +156,39 @@ const Order = () => {
     }
   }, [view, fetchOrders, fetchContracts]);
 
+  // --- THÊM EFFECT ĐỂ TÍNH TOÁN STATS ---
+  useEffect(() => {
+    // Chỉ tính toán lại khi đang ở view 'orders' và data có thay đổi
+    if (view === "orders") {
+      const total = data.length;
+
+      // Tính "Đang chờ xử lý" (bao gồm PENDING và DEPOSITED)
+      const pending = data.filter(
+        (item) =>
+          item.status?.toUpperCase() === "PENDING" ||
+          item.status?.toUpperCase() === "DEPOSITED"
+      ).length;
+
+      // Tính "Đã Xác Nhận" (sẵn sàng giao)
+      const approved = data.filter(
+        (item) => item.status?.toUpperCase() === "APPROVED"
+      ).length;
+
+      // Tính "Đã Hoàn Tất"
+      const done = data.filter(
+        (item) => item.status?.toUpperCase() === "DONE"
+      ).length;
+
+      setStats({
+        totalOrders: total,
+        pendingOrders: pending,
+        approvedOrders: approved,
+        doneOrders: done,
+      });
+    }
+  }, [data, view]); // Chạy lại khi 'data' hoặc 'view' thay đổi
+
+  // --- (Giữ nguyên các hàm handle... và column definitions) ---
   // --- VIEW DETAILS ---
   const handleViewOrder = (record) => {
     navigate(`/seller/order/view/${record.id}`);
@@ -168,7 +198,6 @@ const Order = () => {
   };
 
   const handleGoToDelivery = (record) => {
-    // Điều hướng đến trang chi tiết giao hàng với ID của đơn hàng
     navigate(`/seller/order-deliveries/${record.id}`);
   };
 
@@ -183,7 +212,7 @@ const Order = () => {
     try {
       await api.get(`/seller/orders/approve?orderId=${id}`);
       toast.success(`Phê duyệt đơn hàng ${id} thành công!`);
-      fetchOrders(); // <-- 2. SỬA LỖI: Thêm ()
+      fetchOrders();
     } catch (err) {
       console.error(`Update Error (Approve):`, err);
       toast.error(
@@ -200,7 +229,6 @@ const Order = () => {
       toast.error("Không có 'orderId' để từ chối.");
       return;
     }
-    // Sửa lỗi typo IDBIndex -> id
     console.log("Đang từ chối orderId:", id);
     setIsUpdating(true);
     try {
@@ -209,7 +237,7 @@ const Order = () => {
         reason: "tu chou",
       });
       toast.success(`Từ chối đơn hàng ${id} thành công!`);
-      fetchOrders(); // <-- 2. SỬA LỖI: Thêm ()
+      fetchOrders();
     } catch (err) {
       console.error(`Update Error (Reject):`, err);
       toast.error(
@@ -220,27 +248,34 @@ const Order = () => {
     }
   };
 
-  // -
+  // --- COLUMN DEFINITIONS ---
 
-  // 3. DI CHUYỂN contractColumns ra ngoài
   const contractColumns = [
     {
       title: "Mã Hợp Đồng",
-      dataIndex: "id", // Giả sử là 'id'
+      dataIndex: "id",
       key: "id",
       render: (text) => <a className="font-medium">#{text}</a>,
+      sorter: (a, b) => a.id - b.id,
     },
     {
       title: "Tên Khách Hàng",
-      dataIndex: "buyerName", // Giả sử
+      dataIndex: "buyerName",
       key: "buyerName",
+      sorter: (a, b) => (a.buyerName || "").localeCompare(b.buyerName || ""),
     },
-    
+
     {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => getContractStatusTag(status), // Dùng helper của Contract
+      render: (status) => getContractStatusTag(status),
+      filters: [
+        { text: "Chờ Ký", value: "PENDING" },
+        { text: "Đã Ký", value: "SIGNED" },
+        { text: "Đã Hủy", value: "CANCELLED" },
+      ],
+      onFilter: (value, record) => record.status?.toUpperCase() === value,
     },
     {
       title: "Hành Động",
@@ -259,15 +294,25 @@ const Order = () => {
 
   const orderColumns = [
     {
+      title: "Mã Đơn hàng",
+      dataIndex: "id",
+      key: "id",
+      render: (text) => <a className="font-medium">#{text}</a>,
+      sorter: (a, b) => a.id - b.id,
+    },
+    {
       title: "Hãng xe",
       dataIndex: "vehicleBrand",
       key: "vehicleBrand",
       render: (text) => <a className="font-medium">{text}</a>,
+      sorter: (a, b) =>
+        (a.vehicleBrand || "").localeCompare(b.vehicleBrand || ""),
     },
     {
       title: "Model",
       dataIndex: "model",
       key: "model",
+      sorter: (a, b) => (a.model || "").localeCompare(b.model || ""),
     },
     {
       title: "Phương thức TT",
@@ -276,23 +321,37 @@ const Order = () => {
       render: (type) => (
         <Tag color={type === "DEPOSIT" ? "purple" : "blue"}>{type}</Tag>
       ),
+      sorter: (a, b) =>
+        (a.paymentType || "").localeCompare(b.paymentType || ""),
     },
     {
       title: "Vận chuyển",
       dataIndex: "deliveryMethod",
       key: "deliveryMethod",
+      sorter: (a, b) =>
+        (a.deliveryMethod || "").localeCompare(b.deliveryMethod || ""),
     },
     {
       title: "Ngày Đặt",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => (text ? dayjs(text).format("DD/MM/YYYY") : "N/A"),
+      sorter: (a, b) =>
+        dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf(),
     },
     {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
       render: (status) => getOrderStatusTag(status),
+      filters: [
+        { text: "Đã Xác Nhận", value: "APPROVED" },
+        { text: "Đã Hủy/Từ chối", value: "REJECTED" },
+        { text: "Đang Chờ Xử Lý", value: "PENDING" },
+        { text: "Đã đặt cọc", value: "DEPOSITED" },
+        { text: "Hoàn tất", value: "DONE" },
+      ],
+      onFilter: (value, record) => record.status?.toUpperCase() === value,
     },
     {
       title: "Hành Động",
@@ -302,44 +361,40 @@ const Order = () => {
       render: (_, record) => {
         const currentStatus = record.status?.toUpperCase();
 
-     
-
         return (
           <Space size="small">
             <Button type="link" onClick={() => handleViewOrder(record)}>
               {" "}
-              {/* 4. SỬA LỖI: handleView -> handleViewOrder */}
               Xem
             </Button>
 
-            {(currentStatus === "PENDING" ||
-              currentStatus === "DEPOSITED") && (
-                <>
-                  <Popconfirm
-                    title="Xác nhận đơn hàng này?"
-                    onConfirm={() => handleApprove(record)}
-                    okText="Xác nhận"
-                    cancelText="Hủy"
-                    disabled={isUpdating}
-                  >
-                    <Button type="link" loading={isUpdating}>
-                      Xác nhận
-                    </Button>
-                  </Popconfirm>
-                  <Popconfirm
-                    title="Bạn có chắc muốn từ chối?"
-                    onConfirm={() => handleReject(record)}
-                    okText="Từ chối"
-                    cancelText="Không"
-                    disabled={isUpdating}
-                    okType="danger"
-                  >
-                    <Button type="link" danger loading={isUpdating}>
-                      Từ chối
-                    </Button>
-                  </Popconfirm>
-                </>
-              )}
+            {(currentStatus === "PENDING" || currentStatus === "DEPOSITED") && (
+              <>
+                <Popconfirm
+                  title="Xác nhận đơn hàng này?"
+                  onConfirm={() => handleApprove(record)}
+                  okText="Xác nhận"
+                  cancelText="Hủy"
+                  disabled={isUpdating}
+                >
+                  <Button type="link" loading={isUpdating}>
+                    Xác nhận
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  title="Bạn có chắc muốn từ chối?"
+                  onConfirm={() => handleReject(record)}
+                  okText="Từ chối"
+                  cancelText="Không"
+                  disabled={isUpdating}
+                  okType="danger"
+                >
+                  <Button type="link" danger loading={isUpdating}>
+                    Từ chối
+                  </Button>
+                </Popconfirm>
+              </>
+            )}
             {currentStatus === "APPROVED" && (
               <Button
                 type="link"
@@ -378,33 +433,32 @@ const Order = () => {
         />
       </div>
 
-      {/* Ẩn thống kê khi xem hợp đồng */}
+      {/* --- CẬP NHẬT STATS ĐỂ DÙNG STATE ĐỘNG --- */}
       {view === "orders" && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <StatCard
             title="Tổng Đơn Hàng"
-            value={orderStats.totalOrders}
+            value={stats.totalOrders}
             icon={<Archive className="w-6 h-6" />}
             colorClass="text-blue-600"
           />
           <StatCard
             title="Đang Chờ Xử Lý"
-            value={orderStats.pendingOrders}
+            value={stats.pendingOrders}
             icon={<Clock className="w-6 h-6" />}
             colorClass="text-orange-600"
           />
           <StatCard
-            title="Đang Vận Chuyển"
-            value={orderStats.shippedOrders}
+            title="Đã Xác Nhận"
+            value={stats.approvedOrders}
             icon={<Truck className="w-6 h-6" />}
             colorClass="text-cyan-600"
           />
           <StatCard
-            title="Đã Giao Thành Công"
-            value={orderStats.deliveredOrders}
+            title="Đã Hoàn Tất"
+            value={stats.doneOrders}
             icon={<PackageCheck className="w-6 h-6" />}
             colorClass="text-green-600"
-            // 5. XÓA 'WANNAFIX'
           />
         </div>
       )}
@@ -422,7 +476,6 @@ const Order = () => {
           rowKey="key"
           scroll={{
             x: "max-content",
-         
           }}
         />
       </div>
