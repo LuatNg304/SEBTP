@@ -306,7 +306,7 @@ const Orders = () => {
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record.id)}
           >
-            Chi tiết
+            Tình trạng giao hàng
           </Button>
 
           {hasContract(record.id) && (
@@ -524,7 +524,7 @@ const Orders = () => {
                 <Descriptions.Item label="Số tiền đã cọc" span={2}>
                   <span className="font-semibold text-green-600">
                     {(
-                      ((selectedOrder.price + selectedOrder.shippingFee) *
+                      ((selectedOrder.price) *
                         selectedOrder.depositPercentage) /
                       100
                     ).toLocaleString("vi-VN")}{" "}

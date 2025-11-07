@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
   Card,
-  Timeline,
+  Steps,
   Descriptions,
   Tag,
   Spin,
   Button,
   Space,
+  Alert,
+  Divider,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -16,6 +18,7 @@ import {
   ShoppingCartOutlined,
   EnvironmentOutlined,
   DollarOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import Header from "../../components/header";
 import { useParams, useNavigate } from "react-router-dom";
@@ -112,77 +115,36 @@ const OrderDelivery = () => {
     return statusMap[status] || { text: status, color: "default" };
   };
 
-  // ✅ Tạo timeline items
-  const getTimelineItems = () => {
+  // ✅ Tạo steps items cho timeline nằm ngang (chỉ text, không icon)
+  const getStepsItems = () => {
     const statuses = [
-      "PREPARING",
-      "READY",
-      "DELIVERING",
-      "PICKUP_PENDING",
-      "DELIVERED",
-      "RECEIVED",
+      { key: "PREPARING", title: "Chuẩn bị" },
+      { key: "READY", title: "Sẵn sàng" },
+      { key: "DELIVERING", title: "Đang giao" },
+      { key: "PICKUP_PENDING", title: "Chờ lấy" },
+      { key: "DELIVERED", title: "Đã giao" },
+      { key: "RECEIVED", title: "Đã nhận" },
     ];
 
-    const currentStatusIndex = statuses.indexOf(delivery?.status);
+    const currentStatusIndex = statuses.findIndex(
+      (s) => s.key === delivery?.status
+    );
 
     return statuses.map((status, index) => {
-      const config = getDeliveryStatusConfig(status);
-      const isPassed = index <= currentStatusIndex;
       const isCurrent = index === currentStatusIndex;
 
       return {
-        dot: isPassed ? (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: isCurrent ? config.color : "#52c41a",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: 16,
-            }}
-          >
-            {config.icon}
-          </div>
-        ) : (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: "#d9d9d9",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#8c8c8c",
-              fontSize: 16,
-            }}
-          >
-            {config.icon}
-          </div>
+        title: (
+          <span style={{ fontWeight: isCurrent ? "bold" : "normal" }}>
+            {status.title}
+          </span>
         ),
-        color: isPassed ? (isCurrent ? config.color : "green") : "gray",
-        children: (
-          <div>
-            <div
-              style={{
-                fontWeight: isCurrent ? "bold" : "normal",
-                fontSize: isCurrent ? 16 : 14,
-                marginBottom: 4,
-              }}
-            >
-              {config.text}
-            </div>
-            {isCurrent && (
-              <Tag color={config.color} style={{ marginTop: 4 }}>
-                Trạng thái hiện tại
-              </Tag>
-            )}
-          </div>
-        ),
+        status:
+          index < currentStatusIndex
+            ? "finish"
+            : isCurrent
+            ? "process"
+            : "wait",
       };
     });
   };
@@ -205,6 +167,7 @@ const OrderDelivery = () => {
     return paymentMap[type] || type;
   };
 
+  // ✅ Cập nhật đầy đủ 6 trạng thái đơn hàng
   const getOrderStatusConfig = (status) => {
     const statusMap = {
       PENDING: { text: "Chờ xác nhận", color: "orange" },
@@ -212,6 +175,7 @@ const OrderDelivery = () => {
       APPROVED: { text: "Đã xác nhận", color: "blue" },
       DONE: { text: "Hoàn thành", color: "green" },
       DEPOSITED: { text: "Đã đặt cọc", color: "cyan" },
+      CANCELED: { text: "Đã hủy", color: "volcano" },
     };
     return statusMap[status] || { text: status, color: "default" };
   };
@@ -266,6 +230,10 @@ const OrderDelivery = () => {
     );
   }
 
+  // ✅ Kiểm tra nếu đơn hàng bị hủy hoặc từ chối
+  const isOrderCanceledOrRejected =
+    order.status === "CANCELED" || order.status === "REJECTED";
+
   return (
     <div
       className="overflow-x-hidden"
@@ -282,7 +250,26 @@ const OrderDelivery = () => {
 
       <div className="max-w-[1200px] mx-auto px-4 py-8">
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          {/* Header Card */}
+          {/* ✅ Hiển thị thông báo nếu đơn hàng bị hủy hoặc từ chối */}
+          {isOrderCanceledOrRejected && (
+            <Alert
+              message={
+                order.status === "CANCELED"
+                  ? "Đơn hàng đã bị hủy"
+                  : "Đơn hàng đã bị từ chối"
+              }
+              description={
+                order.status === "CANCELED"
+                  ? "Đơn hàng này đã được hủy và không thể giao hàng."
+                  : "Đơn hàng này đã bị từ chối bởi người bán."
+              }
+              type="error"
+              icon={<CloseCircleOutlined />}
+              showIcon
+            />
+          )}
+
+          {/* ✅ Card gộp: Theo dõi giao hàng + Lộ trình */}
           <Card
             bordered={false}
             className="shadow-2xl rounded-xl"
@@ -300,14 +287,21 @@ const OrderDelivery = () => {
               </Button>
             }
           >
+            {/* Phần 1: Thông tin giao hàng */}
             <Descriptions bordered column={2}>
-              <Descriptions.Item label="Mã vận đơn" span={2}>
-                <span className="font-bold text-blue-600">
-                  {delivery.deliveryTrackingNumber}
-                </span>
-              </Descriptions.Item>
+              {delivery.deliveryTrackingNumber && (
+                <Descriptions.Item label="Mã vận đơn" span={2}>
+                  <span className="font-bold text-blue-600">
+                    {delivery.deliveryTrackingNumber}
+                  </span>
+                </Descriptions.Item>
+              )}
+
               <Descriptions.Item label="Đơn vị vận chuyển">
-                <Tag color="blue">{delivery.deliveryProvider}</Tag>
+                <Tag color="blue">
+                  {" "}
+                  {getDeliveryMethod(order.deliveryMethod)}
+                </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Ngày giao dự kiến">
                 <ClockCircleOutlined className="mr-2" />
@@ -323,24 +317,46 @@ const OrderDelivery = () => {
                 </Tag>
               </Descriptions.Item>
             </Descriptions>
-          </Card>
 
-          {/* Timeline Card */}
-          <Card
-            bordered={false}
-            className="shadow-2xl rounded-xl"
-            title={
-              <div className="flex items-center gap-3">
-                <EnvironmentOutlined className="text-2xl text-green-600" />
-                <span className="text-xl font-bold">Lộ trình giao hàng</span>
-              </div>
-            }
-          >
-            <Timeline
-              mode="left"
-              items={getTimelineItems()}
-              style={{ paddingTop: 20 }}
-            />
+            {/* ✅ Phần 2: Lộ trình giao hàng (chỉ hiển thị nếu không bị hủy/từ chối) */}
+            {!isOrderCanceledOrRejected && (
+              <>
+                <Divider orientation="left">
+                  <div className="flex items-center gap-2">
+                    <EnvironmentOutlined className="text-green-600" />
+                    <span className="">Lộ trình giao hàng</span>
+                  </div>
+                </Divider>
+
+                <style>
+                  {`
+                    .custom-steps .ant-steps-item-icon {
+                      display: none !important;
+                    }
+                    .custom-steps .ant-steps-item-container {
+                      padding-left: 0 !important;
+                    }
+                    .custom-steps .ant-steps-item-content {
+                      min-height: auto !important;
+                    }
+                  `}
+                </style>
+
+                <Steps
+                  className="custom-steps"
+                  current={[
+                    "PREPARING",
+                    "READY",
+                    "DELIVERING",
+                    "PICKUP_PENDING",
+                    "DELIVERED",
+                    "RECEIVED",
+                  ].indexOf(delivery?.status)}
+                  items={getStepsItems()}
+                  style={{ padding: "20px 0" }}
+                />
+              </>
+            )}
           </Card>
 
           {/* Order Details Card */}
@@ -409,19 +425,19 @@ const OrderDelivery = () => {
                 </Tag>
               </Descriptions.Item>
 
-              {order.paymentType === "DEPOSIT" && (
+              {order.paymentType === "DEPOSIT" && order.depositPercentage && (
                 <>
                   <Descriptions.Item label="Phần trăm đặt cọc">
                     {order.depositPercentage}%
                   </Descriptions.Item>
-                  <Descriptions.Item label="Trạng thái đặt cọc">
-                    {order.depositPaid ? (
-                      <Tag color="green" icon={<CheckCircleOutlined />}>
-                        Đã đặt cọc
-                      </Tag>
-                    ) : (
-                      <Tag color="orange">Chưa đặt cọc</Tag>
-                    )}
+                  <Descriptions.Item label="Số tiền đặt cọc">
+                    <span className="font-semibold text-cyan-600">
+                      {(
+                        (order.price * order.depositPercentage) /
+                        100
+                      ).toLocaleString("vi-VN")}{" "}
+                      VNĐ
+                    </span>
                   </Descriptions.Item>
                 </>
               )}
