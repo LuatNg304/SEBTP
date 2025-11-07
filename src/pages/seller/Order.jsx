@@ -40,7 +40,11 @@ const getOrderStatusTag = (status) => {
       break;
     case "REJECTED":
       color = "red";
-      text = "Đã Hủy/Từ chối";
+      text = "Từ chối";
+      break;
+    case "CANCELED":
+      color = "red";
+      text = "Đã hủy";
       break;
     case "DEPOSITED":
       color = "red";
@@ -225,6 +229,8 @@ const Order = () => {
 
   const handleReject = async (record) => {
     const { id } = record;
+    console.log(id);
+    
     if (!id) {
       toast.error("Không có 'orderId' để từ chối.");
       return;
@@ -233,7 +239,7 @@ const Order = () => {
     setIsUpdating(true);
     try {
       await api.post("/seller/orders/reject", {
-        id: parseInt(id),
+        orderId: parseInt(id),
         reason: "tu chou",
       });
       toast.success(`Từ chối đơn hàng ${id} thành công!`);
