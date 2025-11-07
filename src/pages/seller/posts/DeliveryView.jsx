@@ -1,19 +1,15 @@
+"use client";
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   Descriptions,
   Select,
   Tag,
   Space,
+  Steps, // <-- 1. THÊM STEPS
 } from "antd";
-import {
-  ArrowLeft,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import api from "../../../config/axios";
 import { toast } from "react-toastify";
 
@@ -26,6 +22,11 @@ const STATUS_OPTIONS = [
   { value: "DELIVERING", label: "Đang giao hàng" },
   { value: "DELIVERED", label: "Đã giao thành công" },
 ];
+
+// --- 2. TẠO STEP ITEMS TỪ OPTIONS (ĐỂ DÙNG TRONG COMPONENT STEPS) ---
+const stepItems = STATUS_OPTIONS.map((option) => ({
+  title: option.label,
+}));
 
 // --- HELPER: Định dạng Tag Trạng thái ---
 const getDeliveryStatusTag = (status) => {
@@ -63,38 +64,36 @@ export default function DeliveryView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState(""); // Trạng thái được chọn trong dropdown
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const navigate = useNavigate();
-  const { id } = useParams(); // Lấy ID từ URL
+  const { id } = useParams();
 
   const provider = deliveryInfo?.deliveryProvider?.toUpperCase();
+  const orderId = deliveryInfo?.id;
   const isGhn = provider === "GHN";
+
 
   const currentOptions = isGhn
     ? STATUS_OPTIONS.filter((option) => option.value === "DELIVERED")
     : STATUS_OPTIONS;
 
   // --- HÀM TẢI DỮ LIỆU ---
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/seller/order-deliveries/${id}`);
-      if (res.data && res.data.success) {
-        const data = res.data.data || res.data;
+      if (res.data && (res.data.success || res.data)) {
+        // Linh hoạt hơn với cấu trúc response
+        const data = res.data.data || res.data; // Lấy data.data trước, nếu không có thì lấy res.data
         setDeliveryInfo(data);
 
-        // === LOGIC CẬP NHẬT Ở ĐÂY ===
         const provider = data?.deliveryProvider?.toUpperCase();
         if (provider === "GHN") {
-          // Nếu là GHN, tự động đặt trạng thái được chọn là "DELIVERED"
           setSelectedStatus("DELIVERED");
         } else {
-          // Nếu là nhà vận chuyển khác, giữ trạng thái hiện tại
           setSelectedStatus(data.status);
         }
-   
       } else {
         throw new Error(res.data.message || "Không thể tải dữ liệu");
       }
@@ -109,6 +108,7 @@ export default function DeliveryView() {
   }, [id]);
 
   // --- HÀM CẬP NHẬT TRẠNG THÁI (ĐÃ CẬP NHẬT) ---
+
   const handleUpdateStatus = async () => {
     if (!selectedStatus) {
       toast.error("Vui lòng chọn một trạng thái để cập nhật.");
@@ -116,33 +116,37 @@ export default function DeliveryView() {
     }
 
     setIsUpdating(true);
+
+    // Log kiểm tra
+    console.log(
+      "Đang cập nhật với orderId:",
+      orderId,
+      "và status:",
+      selectedStatus
+    );
+
     try {
-      // Lấy nhà cung cấp (provider) một cách an toàn,
-      // và chuyển sang chữ hoa để so sánh
       const provider = deliveryInfo?.deliveryProvider?.toUpperCase();
 
       if (provider === "GHN") {
-        // --- 1. Lôgic mới cho GHN (Dùng PUT) ---
-        // API PUT thường gửi dữ liệu trong body, không phải query param.
-        // Tôi giả định API của bạn mong muốn { deliveryStatus: "TRẠNG THÁI" }
         const payload = {
           deliveryStatus: selectedStatus,
         };
-        await api.put(`/seller/order-deliveries/${id}/ghn`, payload);
+        // Sử dụng `orderId` (từ useParams)
+        await api.put(`/seller/order-deliveries/${orderId}/ghn`, payload);
       } else {
-        // --- 2. Lôgic cũ (Manual) ---
-     
+        // Sử dụng `orderId` (từ useParams)
         await api.put(
-          `/seller/order-deliveries/${id}/manual?deliveryStatus=${selectedStatus}`
+          `/seller/order-deliveries/${orderId}/manual?deliveryStatus=${selectedStatus}`
         );
       }
 
-      // Phần còn lại giữ nguyên
       toast.success("Cập nhật trạng thái thành công!");
-      fetchData(); // Tải lại dữ liệu để thấy thay đổi
+      fetchData();
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || "Cập nhật thất bại";
+      console.error("Lỗi cập nhật:", err); // Thêm log lỗi
       toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
@@ -193,6 +197,11 @@ export default function DeliveryView() {
     );
   }
 
+  // --- 3. TÍNH TOÁN INDEX HIỆN TẠI CHO STEPS ---
+  const currentStepIndex = STATUS_OPTIONS.findIndex(
+    (option) => option.value === deliveryInfo.status
+  );
+
   // --- GIAO DIỆN CHÍNH ---
   return (
     <div className="bg-transparent min-h-screen font-sans p-4 sm:p-6 lg:p-8">
@@ -212,6 +221,17 @@ export default function DeliveryView() {
         <h2 className="text-xl font-semibold mb-6">
           Chi tiết Giao hàng cho Đơn hàng #{deliveryInfo.orderId}
         </h2>
+
+        {/* --- 4. THÊM COMPONENT STEPS VÀO ĐÂY --- */}
+        <div className="mb-8">
+          {" "}
+          {/* Thêm khoảng cách dưới */}
+          <Steps
+            current={currentStepIndex}
+            items={stepItems}
+            responsive={true} // Tự động thu gọn trên di động
+          />
+        </div>
 
         {/* Component Descriptions của Ant Design để hiển thị thông tin */}
         <Descriptions bordered column={1}>
@@ -241,34 +261,29 @@ export default function DeliveryView() {
         </Descriptions>
 
         {/* Khung Cập nhật Trạng thái */}
-        {/* Chỉ hiển thị nếu đơn hàng chưa được giao */}
-        {/* Khung Cập nhật Trạng thái */}
         {deliveryInfo.status !== "DELIVERED" && (
           <div className="mt-8 pt-6 border-t">
             <h3 className="text-lg font-semibold mb-4">Cập nhật trạng thái</h3>
 
-            {/* === LOGIC MỚI: KIỂM TRA isGhn === */}
             {isGhn ? (
-              // 1. NẾU LÀ GHN: Chỉ hiển thị nút (vì status đã được set là "DELIVERED")
+              // 1. NẾU LÀ GHN
               <Button
                 type="primary"
                 size="large"
                 onClick={handleUpdateStatus}
                 loading={isUpdating}
-                disabled={
-                  isUpdating || deliveryInfo.status === selectedStatus // Vô hiệu hóa nếu đã là DELIVERED
-                }
-                style={{ width: "100%" }} // Cho nút rộng hết cỡ
+                disabled={isUpdating || deliveryInfo.status === selectedStatus}
+                style={{ width: "100%" }}
               >
-                {isUpdating ? "..." : "Cập nhật "}
+                {isUpdating ? "..." : "Cập nhật (GHN)"}
               </Button>
             ) : (
-              // 2. NẾU KHÔNG PHẢI GHN: Hiển thị như cũ (Select + Button)
+              // 2. NẾU KHÔNG PHẢI GHN
               <Space.Compact style={{ width: "100%" }}>
                 <Select
                   value={selectedStatus}
                   onChange={(value) => setSelectedStatus(value)}
-                  options={currentOptions} // 'currentOptions' sẽ tự động là full list
+                  options={currentOptions}
                   style={{ width: "100%" }}
                   size="large"
                   placeholder="Chọn trạng thái..."
@@ -286,7 +301,6 @@ export default function DeliveryView() {
                 </Button>
               </Space.Compact>
             )}
-           
           </div>
         )}
       </div>

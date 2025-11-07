@@ -170,7 +170,7 @@ export default function ContractView() {
   const totalAmount = (contract.price || 0) + (contract.shippingFee || 0);
 
   return (
-    <div className="bg-transparent min-h-screen font-sans p-4 sm:p-6 lg:p-8">
+    <div className="bg-transparent min-h-screen  p-4 sm:p-6 lg:p-8">
       {/* Thanh điều hướng (KHÔNG IN) */}
       <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center print:hidden">
         <button
@@ -193,7 +193,7 @@ export default function ContractView() {
       {/* Giao diện hợp đồng A4 */}
       <div
         id="contract-to-print"
-        className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8 sm:p-12 lg:p-16 font-serif text-gray-800"
+        className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8 sm:p-12 lg:p-16  text-gray-800"
       >
         {/* Tiêu đề (Giữ nguyên) */}
         <div className="text-center mb-10">
@@ -221,7 +221,7 @@ export default function ContractView() {
         {/* Các bên (Giữ nguyên) */}
         <section className="mb-8 space-y-4">
           <div>
-            <h3 className="text-lg font-bold mb-2">BÊN A (BÊN BÁN):</h3>
+            <h3 className="text-lg font-bold mb-2">BÊN A (BÊN BÀN):</h3>
             <p>
               <span className="font-semibold">Ông/Bà:</span>{" "}
               {formatText(contract.sellerName)}
@@ -478,7 +478,9 @@ export default function ContractView() {
                 <p className="italic mb-5 text-green-600 font-semibold">
                   (Đã ký điện tử)
                 </p>
-                <p className="font-bold">{formatText(contract.sellerName)}</p>
+                <p className="signature-style ">
+                  {formatText(contract.sellerName)}
+                </p>
               </>
             ) : (
               // NẾU CHƯA KÝ
@@ -504,25 +506,19 @@ export default function ContractView() {
           <div className="text-center">
             <p className="font-bold text-lg mb-2">ĐẠI DIỆN BÊN B (BÊN MUA)</p>
 
-           
             {contract.buyerSigned ? (
               // NẾU ĐÃ KÝ
               <>
                 <p className="italic mb-5 text-green-600 font-semibold">
                   (Đã ký điện tử)
                 </p>
-                <p className="font-bold">{formatText(contract.buyerName)}</p>
+                <p className="signature-style">
+                  {formatText(contract.buyerName)}
+                </p>
               </>
             ) : (
               // NẾU CHƯA KÝ
               <>
-                {/* Nút này chỉ hiển thị trên web (print:hidden) */}
-                <button
-                  onClick={handleGoToSign}
-                  className="italic mb-5 text-blue-600 hover:text-blue-800 underline cursor-pointer print:hidden"
-                >
-                  (Nhấn để ký, ghi rõ họ tên)
-                </button>
                 {/* Chữ này chỉ hiển thị khi IN (hidden print:block) */}
                 <p className="italic mb-5 hidden print:block">
                   (Ký, ghi rõ họ tên)

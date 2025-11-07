@@ -1,8 +1,32 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
+
 body {
+  
   /* background-image: url('/panner.png'); */
   background-size: cover;       /* Ảnh phủ toàn bộ */
   background-position: center;  /* Căn giữa */
   background-attachment: fixed; /* Giữ cố định khi scroll */
   background-repeat: no-repeat; /* Không lặp */
+}
+.signature-style {
+  /* 1. Font chữ: Quan trọng nhất */
+  font-family: "Dancing Script", cursive;
+
+  /* 2. Kích thước: Chữ ký thường lớn hơn văn bản thường */
+  font-size: 2.5rem;
+  /* ~40px, bạn có thể thay đổi */
+
+  /* 3. Màu sắc: Dùng màu tối như mực (đen, xanh đậm) */
+  color: #2D3748;
+  /* (Màu xám đen) */
+
+  /* 4. Độ đậm: Tùy font, 600 (semibold) thường là đẹp */
+  font-weight: 600;
+
+  /* 5. (Tùy chọn) Thêm độ nghiêng nhẹ cho tự nhiên */
+  transform: rotate(-2deg);
+
+  /* 6. (Tùy chọn) Đảm bảo nó không bị cắt xén */
+  line-height: 1.2;
 }

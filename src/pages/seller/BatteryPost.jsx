@@ -9,6 +9,18 @@ import { useNavigate } from "react-router-dom";
 import { uploadFile } from "../../utils/upload";
 import ImageUpload from "../../components/Upload/ImageUploadArea";
 
+const parseNumber = (value) => {
+  if (typeof value !== "string") return "";
+  return value.replace(/[^\d]/g, "");
+};
+
+const formatNumber = (value) => {
+  const rawValue = parseNumber(String(value)); // Luôn làm sạch trước
+  if (rawValue === "") return "";
+
+  // Sử dụng Intl.NumberFormat với locale "vi-VN" để có dấu chấm phân cách
+  return new Intl.NumberFormat("vi-VN").format(Number(rawValue));
+};
 export default function BatteryPost() {
   const [priorityPackages, setPriorityPackages] = useState([]);
   const [paymentTypesOptions, setPaymentTypesOptions] = useState([]);
@@ -118,13 +130,10 @@ export default function BatteryPost() {
     fetchAll();
   }, []);
 
-  // handle input change
-  // handle change input
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
-      // 1. Xử lý checkbox dạng boolean (bật/tắt)
       if (name === "wantsTrustedLabel" || name === "isUseWallet") {
         setFormData((prev) => ({
           ...prev,
@@ -141,10 +150,17 @@ export default function BatteryPost() {
           }));
         }
       }
-      // --- KẾT THÚC THAY ĐỔI ---
     } else {
-      // Input text, number, select...
-      setFormData({ ...formData, [name]: value });
+      // 1. Nếu là trường cần format số (price hoặc mileage)
+      if (name === "price") {
+        // Lấy giá trị số thô (loại bỏ dấu ".")
+        const numericValue = parseNumber(value);
+        if (!isNaN(Number(numericValue))) {
+          setFormData({ ...formData, [name]: numericValue });
+        }
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
 
@@ -293,12 +309,14 @@ export default function BatteryPost() {
               />
             </div>
             <FormInput
+              style={{ width: "100%" }}
               id="price"
               name="price"
               label="Giá bán"
-              type="number"
-              placeholder="15,000,000"
-              value={formData.price}
+              type="text"
+              inputMode="numeric"
+              placeholder="10.000.000"
+              value={formatNumber(formData.price)} // <-- SỬ DỤNG HÀM FORMAT
               onChange={handleChange}
               unit="VNĐ"
               required
