@@ -33,7 +33,6 @@ const formatPaymentType = (type) => {
   return type || "-";
 };
 
-
 const formatDeliveryMethod = (method) => {
   if (method === "SELLER_DELIVERY") return "Người bán tự vận chuyển";
   if (method === "EXPRESS") return "Hỏa tốc";
@@ -60,8 +59,6 @@ const formatWeight = (grams) => {
 // Hàm kiểm tra giá trị có null hoặc undefined không
 const isPresent = (value) => value !== null && value !== undefined;
 
-
-
 // === THÀNH PHẦN CHÍNH ===
 
 export default function Contract() {
@@ -69,16 +66,28 @@ export default function Contract() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [shippingFee, setShippingFee] = useState(0);
 
   const goBack = () => {
     navigate(-1);
   };
 
+  const handleShippingFeeChange = (e) => {
+    const rawValue = e.target.value;
 
-   
+    // 1. Xóa tất cả các ký tự không phải là số (giữ lại số)
+    const cleanedValue = rawValue.replace(/\D/g, "");
+
+    // 2. Chuyển về dạng số (number)
+    const numericValue = parseInt(cleanedValue, 10);
+
+    // 3. Cập nhật state với giá trị số. Nếu rỗng/NaN (người dùng xóa hết) thì set về 0.
+    setShippingFee(isNaN(numericValue) ? 0 : numericValue);
+  };
+
   // hàm tạo hợp đồng
   const handleCreateContract = async () => {
     setIsCreating(true);
@@ -87,15 +96,18 @@ export default function Contract() {
       const payload = {
         orderId: id, // ID của đơn hàng
         content: additionalNotes, // Ghi chú bổ sung
+        shippingFee: shippingFee,
       };
 
       // Gọi API như bạn yêu cầu
+      console.log(payload);
+      
       const res = await api.post("/seller/contracts", payload);
 
       if (res.data && res.data.success) {
         toast.success("Tạo hợp đồng thành công!");
         // Chuyển hướng đến trang danh sách hợp đồng (hoặc trang chi tiết hợp đồng mới)
-        navigate("/seller/order"); 
+        navigate("/seller/order");
       } else {
         throw new Error(res.data.message || "Không thể tạo hợp đồng");
       }
@@ -103,7 +115,7 @@ export default function Contract() {
       const errorMessage =
         err.response?.data?.message || err.message || "Lỗi không xác định";
       toast.error(errorMessage);
-      navigate("/seller/order"); 
+      navigate("/seller/order");
       setIsCreating(false); // Ở lại trang nếu có lỗi
     }
   };
@@ -119,6 +131,7 @@ export default function Contract() {
         if (res.data && res.data.success) {
           const data = res.data.data || res.data;
           setContract(data);
+          setShippingFee(data.shippingFee || 0);
         } else {
           throw new Error(res.data.message || "Không thể lấy dữ liệu hợp đồng");
         }
@@ -151,7 +164,7 @@ export default function Contract() {
       </div>
     );
   }
-
+  
   // Màn hình lỗi
   if (error) {
     return (
@@ -169,7 +182,7 @@ export default function Contract() {
       </div>
     );
   }
-  
+
   // Màn hình hiển thị dữ liệu
   if (!contract) {
     return (
@@ -184,7 +197,6 @@ export default function Contract() {
 
   return (
     <div className="bg-transparent min-h-screen p-4 sm:p-6 lg:p-8">
-      {/* Thanh điều hướng bên ngoài trang in */}
       <div className="max-w-4xl mx-auto mb-6 flex justify-between items-center print:hidden">
         <button
           onClick={goBack}
@@ -193,7 +205,6 @@ export default function Contract() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay lại
         </button>
-        
 
         <button
           onClick={handleCreateContract}
@@ -421,22 +432,20 @@ export default function Contract() {
             <span className="font-semibold">1. Giá tài sản:</span>{" "}
             {formatCurrency(contract.price)}
           </p>
-          <p className="mb-2">
-            <span className="font-semibold">2. Phí vận chuyển:</span>{" "}
-            {formatCurrency(contract.shippingFee)}
-          </p>
+
+          {/* === 5. TỔNG GIÁ TRỊ CŨNG SẼ TỰ ĐỘNG CẬP NHẬT === */}
           <p className="mb-2 text-lg font-bold">
-            <span className="font-semibold">3. TỔNG GIÁ TRỊ HỢP ĐỒNG:</span>{" "}
+            <span className="font-semibold">3. TỔNG GIÁ TRỊ HỢP ĐỒNG:</span>
             {formatCurrency(totalAmount)}
           </p>
           <p className="mb-2">
-            <span className="font-semibold">4. Hình thức thanh toán:</span>{" "}
+            <span className="font-semibold">4. Hình thức thanh toán:</span>
             {formatPaymentType(contract.paymentType)}
           </p>
           {isPresent(contract.depositPercentage) && (
             <p className="mb-2">
-              <span className="font-semibold">5. Đặt cọc:</span>{" "}
-              {contract.depositPercentage}% giá trị tài sản (Tương đương{" "}
+              <span className="font-semibold">5. Đặt cọc:</span>
+              {contract.depositPercentage}% giá trị tài sản (Tương đương
               {formatCurrency(
                 contract.price * (contract.depositPercentage / 100)
               )}
@@ -473,7 +482,30 @@ export default function Contract() {
             có giá trị pháp lý như nhau.
           </p>
         </section>
+        <section className="mb-8 print:hidden">
+          <h3 className="text-xl font-bold mb-4 ">PHÍ VẬN CHUYỂN</h3>
 
+          <label
+            htmlFor="shippingFee"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Nhập phí vận chuyển
+          </label>
+          <div className="relative">
+            <input
+              type="text" // Dùng 'text' để hiển thị format
+              id="shippingFee"
+              // Giá trị hiển thị là state đã được format
+              value={shippingFee.toLocaleString("vi-VN")}
+              onChange={handleShippingFeeChange}
+              className="w-full p-3 pr-12 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 font-sans text-right"
+              placeholder="0"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+              VND
+            </span>
+          </div>
+        </section>
         {/* === KHỐI GHI CHÚ MỚI (CHỈ HIỂN THỊ TRÊN WEB) === */}
         <section className="mb-8 print:hidden">
           <h3 className="text-xl font-bold mb-4 ">
