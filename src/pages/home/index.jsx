@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiHeart, FiUser, FiMenu } from "react-icons/fi";
 import { ShopOutlined, DownOutlined } from "@ant-design/icons";
-import { Dropdown, Button } from "antd";
+import { Dropdown, Button, Modal } from "antd";
 import LoginModal from "../../components/modals/LoginModal";
 import RegisterModal from "../../components/modals/RegisterModal";
 import SignupBanner from "../../components/body/SignupBanner";
@@ -9,28 +9,77 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/accountSlice";
 import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
 import { PiFileZip } from "react-icons/pi";
 import { ShoppingCart, User, Wallet } from "lucide-react";
+import api from "../../config/axios";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignupBanner, setShowSignupBanner] = useState(true);
+  const [isWallet, setWallet] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const account = useSelector((state) => state.account);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
+
+  // Fetch wallet data when component mounts or account changes
+  useEffect(() => {
+    if (account?.user) {
+      fetchWalletData();
+    }
+  }, [account]);
+
+  const fetchWalletData = async () => {
+    try {
+      const response = await api.get("/user/wallet/exists");
+      setWallet(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Handle wallet registration
+  const handleWalletAction = async () => {
+    if (isWallet) {
+      // If wallet exists, navigate to wallet page
+      navigate("/user/wallet");
+    } else {
+      // If no wallet, register new wallet
+      try {
+        setLoading(true);
+        await api.post("/user/wallet");
+        
+        // Show success modal
+        Modal.success({
+          title: "Đăng ký ví thành công",
+          content: "Bạn đã đăng ký ví thành công!",
+          onOk() {
+            // Refresh wallet data
+            fetchWalletData();
+          },
+        });
+      } catch (error) {
+        console.error("Error registering wallet:", error);
+        Modal.error({
+          title: "Đăng ký ví thất bại",
+          content: "Có lỗi xảy ra. Vui lòng thử lại!",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
     if (location.state?.openLogin) {
       setShowLoginModal(true);
       window.history.replaceState({}, document.title);
     }
     console.log(account);
-    
   }, [location.state]);
-
-  const account = useSelector((state) => state.account);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -53,7 +102,7 @@ const HomePage = () => {
     setShowLoginModal(false);
   };
 
-  // Tạo menu items động dựa trên role
+  // Create dynamic menu items based on role
   const getUserMenuItems = () => {
     const menuItems = [
       {
@@ -72,16 +121,17 @@ const HomePage = () => {
         key: "2",
         label: (
           <div
-            onClick={() => navigate("/user/wallet")}
+            onClick={handleWalletAction}
             className="flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:text-green-600"
           >
             <Wallet className="text-green-700 transition-transform duration-200 hover:scale-110" />
-            <span>Ví</span>
+            <span>{isWallet ? "Ví" : "Đăng ký ví"}</span>
           </div>
         ),
       },
     ];
-    //gio hang
+
+    // Shopping cart
     if (account?.user?.role !== "SELLER") {
       menuItems.push({
         key: "3",
@@ -97,7 +147,7 @@ const HomePage = () => {
       });
     }
 
-    // Chỉ hiển thị "Đăng ký Seller" nếu user chưa phải là seller
+    // Only show "Register Seller" if user is not already a seller
     if (account?.user?.role !== "SELLER") {
       menuItems.push({
         key: "4",
@@ -112,7 +162,6 @@ const HomePage = () => {
         ),
       });
     }
-     
 
     menuItems.push(
       {

@@ -148,9 +148,8 @@ const Payment = () => {
         postId: postId,
         deliveryMethod: selectedDelivery,
         paymentType: selectedPayment,
-        serviceTypeId: selectedService,
-        wantDeposit: selectedPayment === "DEPOSIT" ? true : false,
       };
+
       // Thêm serviceTypeId nếu chọn GHN
       if (selectedDelivery === "GHN" && selectedService) {
         params.serviceTypeId = parseInt(selectedService);
@@ -159,16 +158,14 @@ const Payment = () => {
 
       // ✅ POST request với params trong URL (KHÔNG phải body)
       const response = await api.post("/buyer/orders/create", null, { params });
-      //                                                      ^^^^  ^^^^^^^^^
-      //                                                      body  query params
       console.log("✅ Order created:", response.data);
 
       toast.success("Đặt hàng thành công!");
       navigate("/orders");
     } catch (error) {
-      if(error.response.data.message==="Wallet has no balance"){
-        navigate("/user/wallet")
-        toast.error(error.response.data.message)
+      if (error.response?.data?.message === "Wallet has no balance") {
+        navigate("/user/wallet");
+        toast.error(error.response.data.message);
         return;
       }
       console.error("❌ Error:", error.response?.data || error.message);
@@ -178,8 +175,8 @@ const Payment = () => {
     }
   };
 
-  // Delivery method options
-  const deliveryOptions = [
+  // ✅ Delivery method options - ALL POSSIBLE OPTIONS
+  const allDeliveryOptions = [
     {
       value: "SELLER_DELIVERY",
       label: "Người bán giao hàng",
@@ -200,8 +197,13 @@ const Payment = () => {
     },
   ];
 
-  // Payment type options
-  const paymentOptions = [
+  // ✅ Filter delivery options based on product's deliveryMethods
+  const availableDeliveryOptions = allDeliveryOptions.filter((option) =>
+    product?.deliveryMethods?.includes(option.value)
+  );
+
+  // ✅ Payment type options - ALL POSSIBLE OPTIONS
+  const allPaymentOptions = [
     {
       value: "DEPOSIT",
       label: "Đặt cọc",
@@ -215,6 +217,11 @@ const Payment = () => {
       description: "Thanh toán đầy đủ ngay bây giờ",
     },
   ];
+
+  // ✅ Filter payment options based on product's paymentTypes
+  const availablePaymentOptions = allPaymentOptions.filter((option) =>
+    product?.paymentTypes?.includes(option.value)
+  );
 
   // Tính tổng tiền
   const calculateTotal = () => {
@@ -282,43 +289,52 @@ const Payment = () => {
                   }
                   required
                 >
-                  <Radio.Group
-                    value={selectedDelivery}
-                    onChange={(e) => setSelectedDelivery(e.target.value)}
-                    className="w-full"
-                  >
-                    <Space
-                      direction="vertical"
+                  {availableDeliveryOptions.length > 0 ? (
+                    <Radio.Group
+                      value={selectedDelivery}
+                      onChange={(e) => setSelectedDelivery(e.target.value)}
                       className="w-full"
-                      size="middle"
                     >
-                      {deliveryOptions.map((option) => (
-                        <Card
-                          key={option.value}
-                          className={`cursor-pointer transition-all ${
-                            selectedDelivery === option.value
-                              ? "border-2 border-blue-500 bg-blue-50"
-                              : "border hover:border-blue-300"
-                          }`}
-                          onClick={() => setSelectedDelivery(option.value)}
-                        >
-                          <Radio value={option.value} className="w-full">
-                            <div className="ml-2">
-                              <div className="flex items-center gap-2 mb-1">
-                                {option.icon}
-                                <Text strong className="text-base">
-                                  {option.label}
+                      <Space
+                        direction="vertical"
+                        className="w-full"
+                        size="middle"
+                      >
+                        {availableDeliveryOptions.map((option) => (
+                          <Card
+                            key={option.value}
+                            className={`cursor-pointer transition-all ${
+                              selectedDelivery === option.value
+                                ? "border-2 border-blue-500 bg-blue-50"
+                                : "border hover:border-blue-300"
+                            }`}
+                            onClick={() => setSelectedDelivery(option.value)}
+                          >
+                            <Radio value={option.value} className="w-full">
+                              <div className="ml-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {option.icon}
+                                  <Text strong className="text-base">
+                                    {option.label}
+                                  </Text>
+                                </div>
+                                <Text type="secondary" className="text-sm">
+                                  {option.description}
                                 </Text>
                               </div>
-                              <Text type="secondary" className="text-sm">
-                                {option.description}
-                              </Text>
-                            </div>
-                          </Radio>
-                        </Card>
-                      ))}
-                    </Space>
-                  </Radio.Group>
+                            </Radio>
+                          </Card>
+                        ))}
+                      </Space>
+                    </Radio.Group>
+                  ) : (
+                    <Alert
+                      message="Không có phương thức giao hàng"
+                      description="Sản phẩm này không có phương thức giao hàng nào."
+                      type="warning"
+                      showIcon
+                    />
+                  )}
                 </Form.Item>
 
                 {/* Service Type cho GHN */}
@@ -350,43 +366,52 @@ const Payment = () => {
                   }
                   required
                 >
-                  <Radio.Group
-                    value={selectedPayment}
-                    onChange={(e) => setSelectedPayment(e.target.value)}
-                    className="w-full"
-                  >
-                    <Space
-                      direction="vertical"
+                  {availablePaymentOptions.length > 0 ? (
+                    <Radio.Group
+                      value={selectedPayment}
+                      onChange={(e) => setSelectedPayment(e.target.value)}
                       className="w-full"
-                      size="middle"
                     >
-                      {paymentOptions.map((option) => (
-                        <Card
-                          key={option.value}
-                          className={`cursor-pointer transition-all ${
-                            selectedPayment === option.value
-                              ? "border-2 border-green-500 bg-green-50"
-                              : "border hover:border-green-300"
-                          }`}
-                          onClick={() => setSelectedPayment(option.value)}
-                        >
-                          <Radio value={option.value} className="w-full">
-                            <div className="ml-2">
-                              <div className="flex items-center gap-2 mb-1">
-                                {option.icon}
-                                <Text strong className="text-base">
-                                  {option.label}
+                      <Space
+                        direction="vertical"
+                        className="w-full"
+                        size="middle"
+                      >
+                        {availablePaymentOptions.map((option) => (
+                          <Card
+                            key={option.value}
+                            className={`cursor-pointer transition-all ${
+                              selectedPayment === option.value
+                                ? "border-2 border-green-500 bg-green-50"
+                                : "border hover:border-green-300"
+                            }`}
+                            onClick={() => setSelectedPayment(option.value)}
+                          >
+                            <Radio value={option.value} className="w-full">
+                              <div className="ml-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {option.icon}
+                                  <Text strong className="text-base">
+                                    {option.label}
+                                  </Text>
+                                </div>
+                                <Text type="secondary" className="text-sm">
+                                  {option.description}
                                 </Text>
                               </div>
-                              <Text type="secondary" className="text-sm">
-                                {option.description}
-                              </Text>
-                            </div>
-                          </Radio>
-                        </Card>
-                      ))}
-                    </Space>
-                  </Radio.Group>
+                            </Radio>
+                          </Card>
+                        ))}
+                      </Space>
+                    </Radio.Group>
+                  ) : (
+                    <Alert
+                      message="Không có hình thức thanh toán"
+                      description="Sản phẩm này không có hình thức thanh toán nào."
+                      type="warning"
+                      showIcon
+                    />
+                  )}
                 </Form.Item>
 
                 {/* Alert info */}
@@ -495,6 +520,12 @@ const Payment = () => {
                   block
                   loading={submitting}
                   onClick={handleSubmitOrder}
+                  disabled={
+                    !selectedDelivery ||
+                    !selectedPayment ||
+                    availableDeliveryOptions.length === 0 ||
+                    availablePaymentOptions.length === 0
+                  }
                   className="h-14 text-lg font-semibold"
                   style={{ background: "#33bd24c5" }}
                 >
@@ -558,19 +589,6 @@ const Payment = () => {
                     </Text>
                   </div>
                 )}
-
-                {/* <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
-                  <Text type="secondary" className="block mb-1">
-                    Tổng thanh toán:
-                  </Text>
-                  <Text
-                    strong
-                    className="text-2xl"
-                    style={{ color: "#259446d8" }}
-                  >
-                    {calculateTotal().toLocaleString("vi-VN")} VNĐ
-                  </Text>
-                </div> */}
               </div>
 
               <Divider className="my-4" />

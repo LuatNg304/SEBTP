@@ -104,14 +104,14 @@ const Orders = () => {
   // ✅ Hàm lấy delivery ID từ orderId
   const getDeliveryId = (orderId) => {
     const delivery = deliveryList.find((d) => d.orderId === orderId.toString());
-    return delivery?.id;
+    return delivery?.orderId;
   };
 
   // ✅ Hàm xử lý click nút Chi tiết
   const handleViewDetail = (orderId) => {
-    const deliveryId = getDeliveryId(orderId);
+    
 
-    navigate(`/delivery/${deliveryId}`);
+    navigate(`/delivery/${orderId}`);
   };
 
   const getStatusConfig = (status) => {

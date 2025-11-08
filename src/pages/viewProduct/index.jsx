@@ -28,6 +28,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
+import { useSelector } from "react-redux";
 
 const { Title, Text } = Typography;
 
@@ -49,6 +50,7 @@ const ViewProduct = () => {
   const [item, setItem] = useState(null);
   const { id } = useParams();
   const [replateProduct, setPreplateProduct] = useState(null);
+  const isLogin = useSelector((state) => state.account);
   const postData = item?.data;
   const navigate = useNavigate();
   useEffect(() => {
@@ -351,23 +353,43 @@ const ViewProduct = () => {
 
               {/* Thêm các nút hành động */}
               <Space size="large" className="mt-4 flex flex-wrap">
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<ShoppingCartOutlined />}
-                  style={{
-                    height: "58px",
-                    fontSize: "19px",
-                    padding: "0 45px",
-                    background: "#33bd24c5",
-                    borderColor: "#dededeff",
-                    borderRadius: "10px",
-                  }}
-                  className="hover:bg-red-700 transition-colors shadow-lg"
-                  onClick={() => navigate(`/payment/${postData.id}`)}
-                >
-                  Đặt hàng ngay
-                </Button>
+                {isLogin ? (
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<ShoppingCartOutlined />}
+                    style={{
+                      height: "58px",
+                      fontSize: "19px",
+                      padding: "0 45px",
+                      background: "#33bd24c5",
+                      borderColor: "#dededeff",
+                      borderRadius: "10px",
+                    }}
+                    className="hover:bg-red-700 transition-colors shadow-lg"
+                    onClick={() => navigate(`/payment/${postData.id}`)}
+                  >
+                    Đặt hàng ngay
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<ShoppingCartOutlined />}
+                    style={{
+                      height: "58px",
+                      fontSize: "19px",
+                      padding: "0 45px",
+                      background: "#33bd24c5",
+                      borderColor: "#dededeff",
+                      borderRadius: "10px",
+                    }}
+                    className="hover:bg-red-700 transition-colors shadow-lg"
+                    onClick={() => toast.error("Vui lòng đăng nhập")}
+                  >
+                    Đăng nhập để đặt hàng
+                  </Button>
+                )}
               </Space>
             </Card>
 
@@ -503,7 +525,6 @@ const ViewProduct = () => {
                 dots={true}
                 infinite={true}
                 className="related-products-carousel"
-               
               >
                 {Array.from({
                   length: Math.ceil(replateProduct.data.length / 4),
