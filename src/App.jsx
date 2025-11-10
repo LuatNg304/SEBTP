@@ -34,6 +34,8 @@ import ContractView from "./pages/seller/posts/ContractView";
 import BuyerContract from "./pages/buyerContract";
 import DeliveryView from "./pages/seller/posts/DeliveryView";
 import OrderDelivery from "./pages/delivery";
+import ComplaintList from "./pages/seller/complaint/Complaints";
+import ComplaintDetail from "./pages/seller/complaint/ComplainDetail";
 
 
 const router = createBrowserRouter([
@@ -73,11 +75,13 @@ const router = createBrowserRouter([
       { path: "/seller/contract/create/:id", element: <Contract /> },
       { path: "/seller/contract/view/:id", element: <ContractView /> },
       { path: "/seller/contract/sign-otp/:id", element: <SignOtp /> },
-      { path: "/seller/order", element: <Order /> },
+      { path: "/seller/complaints", element: <ComplaintList /> },
+      { path: "/seller/complaints/:id", element: <ComplaintDetail /> },
       {
         path: "package",
         element: <PackagePage />,
       },
+      { path: "/seller/order", element: <Order /> },
     ],
   },
   {
@@ -144,10 +148,11 @@ const router = createBrowserRouter([
   {
     path: "contract/:id",
     element: <BuyerContract />,
-  },{
+  },
+  {
     path: "delivery/:id",
     element: <OrderDelivery />,
-  }
+  },
 ]);
 
 function App() {

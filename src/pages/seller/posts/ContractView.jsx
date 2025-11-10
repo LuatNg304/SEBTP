@@ -221,7 +221,7 @@ export default function ContractView() {
         {/* Các bên (Giữ nguyên) */}
         <section className="mb-8 space-y-4">
           <div>
-            <h3 className="text-lg font-bold mb-2">BÊN A (BÊN BÀN):</h3>
+            <h3 className="text-lg font-bold mb-2">BÊN A (BÊN BÁN):</h3>
             <p>
               <span className="font-semibold">Ông/Bà:</span>{" "}
               {formatText(contract.sellerName)}
