@@ -209,7 +209,7 @@ export default function BatteryPost() {
       toast.success("Đăng bài thành công!");
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra.");
+      toast.error( "Lỗi khi đăng  bài mong bạn kiểm tra thông tin");
     } finally {
       setIsSubmitting(false);
     }

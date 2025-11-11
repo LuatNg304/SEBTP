@@ -7,7 +7,7 @@ import {
   Select,
   Tag,
   Space,
-  Steps, // <-- 1. THÊM STEPS
+  Steps, 
 } from "antd";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import api from "../../../config/axios";
@@ -115,7 +115,8 @@ export default function DeliveryView() {
       const errorMessage =
         err.response?.data?.message || err.message || "Lỗi không xác định";
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error("Vui lòng chờ người mua đặt thanh toán!");
+      navigate(-1)
     } finally {
       setLoading(false);
     }

@@ -38,6 +38,7 @@ import Complain from "./pages/buyerComplain/Complain";
 import AdminComplain from "./pages/admin/complain/AdminComplain";
 import ComplaintList from "./pages/seller/complaint/Complaints";
 import ComplaintDetail from "./pages/seller/complaint/ComplainDetail";
+import ContractManagement from "./pages/seller/ContractManagement";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
       { path: "/seller/posts/view/:id", element: <PostView /> },
       { path: "/seller/order/view/:id", element: <OrderView /> },
       { path: "/seller/order-deliveries/:id", element: <DeliveryView /> },
+      { path: "/seller/contract-management", element: <ContractManagement /> },
       { path: "/seller/contract/create/:id", element: <Contract /> },
       { path: "/seller/contract/view/:id", element: <ContractView /> },
       { path: "/seller/contract/sign-otp/:id", element: <SignOtp /> },
