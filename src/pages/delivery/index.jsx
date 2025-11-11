@@ -168,7 +168,7 @@ const OrderDelivery = () => {
   };
 
   const getStepsItems = () => {
-    const statuses = [
+    const allStatuses = [
       { key: "PREPARING", title: "Chuẩn bị" },
       { key: "READY", title: "Sẵn sàng" },
       { key: "DELIVERING", title: "Đang giao" },
@@ -176,6 +176,17 @@ const OrderDelivery = () => {
       { key: "DELIVERED", title: "Đã giao" },
       { key: "RECEIVED", title: "Đã nhận" },
     ];
+
+    // Lọc bỏ DELIVERING nếu là BUYER_PICKUP
+    const statuses = allStatuses.filter((status) => {
+      if (
+        status.key === "DELIVERING" &&
+        order?.deliveryMethod === "BUYER_PICKUP"
+      ) {
+        return false;
+      }
+      return true;
+    });
 
     const currentStatusIndex = statuses.findIndex(
       (s) => s.key === delivery?.status
@@ -230,7 +241,9 @@ const OrderDelivery = () => {
   };
   const handleConfirmOrder = async () => {
     try {
-      const res = await api.post(`buyer/order-deliveries/${delivery.id}/confirm-received`);
+      const res = await api.post(
+        `buyer/order-deliveries/${delivery.id}/confirm-received`
+      );
       fetchDelivery();
       console.log("ID cua delivery: ", delivery.id);
 
@@ -380,14 +393,19 @@ const OrderDelivery = () => {
 
                     <Steps
                       className="custom-steps"
-                      current={[
-                        "PREPARING",
-                        "READY",
-                        "DELIVERING",
-                        "PICKUP_PENDING",
-                        "DELIVERED",
-                        "RECEIVED",
-                      ].indexOf(delivery?.status)}
+                      current={(() => {
+                        const statuses = [
+                          "PREPARING",
+                          "READY",
+                          ...(order?.deliveryMethod !== "BUYER_PICKUP"
+                            ? ["DELIVERING"]
+                            : []),
+                          "PICKUP_PENDING",
+                          "DELIVERED",
+                          "RECEIVED",
+                        ];
+                        return statuses.indexOf(delivery?.status);
+                      })()}
                       items={getStepsItems()}
                       style={{ padding: "20px 0" }}
                     />
@@ -542,12 +560,12 @@ const OrderDelivery = () => {
                     order.depositPercentage && (
                       <>
                         <Descriptions.Item label="Phần trăm đặt cọc">
-                          {order.depositPercentage}%
+                          {order.depositPercentage * 100}%
                         </Descriptions.Item>
                         <Descriptions.Item label="Số tiền đặt cọc">
                           <span className="font-semibold text-cyan-600">
                             {(
-                              (order.price * order.depositPercentage) /
+                              (order.price * 100 * order.depositPercentage) /
                               100
                             ).toLocaleString("vi-VN")}{" "}
                             VNĐ

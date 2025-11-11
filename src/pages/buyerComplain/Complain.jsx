@@ -187,7 +187,7 @@ const Complain = () => {
           open={detailModal}
           onCancel={() => setDetailModal(false)}
           footer={
-            complainDetail?.status === "RESOLUTION_GIVEN"
+            complainDetail?.status === "RESOLUTION_GIVEN" || complainDetail?.status === "ADMIN_RESOLUTION_GIVEN" 
               ? [
                   <Button type="primary" onClick={handleAccept} key="accept">
                     Đồng ý

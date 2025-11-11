@@ -12,6 +12,7 @@ import { useLocation } from "react-router-dom";
 import { PiFileZip } from "react-icons/pi";
 import { ShoppingCart, User, Wallet } from "lucide-react";
 import api from "../../config/axios";
+import { toast } from "react-toastify";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -41,32 +42,20 @@ const HomePage = () => {
     }
   };
 
-  // Handle wallet registration
   const handleWalletAction = async () => {
     if (isWallet) {
-      // If wallet exists, navigate to wallet page
       navigate("/user/wallet");
     } else {
-      // If no wallet, register new wallet
       try {
         setLoading(true);
         await api.post("/user/wallet");
-        
-        // Show success modal
-        Modal.success({
-          title: "Đăng ký ví thành công",
-          content: "Bạn đã đăng ký ví thành công!",
-          onOk() {
-            // Refresh wallet data
-            fetchWalletData();
-          },
-        });
+
+        setWallet(true);
+
+        toast.success("Đăng ký ví thành công");
       } catch (error) {
         console.error("Error registering wallet:", error);
-        Modal.error({
-          title: "Đăng ký ví thất bại",
-          content: "Có lỗi xảy ra. Vui lòng thử lại!",
-        });
+        toast.error("Lỗi đăng ký ví");
       } finally {
         setLoading(false);
       }
@@ -370,10 +359,10 @@ const HomePage = () => {
                     }`
                   }
                 >
-                  Oto điện
+                  Xe điện
                 </NavLink>
               </li>
-              <li>
+              {/* <li>
                 <NavLink
                   to="bike"
                   className={({ isActive }) =>
@@ -386,7 +375,7 @@ const HomePage = () => {
                 >
                   Xe máy điện
                 </NavLink>
-              </li>
+              </li> */}
               <li>
                 <NavLink
                   to="pin"

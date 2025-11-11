@@ -82,16 +82,18 @@ const Pin = () => {
                   {/* Thông số kỹ thuật */}
                   <div className="space-y-2 mb-4">
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Hãng xe: </span>
-                      {bike.vehicleBrand || "N/A"}
+                      <span className="font-medium">Loại: </span>
+                      {bike.batteryType || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Model: </span>
-                      {bike.model || "N/A"}
+                      <span className="font-medium">Thương hiệu: </span>
+                      {bike.batteryBrand || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Màu sắc: </span>
-                      {bike.color || "N/A"}
+                      <span className="font-medium">Dung lượng: </span>
+                      {bike.capacity
+                                ? `${bike.capacity} Ah`
+                                : "N/A"}
                     </p>
                   </div>
                 </div>

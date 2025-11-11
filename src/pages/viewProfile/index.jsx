@@ -345,12 +345,13 @@ const UserProfile = () => {
             </div>
             {user.role === "SELLER" && (
               <div style={{ marginLeft: 20 }}>
-                <p style={{ color: "#888", marginBottom: 0 }}>
-                  Bài đăng còn lại: {user.remainingPosts}
+                <p style={{ color: "#42ab50ff", marginBottom: 0 }}>
+                  Bài đăng bình thường: {user.remainingBasicPosts}
                 </p>
-                <p style={{ color: "#888", marginBottom: 0 }}>
-                  Gói bán hàng:{" "}
-                  {user.sellerPackageId ? user.sellerPackageId : "Chưa có"}{" "}
+                <p style={{ color: "#b6763dff", marginBottom: 0 }}>
+                  Bài đăng premium:{" "}
+                  {user.remainingPremiumPosts}
+                  {/* {user.sellerPackageId ? user.sellerPackageId : "Chưa có"}{" "} */}
                 </p>
               </div>
             )}

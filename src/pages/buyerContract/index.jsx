@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../../components/header';
-import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../config/axios';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import Header from "../../components/header";
+import { useParams, useNavigate } from "react-router-dom";
+import api from "../../config/axios";
+import { toast } from "react-toastify";
 import {
   Card,
   Button,
@@ -13,7 +13,8 @@ import {
   Form,
   Spin,
   Empty,
-} from 'antd';
+  Alert,
+} from "antd";
 import {
   FileTextOutlined,
   CheckCircleOutlined,
@@ -21,7 +22,8 @@ import {
   EditOutlined,
   PrinterOutlined,
   ArrowLeftOutlined,
-} from '@ant-design/icons';
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 
 const BuyerContract = () => {
   const [contract, setContract] = useState(null);
@@ -30,6 +32,8 @@ const BuyerContract = () => {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+
   const [otpForm] = Form.useForm();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -40,11 +44,11 @@ const BuyerContract = () => {
       setLoading(true);
       const response = await api.get(`/buyer/contracts/${id}`);
       setContract(response.data.data);
-      console.log('✅ Contract:', response.data.data);
+      console.log("✅ Contract:", response.data.data);
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error("❌ Error:", error);
       toast.error(
-        error.response?.data?.message || 'Không thể tải thông tin hợp đồng'
+        error.response?.data?.message || "Không thể tải thông tin hợp đồng"
       );
     } finally {
       setLoading(false);
@@ -60,12 +64,12 @@ const BuyerContract = () => {
     try {
       setSendingOtp(true);
       await api.patch(`/buyer/contracts/${id}/sign/send-otp`);
-      toast.success('Mã OTP đã được gửi đến số điện thoại của bạn!');
+      toast.success("Mã OTP đã được gửi đến số điện thoại của bạn!");
       setOtpModalVisible(true);
       otpForm.resetFields();
     } catch (error) {
-      console.error('❌ Error:', error);
-      toast.error(error.response?.data?.message || 'Không thể gửi mã OTP');
+      console.error("❌ Error:", error);
+      toast.error(error.response?.data?.message || "Không thể gửi mã OTP");
     } finally {
       setSendingOtp(false);
     }
@@ -77,12 +81,12 @@ const BuyerContract = () => {
       const values = await otpForm.validateFields();
       setVerifyingOtp(true);
 
-      await api.patch('/buyer/contracts/sign/verify', {
+      await api.patch("/buyer/contracts/sign/verify", {
         contractId: parseInt(id),
         otp: values.otp,
       });
 
-      toast.success('Ký hợp đồng thành công!');
+      toast.success("Ký hợp đồng thành công!");
       setOtpModalVisible(false);
       otpForm.resetFields();
 
@@ -90,11 +94,11 @@ const BuyerContract = () => {
       await fetchContract();
     } catch (error) {
       if (error.errorFields) {
-        toast.error('Vui lòng nhập mã OTP!');
+        toast.error("Vui lòng nhập mã OTP!");
       } else {
-        console.error('❌ Error:', error);
+        console.error("❌ Error:", error);
         toast.error(
-          error.response?.data?.message || 'Mã OTP không hợp lệ hoặc đã hết hạn'
+          error.response?.data?.message || "Mã OTP không hợp lệ hoặc đã hết hạn"
         );
       }
     } finally {
@@ -103,32 +107,24 @@ const BuyerContract = () => {
   };
 
   // Hủy hợp đồng
-  const handleCancelContract = () => {
-    Modal.confirm({
-      title: 'Xác nhận hủy hợp đồng',
-      content:
-        'Bạn có chắc chắn muốn hủy hợp đồng này? Hành động này không thể hoàn tác.',
-      okText: 'Xác nhận hủy',
-      cancelText: 'Đóng',
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          setCancelLoading(true);
-          await api.patch(`/buyer/contracts/${id}/cancel`);
-          toast.success('Hủy hợp đồng thành công!');
+  // Hủy hợp đồng (gọi từ modal)
+  const handleCancelContract = async () => {
+    try {
+      setCancelLoading(true);
+      await api.patch(`/buyer/contracts/${id}/cancel`);
+      toast.success("Hủy hợp đồng thành công!");
+      setCancelModalVisible(false); // Đóng modal
 
-          // Quay lại trang orders
-          navigate('/orders');
-        } catch (error) {
-          console.error('❌ Error:', error);
-          toast.error(
-            error.response?.data?.message || 'Không thể hủy hợp đồng'
-          );
-        } finally {
-          setCancelLoading(false);
-        }
-      },
-    });
+      // Quay lại trang orders
+      setTimeout(() => {
+        navigate("/orders");
+      }, 1000);
+    } catch (error) {
+      console.error("❌ Error:", error);
+      toast.error(error.response?.data?.message || "Không thể hủy hợp đồng");
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   // In hợp đồng
@@ -142,17 +138,17 @@ const BuyerContract = () => {
         className="overflow-x-hidden"
         style={{
           backgroundImage: "url('/background.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          backgroundRepeat: 'no-repeat',
-          minHeight: '100vh',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          backgroundRepeat: "no-repeat",
+          minHeight: "100vh",
         }}
       >
         <Header />
         <div
           className="flex justify-center items-center"
-          style={{ minHeight: '80vh' }}
+          style={{ minHeight: "80vh" }}
         >
           <Spin size="large" tip="Đang tải hợp đồng..." />
         </div>
@@ -166,11 +162,11 @@ const BuyerContract = () => {
         className="overflow-x-hidden"
         style={{
           backgroundImage: "url('/background.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          backgroundRepeat: 'no-repeat',
-          minHeight: '100vh',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          backgroundRepeat: "no-repeat",
+          minHeight: "100vh",
         }}
       >
         <Header />
@@ -178,7 +174,7 @@ const BuyerContract = () => {
           <Card>
             <Empty description="Không tìm thấy hợp đồng" />
             <div className="text-center mt-4">
-              <Button type="primary" onClick={() => navigate('/orders')}>
+              <Button type="primary" onClick={() => navigate("/orders")}>
                 Quay lại đơn hàng
               </Button>
             </div>
@@ -193,11 +189,11 @@ const BuyerContract = () => {
       className="overflow-x-hidden"
       style={{
         backgroundImage: "url('/background.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '100vh',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+        backgroundRepeat: "no-repeat",
+        minHeight: "100vh",
       }}
     >
       <Header />
@@ -207,7 +203,7 @@ const BuyerContract = () => {
         <div className="flex justify-between items-center mb-6 print:hidden">
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate("/orders")}
             size="large"
           >
             Quay lại đơn hàng
@@ -215,7 +211,7 @@ const BuyerContract = () => {
 
           <Space size="large">
             {/* Chỉ hiện nút ký nếu chưa ký và trạng thái PENDING */}
-            {!contract.buyerSigned && contract.status === 'PENDING' && (
+            {!contract.buyerSigned && contract.status === "PENDING" && (
               <Button
                 type="primary"
                 size="large"
@@ -228,13 +224,12 @@ const BuyerContract = () => {
             )}
 
             {/* Chỉ hiện nút hủy nếu trạng thái PENDING */}
-            {contract.status === 'PENDING' && (
+            {contract.status === "PENDING" && (
               <Button
                 danger
                 size="large"
                 icon={<CloseCircleOutlined />}
-                loading={cancelLoading}
-                onClick={handleCancelContract}
+                onClick={() => setCancelModalVisible(true)} // Chỉ mở modal
               >
                 Hủy hợp đồng
               </Button>
@@ -256,59 +251,59 @@ const BuyerContract = () => {
           <div
             className="mx-auto bg-white"
             style={{
-              width: '210mm',
-              minHeight: '297mm',
-              padding: '20mm',
-              boxSizing: 'border-box',
-              fontFamily: 'Times New Roman, serif',
-              lineHeight: '1.6',
-              color: '#000',
+              width: "210mm",
+              minHeight: "297mm",
+              padding: "20mm",
+              boxSizing: "border-box",
+              fontFamily: "Times New Roman, serif",
+              lineHeight: "1.6",
+              color: "#000",
             }}
           >
             {/* === PHẦN TIÊU ĐỀ === */}
             <div className="text-center mb-1">
-              <div style={{ fontSize: '23pt', fontWeight: 'bold' }}>
+              <div style={{ fontSize: "23pt", fontWeight: "bold" }}>
                 CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
               </div>
             </div>
 
             <div className="text-center mb-3">
-              <div style={{ fontSize: '18pt', fontWeight: 'bold' }}>
+              <div style={{ fontSize: "18pt", fontWeight: "bold" }}>
                 Độc lập – Tự do – Hạnh phúc
               </div>
             </div>
 
             {/* Đường gạch ngang dưới phần tiêu đề */}
             <div className="flex justify-center mb-6">
-              <div style={{ width: '80px', borderTop: '3px solid #000' }}></div>
+              <div style={{ width: "80px", borderTop: "3px solid #000" }}></div>
             </div>
 
             {/* === MÃ HỢP ĐỒNG + NGÀY THÁNG === */}
             <div className="grid grid-cols-2 gap-8 mb-6">
               <div>
-                <div style={{ fontSize: '12pt' }}>
-                  <span style={{ fontWeight: 'bold' }}>Số hợp đồng:</span>{' '}
+                <div style={{ fontSize: "12pt" }}>
+                  <span style={{ fontWeight: "bold" }}>Số hợp đồng:</span>{" "}
                   {contract.contractCode}
                 </div>
               </div>
               <div className="text-right">
-                <div style={{ fontSize: '12pt', fontStyle: 'italic' }}>
-                  Ngày {new Date().getDate()} tháng{' '}
-                  {new Date().getMonth() + 1} năm {new Date().getFullYear()}
+                <div style={{ fontSize: "12pt", fontStyle: "italic" }}>
+                  Ngày {new Date().getDate()} tháng {new Date().getMonth() + 1}{" "}
+                  năm {new Date().getFullYear()}
                 </div>
               </div>
             </div>
 
             {/* === TIÊU ĐỀ HỢP ĐỒNG === */}
             <div className="text-center mb-6">
-              <div style={{ fontSize: '16pt', fontWeight: 'bold' }}>
+              <div style={{ fontSize: "16pt", fontWeight: "bold" }}>
                 HỢP ĐỒNG MUA BÁN
               </div>
-              <div style={{ fontSize: '12pt', marginTop: '4pt' }}>
+              <div style={{ fontSize: "12pt", marginTop: "4pt" }}>
                 (
-                {contract.productType === 'VEHICLE'
-                  ? 'Phương tiện giao thông'
-                  : 'Pin/Ắc quy điện'}
+                {contract.productType === "VEHICLE"
+                  ? "Phương tiện giao thông"
+                  : "Pin/Ắc quy điện"}
                 )
               </div>
             </div>
@@ -316,23 +311,23 @@ const BuyerContract = () => {
             {/* === THÂN HỢP ĐỒNG === */}
 
             {/* 1. Các bên tham gia */}
-            <div className="mb-4" style={{ fontSize: '12pt' }}>
+            <div className="mb-4" style={{ fontSize: "12pt" }}>
               <div
                 style={{
-                  fontWeight: 'bold',
-                  marginBottom: '8pt',
-                  textTransform: 'uppercase',
+                  fontWeight: "bold",
+                  marginBottom: "8pt",
+                  textTransform: "uppercase",
                 }}
               >
                 Điều 1: Các bên tham gia hợp đồng
               </div>
 
               <div className="mb-3">
-                <div style={{ fontWeight: 'bold' }}>Bên A (Người bán):</div>
+                <div style={{ fontWeight: "bold" }}>Bên A (Người bán):</div>
                 <div className="ml-4">
                   <div>
-                    - Họ và tên:{' '}
-                    <span style={{ fontWeight: 'bold' }}>
+                    - Họ và tên:{" "}
+                    <span style={{ fontWeight: "bold" }}>
                       {contract.sellerName}
                     </span>
                   </div>
@@ -342,11 +337,11 @@ const BuyerContract = () => {
               </div>
 
               <div>
-                <div style={{ fontWeight: 'bold' }}>Bên B (Người mua):</div>
+                <div style={{ fontWeight: "bold" }}>Bên B (Người mua):</div>
                 <div className="ml-4">
                   <div>
-                    - Họ và tên:{' '}
-                    <span style={{ fontWeight: 'bold' }}>
+                    - Họ và tên:{" "}
+                    <span style={{ fontWeight: "bold" }}>
                       {contract.buyerName}
                     </span>
                   </div>
@@ -357,12 +352,12 @@ const BuyerContract = () => {
             </div>
 
             {/* 2. Đối tượng hợp đồng */}
-            <div className="mb-4" style={{ fontSize: '12pt' }}>
+            <div className="mb-4" style={{ fontSize: "12pt" }}>
               <div
                 style={{
-                  fontWeight: 'bold',
-                  marginBottom: '8pt',
-                  textTransform: 'uppercase',
+                  fontWeight: "bold",
+                  marginBottom: "8pt",
+                  textTransform: "uppercase",
                 }}
               >
                 Điều 2: Đối tượng hợp đồng
@@ -374,78 +369,78 @@ const BuyerContract = () => {
                   như sau:
                 </div>
 
-                {contract.productType === 'VEHICLE' ? (
+                {contract.productType === "VEHICLE" ? (
                   <div className="mt-2">
                     <div>
-                      - Loại sản phẩm:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Loại sản phẩm:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         Phương tiện giao thông
                       </span>
                     </div>
                     <div>
-                      - Hãng xe:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Hãng xe:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.vehicleBrand}
                       </span>
                     </div>
                     <div>
-                      - Model:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Model:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.model}
                       </span>
                     </div>
                     <div>
-                      - Năm sản xuất:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Năm sản xuất:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.yearOfManufacture}
                       </span>
                     </div>
                     <div>
-                      - Màu sắc:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Màu sắc:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.color}
                       </span>
                     </div>
                     <div>
-                      - Số Km đã đi:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
-                        {contract.mileage?.toLocaleString('vi-VN')} km
+                      - Số Km đã đi:{" "}
+                      <span style={{ fontWeight: "bold" }}>
+                        {contract.mileage?.toLocaleString("vi-VN")} km
                       </span>
                     </div>
                     <div>
-                      - Trọng lượng:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
-                        {contract.weight?.toLocaleString('vi-VN')} kg
+                      - Trọng lượng:{" "}
+                      <span style={{ fontWeight: "bold" }}>
+                        {contract.weight?.toLocaleString("vi-VN")} kg
                       </span>
                     </div>
                   </div>
                 ) : (
                   <div className="mt-2">
                     <div>
-                      - Loại sản phẩm:{' '}
-                      <span style={{ fontWeight: 'bold' }}>Pin/Ắc quy</span>
+                      - Loại sản phẩm:{" "}
+                      <span style={{ fontWeight: "bold" }}>Pin/Ắc quy</span>
                     </div>
                     <div>
-                      - Loại pin:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Loại pin:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.batteryType}
                       </span>
                     </div>
                     <div>
-                      - Thương hiệu:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Thương hiệu:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.batteryBrand}
                       </span>
                     </div>
                     <div>
-                      - Dung lượng:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Dung lượng:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.capacity} Ah
                       </span>
                     </div>
                     <div>
-                      - Điện áp:{' '}
-                      <span style={{ fontWeight: 'bold' }}>
+                      - Điện áp:{" "}
+                      <span style={{ fontWeight: "bold" }}>
                         {contract.voltage} V
                       </span>
                     </div>
@@ -455,12 +450,12 @@ const BuyerContract = () => {
             </div>
 
             {/* 3. Giá trị hợp đồng */}
-            <div className="mb-4" style={{ fontSize: '12pt' }}>
+            <div className="mb-4" style={{ fontSize: "12pt" }}>
               <div
                 style={{
-                  fontWeight: 'bold',
-                  marginBottom: '8pt',
-                  textTransform: 'uppercase',
+                  fontWeight: "bold",
+                  marginBottom: "8pt",
+                  textTransform: "uppercase",
                 }}
               >
                 Điều 3: Giá trị hợp đồng
@@ -468,39 +463,39 @@ const BuyerContract = () => {
 
               <div className="ml-4">
                 <div>
-                  - Giá sản phẩm:{' '}
-                  <span style={{ fontWeight: 'bold' }}>
-                    {contract.price?.toLocaleString('vi-VN')} VNĐ
+                  - Giá sản phẩm:{" "}
+                  <span style={{ fontWeight: "bold" }}>
+                    {contract.price?.toLocaleString("vi-VN")} VNĐ
                   </span>
                 </div>
                 <div>
-                  - Phí vận chuyển:{' '}
-                  <span style={{ fontWeight: 'bold' }}>
-                    {contract.shippingFee?.toLocaleString('vi-VN')} VNĐ
+                  - Phí vận chuyển:{" "}
+                  <span style={{ fontWeight: "bold" }}>
+                    {contract.shippingFee?.toLocaleString("vi-VN")} VNĐ
                   </span>
                 </div>
-                <div style={{ marginTop: '8pt', fontSize: '12pt' }}>
-                  - <span style={{ fontWeight: 'bold' }}>Tổng giá trị:</span>{' '}
+                <div style={{ marginTop: "8pt", fontSize: "12pt" }}>
+                  - <span style={{ fontWeight: "bold" }}>Tổng giá trị:</span>{" "}
                   <span
                     style={{
-                      fontWeight: 'bold',
-                      color: '#d32f2f',
-                      fontSize: '13pt',
+                      fontWeight: "bold",
+                      color: "#d32f2f",
+                      fontSize: "13pt",
                     }}
                   >
-                    {contract.totalFee?.toLocaleString('vi-VN')} VNĐ
+                    {contract.totalFee?.toLocaleString("vi-VN")} VNĐ
                   </span>
                 </div>
               </div>
             </div>
 
             {/* 4. Phương thức thanh toán */}
-            <div className="mb-4" style={{ fontSize: '12pt' }}>
+            <div className="mb-4" style={{ fontSize: "12pt" }}>
               <div
                 style={{
-                  fontWeight: 'bold',
-                  marginBottom: '8pt',
-                  textTransform: 'uppercase',
+                  fontWeight: "bold",
+                  marginBottom: "8pt",
+                  textTransform: "uppercase",
                 }}
               >
                 Điều 4: Phương thức thanh toán
@@ -508,23 +503,23 @@ const BuyerContract = () => {
 
               <div className="ml-4">
                 <div>
-                  {contract.paymentType === 'FULL' &&
-                    'Bên B thanh toán toàn bộ giá trị hợp đồng cho Bên A.'}
-                  {contract.paymentType === 'DEPOSIT' &&
+                  {contract.paymentType === "FULL" &&
+                    "Bên B thanh toán toàn bộ giá trị hợp đồng cho Bên A."}
+                  {contract.paymentType === "DEPOSIT" &&
                     `Bên B thanh toán đặt cọc ${contract.depositPercentage}% giá trị hợp đồng, phần còn lại thanh toán khi nhận hàng.`}
-                  {contract.paymentType === 'COD' &&
-                    'Bên B thanh toán khi nhận hàng (COD).'}
+                  {contract.paymentType === "COD" &&
+                    "Bên B thanh toán khi nhận hàng (COD)."}
                 </div>
               </div>
             </div>
 
             {/* 5. Giao nhận hàng hóa */}
-            <div className="mb-6" style={{ fontSize: '12pt' }}>
+            <div className="mb-6" style={{ fontSize: "12pt" }}>
               <div
                 style={{
-                  fontWeight: 'bold',
-                  marginBottom: '8pt',
-                  textTransform: 'uppercase',
+                  fontWeight: "bold",
+                  marginBottom: "8pt",
+                  textTransform: "uppercase",
                 }}
               >
                 Điều 5: Giao nhận hàng hóa
@@ -532,19 +527,19 @@ const BuyerContract = () => {
 
               <div className="ml-4">
                 <div>
-                  - Phương thức giao hàng:{' '}
-                  <span style={{ fontWeight: 'bold' }}>
-                    {contract.deliveryMethod === 'GHN' &&
-                      'Giao hàng nhanh (GHN)'}
-                    {contract.deliveryMethod === 'SELLER_DELIVERY' &&
-                      'Người bán trực tiếp giao hàng'}
-                    {contract.deliveryMethod === 'BUYER_PICKUP' &&
-                      'Người mua tự đến lấy hàng'}
+                  - Phương thức giao hàng:{" "}
+                  <span style={{ fontWeight: "bold" }}>
+                    {contract.deliveryMethod === "GHN" &&
+                      "Giao hàng nhanh (GHN)"}
+                    {contract.deliveryMethod === "SELLER_DELIVERY" &&
+                      "Người bán trực tiếp giao hàng"}
+                    {contract.deliveryMethod === "BUYER_PICKUP" &&
+                      "Người mua tự đến lấy hàng"}
                   </span>
                 </div>
                 <div>
-                  - Địa chỉ giao hàng:{' '}
-                  <span style={{ fontWeight: 'bold' }}>
+                  - Địa chỉ giao hàng:{" "}
+                  <span style={{ fontWeight: "bold" }}>
                     {contract.buyerAddress}
                   </span>
                 </div>
@@ -552,12 +547,12 @@ const BuyerContract = () => {
             </div>
 
             {/* 6. Cam kết */}
-            <div className="mb-8" style={{ fontSize: '12pt' }}>
+            <div className="mb-8" style={{ fontSize: "12pt" }}>
               <div
                 style={{
-                  fontWeight: 'bold',
-                  marginBottom: '8pt',
-                  textTransform: 'uppercase',
+                  fontWeight: "bold",
+                  marginBottom: "8pt",
+                  textTransform: "uppercase",
                 }}
               >
                 Điều 6: Cam kết của các bên
@@ -567,9 +562,7 @@ const BuyerContract = () => {
                 <div>
                   - Bên A cam kết sản phẩm đúng như mô tả trong hợp đồng.
                 </div>
-                <div>
-                  - Bên B cam kết thanh toán đầy đủ theo thỏa thuận.
-                </div>
+                <div>- Bên B cam kết thanh toán đầy đủ theo thỏa thuận.</div>
                 <div>
                   - Hai bên cam kết thực hiện đúng các điều khoản trong hợp
                   đồng.
@@ -583,31 +576,31 @@ const BuyerContract = () => {
               <div className="text-center">
                 <div
                   style={{
-                    fontSize: '12pt',
-                    fontWeight: 'bold',
-                    marginBottom: '6pt',
+                    fontSize: "12pt",
+                    fontWeight: "bold",
+                    marginBottom: "6pt",
                   }}
                 >
                   ĐẠI DIỆN BÊN A
                 </div>
-                <div style={{ fontSize: '11pt', marginBottom: '50pt' }}>
+                <div style={{ fontSize: "11pt", marginBottom: "50pt" }}>
                   (Ký và ghi rõ họ tên)
                 </div>
                 {contract.sellerSigned ? (
                   <div>
                     <div
                       style={{
-                        fontSize: '12pt',
-                        fontWeight: 'bold',
-                        color: '#4caf50',
+                        fontSize: "12pt",
+                        fontWeight: "bold",
+                        color: "#4caf50",
                       }}
                     >
                       ✓ Đã ký
                     </div>
                     {contract.sellerSignedAt && (
-                      <div style={{ fontSize: '9pt', marginTop: '4pt' }}>
+                      <div style={{ fontSize: "9pt", marginTop: "4pt" }}>
                         {new Date(contract.sellerSignedAt).toLocaleString(
-                          'vi-VN'
+                          "vi-VN"
                         )}
                       </div>
                     )}
@@ -615,16 +608,16 @@ const BuyerContract = () => {
                 ) : (
                   <div
                     style={{
-                      height: '50pt',
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      justifyContent: 'center',
+                      height: "50pt",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "center",
                     }}
                   >
                     <div
                       style={{
-                        width: '150px',
-                        borderBottom: '1px solid #000',
+                        width: "150px",
+                        borderBottom: "1px solid #000",
                       }}
                     ></div>
                   </div>
@@ -635,31 +628,31 @@ const BuyerContract = () => {
               <div className="text-center">
                 <div
                   style={{
-                    fontSize: '12pt',
-                    fontWeight: 'bold',
-                    marginBottom: '6pt',
+                    fontSize: "12pt",
+                    fontWeight: "bold",
+                    marginBottom: "6pt",
                   }}
                 >
                   ĐẠI DIỆN BÊN B
                 </div>
-                <div style={{ fontSize: '11pt', marginBottom: '50pt' }}>
+                <div style={{ fontSize: "11pt", marginBottom: "50pt" }}>
                   (Ký và ghi rõ họ tên)
                 </div>
                 {contract.buyerSigned ? (
                   <div>
                     <div
                       style={{
-                        fontSize: '12pt',
-                        fontWeight: 'bold',
-                        color: '#4caf50',
+                        fontSize: "12pt",
+                        fontWeight: "bold",
+                        color: "#4caf50",
                       }}
                     >
                       ✓ Đã ký
                     </div>
                     {contract.buyerSignedAt && (
-                      <div style={{ fontSize: '9pt', marginTop: '4pt' }}>
+                      <div style={{ fontSize: "9pt", marginTop: "4pt" }}>
                         {new Date(contract.buyerSignedAt).toLocaleString(
-                          'vi-VN'
+                          "vi-VN"
                         )}
                       </div>
                     )}
@@ -667,16 +660,16 @@ const BuyerContract = () => {
                 ) : (
                   <div
                     style={{
-                      height: '50pt',
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      justifyContent: 'center',
+                      height: "50pt",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "center",
                     }}
                   >
                     <div
                       style={{
-                        width: '150px',
-                        borderBottom: '1px solid #000',
+                        width: "150px",
+                        borderBottom: "1px solid #000",
                       }}
                     ></div>
                   </div>
@@ -691,22 +684,21 @@ const BuyerContract = () => {
           <Card>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-               
                 <div>
                   <div className="text-lg font-bold">
-                    Trạng thái hợp đồng:{' '}
+                    Trạng thái hợp đồng:{" "}
                     <Tag
                       color={
-                        contract.status === 'PENDING'
-                          ? 'orange'
-                          : contract.status === 'SIGNED'
-                          ? 'green'
-                          : 'red'
+                        contract.status === "PENDING"
+                          ? "orange"
+                          : contract.status === "SIGNED"
+                          ? "green"
+                          : "red"
                       }
                     >
-                      {contract.status === 'PENDING' && 'Chờ ký'}
-                      {contract.status === 'SIGNED' && 'Đã ký'}
-                      {contract.status === 'CANCELLED' && 'Đã hủy'}
+                      {contract.status === "PENDING" && "Chờ ký"}
+                      {contract.status === "SIGNED" && "Đã ký"}
+                      {contract.status === "CANCELLED" && "Đã hủy"}
                     </Tag>
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
@@ -753,17 +745,16 @@ const BuyerContract = () => {
       >
         <Form form={otpForm} layout="vertical">
           <p className="mb-4 text-gray-600">
-            Mã OTP đã được gửi đến số điện thoại{' '}
-            <strong>{contract.buyerPhone}</strong>. Vui lòng nhập mã OTP để xác
-            nhận ký hợp đồng:
+            Mã OTP đã được gửi đến email . Vui lòng nhập mã OTP để xác nhận ký
+            hợp đồng:
           </p>
           <Form.Item
             name="otp"
             label="Mã OTP"
             rules={[
-              { required: true, message: 'Vui lòng nhập mã OTP!' },
-              { len: 6, message: 'Mã OTP phải có 6 số!' },
-              { pattern: /^\d+$/, message: 'Mã OTP chỉ chứa số!' },
+              { required: true, message: "Vui lòng nhập mã OTP!" },
+              { len: 6, message: "Mã OTP phải có 6 số!" },
+              { pattern: /^\d+$/, message: "Mã OTP chỉ chứa số!" },
             ]}
           >
             <Input
@@ -774,7 +765,7 @@ const BuyerContract = () => {
             />
           </Form.Item>
           <p className="text-sm text-gray-500">
-            Không nhận được mã?{' '}
+            Không nhận được mã?{" "}
             <a
               onClick={handleSendOtp}
               className="text-blue-600 cursor-pointer hover:underline"
@@ -808,6 +799,73 @@ const BuyerContract = () => {
           }
         }
       `}</style>
+
+      {/* Modal xác nhận hủy hợp đồng */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <ExclamationCircleOutlined className="text-red-600" />
+            <span className="text-lg font-semibold">Xác nhận hủy hợp đồng</span>
+          </div>
+        }
+        open={cancelModalVisible}
+        onCancel={() => setCancelModalVisible(false)}
+        onOk={handleCancelContract}
+        okText="Xác nhận hủy"
+        cancelText="Không, giữ lại"
+        okButtonProps={{
+          danger: true,
+          loading: cancelLoading,
+          size: "large",
+        }}
+        cancelButtonProps={{
+          size: "large",
+        }}
+        width={550}
+        centered
+      >
+        <div className="py-4">
+          <p className="text-base mb-3">
+            Bạn có chắc chắn muốn hủy hợp đồng này không?
+          </p>
+
+          <Alert
+            message="Cảnh báo!"
+            description="Hành động này không thể hoàn tác. Sau khi hủy, bạn sẽ không thể khôi phục lại hợp đồng."
+            type="warning"
+            showIcon
+            className="mb-4"
+          />
+
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Mã hợp đồng:</span>
+                <span className="font-semibold">{contract?.contractCode}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Người bán:</span>
+                <span className="font-semibold">{contract?.sellerName}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Tổng giá trị:</span>
+                <span className="font-semibold text-red-600">
+                  {contract?.totalFee?.toLocaleString("vi-VN")} VNĐ
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-600">Trạng thái:</span>
+                <Tag color="orange">
+                  {contract?.status === "PENDING" ? "Chờ ký" : contract?.status}
+                </Tag>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
