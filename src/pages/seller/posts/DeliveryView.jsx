@@ -21,7 +21,7 @@ const STATUS_OPTIONS = [
 
   { value: "DELIVERING", label: "Đang giao hàng" },
   { value: "PICKUP_PENDING", label: "Chờ lấy hàng" },
-  { value: "DELIVERED", label: "Đã giao thành công" },
+  { value: "RECEIVED", label: "Đã giao thành công" },
 ];
 
 
@@ -37,7 +37,7 @@ const getDeliveryStatusTag = (status) => {
       return <Tag color="geekblue">Chờ lấy hàng</Tag>;
     case "DELIVERING":
       return <Tag color="orange">Đang giao hàng</Tag>;
-    case "DELIVERED":
+    case "RECEIVED":
       return <Tag color="green">Đã giao thành công</Tag>;
     default:
       return <Tag color="gray">{status || "Không rõ"}</Tag>;
@@ -89,7 +89,7 @@ export default function DeliveryView() {
    title: option.label,
  }));
   const currentOptions = isGhn
-    ? availableStatusOptions.filter((option) => option.value === "DELIVERED")
+    ? availableStatusOptions.filter((option) => option.value === "RECEIVED")
     : availableStatusOptions;
 
   // --- HÀM TẢI DỮ LIỆU ---
@@ -104,7 +104,7 @@ export default function DeliveryView() {
 
         const provider = data?.deliveryProvider?.toUpperCase();
         if (provider === "GHN") {
-          setSelectedStatus("DELIVERED");
+          setSelectedStatus("RECEIVED");
         } else {
           setSelectedStatus(data.status);
         }
@@ -276,7 +276,7 @@ export default function DeliveryView() {
         </Descriptions>
 
         {/* Khung Cập nhật Trạng thái */}
-        {deliveryInfo.status !== "DELIVERED" && (
+        {deliveryInfo.status !== "RECEIVED" && (
           <div className="mt-8 pt-6 border-t">
             <h3 className="text-lg font-semibold mb-4">Cập nhật trạng thái</h3>
 

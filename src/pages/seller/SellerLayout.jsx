@@ -31,7 +31,7 @@ const SellerLayout = () => {
     },
     { icon: Paperclip, path: "/seller/package", tooltip: "Gói đăng tin" },
     { icon: ShoppingBag, path: "/seller/order", tooltip: "Đặt hàng" },
-    { icon: MessageCircle, path: "/seller/messages", tooltip: "Tin nhắn" },
+    { icon: MessageCircle, path: "/seller/complaints", tooltip: "Khiếu nại" },
   ];
 
   return (

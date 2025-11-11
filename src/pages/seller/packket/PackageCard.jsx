@@ -77,15 +77,17 @@ const PackageCard = ({ packageData }) => {
         <h2 className="text-2xl font-bold mb-1">{type} Package</h2>
         <p className="text-4xl font-extrabold border-b border-white border-opacity-30 pb-3">
           {price.toLocaleString("vi-VN")}₫{" "}
-          
         </p>
       </div>
 
       {/* Nội dung */}
+      
       <div className="p-6 space-y-3">
         <p className="text-gray-600 italic">
-          {description || "Không có mô tả cho gói này."}
+          {description ||
+            "Gói cơ bản giúp người bán có thêm lượt đăng bán sản phẩm."}
         </p>
+        
 
         <ul className="space-y-3">
           <li className="flex items-start border-b pb-3 last:border-b-0">
@@ -111,7 +113,9 @@ const PackageCard = ({ packageData }) => {
       <div className="p-6 pt-0">
         <button
           className={buttonClass}
-          onClick={() => {handlePayment()}}
+          onClick={() => {
+            handlePayment();
+          }}
         >
           Thanh toán
         </button>
