@@ -1,10 +1,35 @@
+"use client";
 import React, { useState, useEffect } from "react";
-import { Loader2, Eye, ShieldAlert } from "lucide-react"; // Icon cho tải, xem, và tiêu đề
+import {
+  Table,
+  Tag,
+  Button,
+  Select,
+  Spin,
+  Typography,
+  Space,
+  Result,
+} from "antd"; // 1. Import component AntD
+import { Eye, ShieldAlert } from "lucide-react"; // Giữ lại icon
 import { useNavigate } from "react-router-dom";
-
 import { toast } from "react-toastify";
 import api from "../../../config/axios";
 
+// --- Constants ---
+const { Title } = Typography;
+const { Option } = Select;
+
+// --- DANH SÁCH LỌC (Không đổi) ---
+const STATUS_FILTER_OPTIONS = [
+  { value: "ALL", label: "Tất cả trạng thái" },
+  { value: "PENDING", label: "Chờ xử lý" },
+  { value: "RESOLUTION_GIVEN", label: "Đã phản hồi" },
+  { value: "ADMIN_SOLVING", label: "Admin đang giải quyết" },
+  { value: "RESOLVED", label: "Đã giải quyết" },
+  { value: "REJECTED", label: "Đã từ chối" },
+];
+
+// --- HELPER FUNCTIONS ---
 const formatDate = (dateString) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
@@ -18,61 +43,45 @@ const formatDate = (dateString) => {
 };
 
 /**
- * Tạo Tag màu cho trạng thái Khiếu nại
+ * 2. Tạo Tag AntD cho trạng thái
  */
-const StatusTag = ({ status }) => {
-  // Ánh xạ status sang màu sắc Tailwind
-  const colorMap = {
-    PENDING: "bg-orange-100 text-orange-800",
-    RESOLUTION_GIVEN: "bg-blue-100 text-blue-800",
-    RESOLVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    ADMIN_SOLVING: "bg-purple-100 text-purple-800",
+const getComplaintTag = (status) => {
+  let color = "default";
+  let text = status;
 
-    // Loại khiếu nại
-    DAMAGED_PRODUCT: "bg-yellow-100 text-yellow-800",
-    WRONG_ITEM: "bg-yellow-100 text-yellow-800",
-    NOT_AS_DESCRIBED: "bg-yellow-100 text-yellow-800",
-  };
-
-  //  status sang văn bản tiếng Việt
-  const textMap = {
+  // Ánh xạ status sang màu sắc và text
+  const statusMap = {
     // Status
-    PENDING: "Chờ xử lý",
-    RESOLUTION_GIVEN: "Đã phản hồi",
-    RESOLVED: "Đã giải quyết",
-    REJECTED: "Đã từ chối",
-    ADMIN_SOLVING: "Admin đang giải quyết",
-
+    PENDING: { color: "orange", text: "Chờ xử lý" },
+    RESOLUTION_GIVEN: { color: "blue", text: "Đã phản hồi" },
+    RESOLVED: { color: "green", text: "Đã giải quyết" },
+    REJECTED: { color: "red", text: "Đã từ chối" },
+    ADMIN_SOLVING: { color: "purple", text: "Admin đang giải quyết" },
     // Loại khiếu nại
-    DAMAGED_PRODUCT: "Sản phẩm bị hỏng",
-    WRONG_ITEM: "Giao sai sản phẩm",
-    NOT_AS_DESCRIBED: "Không đúng mô tả",
+    DAMAGED_PRODUCT: { color: "yellow", text: "Sản phẩm bị hỏng" },
+    WRONG_ITEM: { color: "yellow", text: "Giao sai sản phẩm" },
+    NOT_AS_DESCRIBED: { color: "yellow", text: "Không đúng mô tả" },
   };
 
-  // Dùng màu mặc định (xám) nếu status không có trong map
-  const color = colorMap[status] || "bg-gray-100 text-gray-800";
-  // Dùng chính giá trị status làm text nếu không có trong map
-  const text = textMap[status] || status;
+  if (statusMap[status]) {
+    color = statusMap[status].color;
+    text = statusMap[status].text;
+  }
 
-  return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${color}`}>
-      {text}
-    </span>
-  );
+  return <Tag color={color}>{text}</Tag>;
 };
-
-
 
 // === THÀNH PHẦN CHÍNH ===
 
-export default function ComplaintList() {
+export default function ComplaintListAntD() {
   const [complaints, setComplaints] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Gọi API khi component được mount
+  // --- LOGIC (Không đổi) ---
   useEffect(() => {
     const fetchComplaints = async () => {
       setLoading(true);
@@ -81,6 +90,7 @@ export default function ComplaintList() {
         const data = res.data.data || res.data;
         if (res.data.success && Array.isArray(data)) {
           setComplaints(data);
+          setFilteredList(data);
         } else {
           throw new Error(res.data.message || "Định dạng dữ liệu không đúng");
         }
@@ -93,148 +103,157 @@ export default function ComplaintList() {
         setLoading(false);
       }
     };
-
     fetchComplaints();
-  }, []); // Mảng rỗng đảm bảo chỉ chạy 1 lần
+  }, []);
+
+  useEffect(() => {
+    if (selectedStatus === "ALL") {
+      setFilteredList(complaints);
+    } else {
+      const filtered = complaints.filter(
+        (complaint) => complaint.status === selectedStatus
+      );
+      setFilteredList(filtered);
+    }
+  }, [selectedStatus, complaints]);
 
   const handleViewDetails = (id) => {
     console.log(id);
-    
     navigate(`/seller/complaints/${id}`);
   };
 
-  // Màn hình chờ
+  // --- 3. ĐỊNH NGHĨA CỘT CHO BẢNG ANTD ---
+  const columns = [
+    {
+      title: "Mã Đơn hàng",
+      dataIndex: "orderId",
+      key: "orderId",
+      render: (text) => <a>#{text}</a>,
+    },
+    {
+      title: "Người khiếu nại",
+      dataIndex: "buyerName",
+      key: "buyerName",
+    },
+    {
+      title: "Tiêu đề",
+      dataIndex: "type",
+      key: "type",
+      render: (type) => getComplaintTag(type),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => getComplaintTag(status),
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => formatDate(text),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Button
+          type="link"
+          icon={<Eye className="w-4 h-4" />}
+          onClick={() => handleViewDetails(record.id)}
+        >
+          Xem
+        </Button>
+      ),
+    },
+  ];
+
+  // --- 4. RENDER UI ĐÃ CHUYỂN ĐỔI ---
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center">
-        <Loader2 className="w-16 h-16 animate-spin text-blue-500" />
+      // Dùng <Spin> của AntD
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
       </div>
     );
   }
 
-  // Màn hình lỗi
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center  p-4">
-        <p className="text-red-500 text-center mb-4">
-          Lỗi khi tải danh sách khiếu nại: {error}
-        </p>
-      </div>
+      // Dùng <Result> của AntD
+      <Result
+        status="error"
+        title="Lỗi khi tải danh sách khiếu nại"
+        subTitle={error}
+        extra={
+          <Button type="primary" onClick={() => window.location.reload()}>
+            Thử lại
+          </Button>
+        }
+      />
     );
   }
+
+  // Văn bản khi bảng trống
+  const emptyText =
+    selectedStatus === "ALL"
+      ? "Không tìm thấy khiếu nại nào."
+      : "Không tìm thấy khiếu nại phù hợp.";
 
   // Màn hình chính
   return (
-    <div className=" min-h-screen  p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+      {/* Dùng Space của AntD để căn chỉnh */}
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
         {/* Header */}
-        <div className="mb-6 flex items-center space-x-3">
+        <Space align="center" size="middle">
           <ShieldAlert className="w-8 h-8 text-red-600" />
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <Title level={2} style={{ margin: 0 }}>
             Quản lý Khiếu nại
-          </h1>
-        </div>
+          </Title>
+        </Space>
 
-        {/* Bảng dữ liệu */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] divide-y divide-gray-200">
-              {/* Header của bảng */}
-              <thead className="bg-gray-50">
-                <tr>
-                  
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
-                  >
-                    Mã Đơn hàng
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
-                  >
-                    Người khiếu nại
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
-                  >
-                    Tiêu đề
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
-                  >
-                    Trạng thái
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
-                  >
-                    Ngày tạo
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
-                  >
-                    Hành động
-                  </th>
-                </tr>
-              </thead>
+        {/* Bảng dữ liệu (Gói trong 1 div để có bóng và padding) */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          {/* 5. Bộ lọc dùng <Select> của AntD */}
+          <div className="mb-4">
+            <label
+              htmlFor="status-filter"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Lọc theo trạng thái
+            </label>
+            <Select
+              id="status-filter"
+              value={selectedStatus}
+              onChange={(value) => setSelectedStatus(value)} // AntD Select trả về value trực tiếp
+              style={{ width: 240 }}
+            >
+              {STATUS_FILTER_OPTIONS.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          </div>
 
-              {/* Body của bảng */}
-              <tbody className="bg-white divide-y divide-gray-200">
-                {complaints.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan="7"
-                      className="px-6 py-8 text-center text-gray-500"
-                    >
-                      Không tìm thấy khiếu nại nào.
-                    </td>
-                  </tr>
-                ) : (
-                  complaints.map((complaint) => (
-                    <tr
-                      key={complaint.id}
-                      className="hover:bg-gray-50 transition duration-150"
-                    >
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        #{complaint.orderId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {complaint.name}
-                      </td>
-                      <td
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-xs truncate"
-                        title={complaint.type}
-                      >
-                        <StatusTag status={complaint.type} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <StatusTag status={complaint.status} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {formatDate(complaint.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <button
-                          onClick={() => handleViewDetails(complaint.id)}
-                          className="flex items-center justify-center mx-auto text-blue-600 hover:text-blue-800 transition duration-150"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Xem
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          {/* 6. Bảng dữ liệu dùng <Table> của AntD */}
+          <div style={{ minHeight: "350px" }}>
+            <Table
+              columns={columns}
+              dataSource={filteredList}
+              loading={loading}
+              rowKey="id"
+              locale={{ emptyText: emptyText }}
+             scroll={{
+                x: "max-content",
+                y: 300,}}
+            />
           </div>
         </div>
-      </div>
+      </Space>
     </div>
   );
 }

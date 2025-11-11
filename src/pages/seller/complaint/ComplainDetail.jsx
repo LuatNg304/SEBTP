@@ -214,7 +214,7 @@ export default function ComplaintDetail() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate px-4">
-            Chi tiết Khiếu nại #{complaint.id}
+            Chi tiết Khiếu nại 
           </h1>
           <button
             onClick={goBack}
@@ -248,7 +248,9 @@ export default function ComplaintDetail() {
                     <label className="text-sm font-medium text-gray-500">
                       Người khiếu nại
                     </label>
-                    <p className="text-base text-gray-900">{complaint.name}</p>
+                    <p className="text-base text-gray-900">
+                      {complaint.buyerName}
+                    </p>
                   </div>
                   <div className="info-item">
                     <label className="text-sm font-medium text-gray-500">
