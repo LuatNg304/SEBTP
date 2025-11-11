@@ -40,7 +40,7 @@ const OrderDelivery = () => {
     try {
       const response = await api.get(`/buyer/order-deliveries/${id}`);
       setDelivery(response.data.data);
-      console.log("✅ Delivery:", response.data.data);
+      console.log("Luat dep:", response.data.data);
       return response.data.data;
     } catch (error) {
       console.error("❌ Delivery not found:", error.response?.status);
@@ -227,6 +227,19 @@ const OrderDelivery = () => {
       CANCELED: { text: "Đã hủy", color: "volcano" },
     };
     return statusMap[status] || { text: status, color: "default" };
+  };
+  const handleConfirmOrder = async () => {
+    try {
+      const res = await api.post(`buyer/order-deliveries/${delivery.id}/confirm-received`);
+      fetchDelivery();
+      console.log("ID cua delivery: ", delivery.id);
+
+      toast.success("Xác nhận giao hàng thành công!");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Xác nhận giao hàng thất bại"
+      );
+    }
   };
 
   const activeInvoice = invoices.find((inv) => inv.status === "ACTIVE");
@@ -601,6 +614,19 @@ const OrderDelivery = () => {
               </Card>
             )}
           </Space>
+          <Divider />
+          {delivery?.status === "DELIVERED" && (
+            <div className="text-center">
+              <Button
+                type="primary"
+                size="large"
+                loading={paymentLoading}
+                onClick={handleConfirmOrder}
+              >
+                Xác nhận giao hàng
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

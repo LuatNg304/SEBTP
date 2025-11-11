@@ -1,12 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Layout, Button, Modal, Table, Form, Input, Card, 
-  Typography, Space, Row, Col, Avatar, ConfigProvider, message, 
-  Tag
+import {
+  Layout,
+  Button,
+  Modal,
+  Table,
+  Form,
+  Input,
+  Card,
+  Typography,
+  Space,
+  Row,
+  Col,
+  Avatar,
+  ConfigProvider,
+  message,
+  Tag,
 } from "antd";
-import { 
-  PlusOutlined, MinusOutlined, ArrowUpOutlined, 
-  ArrowDownOutlined, WalletOutlined 
+import {
+  PlusOutlined,
+  MinusOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  WalletOutlined,
+  ShoppingOutlined,
+  CrownOutlined,
+  FileTextOutlined,
+  RocketOutlined,
+  UndoOutlined,
 } from "@ant-design/icons";
 import api from "../../config/axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -52,31 +72,31 @@ const ViewWallet = () => {
 
   useEffect(() => {
     // Kiểm tra xem URL có query parameter paymentStatus không
-    const paymentStatus = searchParams.get('paymentStatus');
-    
-    if (paymentStatus === 'success') {
+    const paymentStatus = searchParams.get("paymentStatus");
+
+    if (paymentStatus === "success") {
       // Hiển thị modal thông báo thanh toán thành công
       Modal.success({
-        title: 'Nạp tiền thành công!',
-        content: 'Giao dịch của bạn đã được xử lý thành công.',
+        title: "Nạp tiền thành công!",
+        content: "Giao dịch của bạn đã được xử lý thành công.",
         onOk: () => {
           // Xóa query parameter khỏi URL sau khi đóng modal
-          searchParams.delete('paymentStatus');
+          searchParams.delete("paymentStatus");
           setSearchParams(searchParams);
-        }
+        },
       });
-      
+
       // Reload dữ liệu ví
       fetchWalletData();
-    } else if (paymentStatus === 'failed') {
+    } else if (paymentStatus === "failed") {
       // Hiển thị modal thông báo thanh toán thất bại
       Modal.error({
-        title: 'Thanh toán thất bại',
-        content: 'Giao dịch của bạn không thành công. Vui lòng thử lại.',
+        title: "Thanh toán thất bại",
+        content: "Giao dịch của bạn không thành công. Vui lòng thử lại.",
         onOk: () => {
-          searchParams.delete('paymentStatus');
+          searchParams.delete("paymentStatus");
           setSearchParams(searchParams);
-        }
+        },
       });
     } else {
       // Load dữ liệu bình thường nếu không có paymentStatus
@@ -85,44 +105,47 @@ const ViewWallet = () => {
   }, [searchParams]);
 
   const showModal = (type) => {
-    setTransactionType(type);
-    setIsModalVisible(true);
-  };
+  setTransactionType(type);
+  setIsModalVisible(true);
+};
 
   const handleOk = async () => {
-    try {
-      const values = await form.validateFields();
+  try {
+    const values = await form.validateFields();
+    const amount = parseFloat(values.amount);
 
-      if (transactionType === "deposit") {
-        const response = await api.post('/user/wallet/deposit', {
-          amount: parseFloat(values.amount)
-        });
+    // Validate số dư trước khi withdraw
+    if (transactionType === "withdraw" && amount > balance) {
+      message.error("Số dư không đủ để thực hiện giao dịch!");
+      return;
+    }
 
-        if (response.data.success) {
-          // Chuyển hướng đến trang VNPay trong cùng tab
-          window.location.href = response.data.data;
-          
-          setIsModalVisible(false);
-          form.resetFields();
-        }
-      } else {
-        await api.post('/user/wallet/withdraw', {
-          amount: parseFloat(values.amount)
-        });
+    if (transactionType === "deposit") {
+      const response = await api.post('/user/wallet/deposit', {
+        amount: amount
+      });
 
+      if (response.data.success) {
+        window.location.href = response.data.data;
         setIsModalVisible(false);
         form.resetFields();
-        message.success("Rút tiền thành công!");
-        
-        // Reload dữ liệu sau khi rút tiền
-        fetchWalletData();
       }
+    } else if (transactionType === "withdraw") {
+      await api.post('/user/wallet/withdraw', {
+        amount: amount
+      });
 
-    } catch (error) {
-      console.log('Error:', error.response?.data);
-      message.error(error.response?.data?.message || "Giao dịch thất bại!");
+      setIsModalVisible(false);
+      form.resetFields();
+      message.success("Rút tiền thành công!");
+      fetchWalletData();
     }
-  };
+
+  } catch (error) {
+    console.log('Error:', error.response?.data);
+    message.error(error.response?.data?.message || "Giao dịch thất bại!");
+  }
+};
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -135,36 +158,81 @@ const ViewWallet = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       width: 180,
-      render: (date) => new Date(date).toLocaleString('vi-VN')
+      render: (date) => new Date(date).toLocaleString("vi-VN"),
     },
     {
       title: "Loại giao dịch",
       dataIndex: "type",
       key: "type",
-      width: 160,
-      render: (type) => (
-        <Space>
-          {type === "DEPOSIT" ? (
-            <>
-              <Avatar 
-                size={32} 
-                style={{ backgroundColor: '#e6f7e6', color: '#52c41a' }}
-                icon={<ArrowUpOutlined />}
-              />
-              <Text>Nạp tiền</Text>
-            </>
-          ) : (
-            <>
-              <Avatar 
-                size={32} 
-                style={{ backgroundColor: '#ffe6e6', color: '#ff4d4f' }}
-                icon={<ArrowDownOutlined />}
-              />
-              <Text>Rút tiền</Text>
-            </>
-          )}
-        </Space>
-      )
+      width: 200,
+      render: (type) => {
+        const transactionConfig = {
+          TOUP_WALLET: {
+            icon: <ArrowUpOutlined />,
+            bgColor: "#e6f7e6",
+            textColor: "#52c41a",
+            text: "Nạp tiền",
+          },
+          WITHDRAW_WALLET: {
+            icon: <ArrowDownOutlined />,
+            bgColor: "#ffe6e6",
+            textColor: "#ff4d4f",
+            text: "Rút tiền",
+          },
+          PURCHASE_SELLER_PACKAGE: {
+            icon: <ShoppingOutlined />,
+            bgColor: "#e6f4ff",
+            textColor: "#1890ff",
+            text: "Mua gói bán hàng",
+          },
+          PURCHASE_PRIORITY_PACKAGE: {
+            icon: <RocketOutlined />,
+            bgColor: "#fff7e6",
+            textColor: "#fa8c16",
+            text: "Mua gói ưu tiên",
+          },
+          PAY_INVOICE: {
+            icon: <FileTextOutlined />,
+            bgColor: "#f9f0ff",
+            textColor: "#722ed1",
+            text: "Thanh toán hóa đơn",
+          },
+          REFUND_WALLET: {
+            icon: <UndoOutlined />,
+            bgColor: "#e6fffb",
+            textColor: "#13c2c2",
+            text: "Hoàn tiền",
+          },
+          // Legacy support cho DEPOSIT nếu có data cũ
+          DEPOSIT: {
+            icon: <ArrowUpOutlined />,
+            bgColor: "#e6f7e6",
+            textColor: "#52c41a",
+            text: "Nạp tiền",
+          },
+        };
+
+        const config = transactionConfig[type] || {
+          icon: <WalletOutlined />,
+          bgColor: "#f5f5f5",
+          textColor: "#8c8c8c",
+          text: type,
+        };
+
+        return (
+          <Space>
+            <Avatar
+              size={32}
+              style={{
+                backgroundColor: config.bgColor,
+                color: config.textColor,
+              }}
+              icon={config.icon}
+            />
+            <Text>{config.text}</Text>
+          </Space>
+        );
+      },
     },
     {
       title: "Mô tả",
@@ -177,124 +245,159 @@ const ViewWallet = () => {
       key: "status",
       width: 120,
       render: (status) => {
-        let color = 'default';
+        let color = "default";
         let text = status;
-        
-        if (status === 'SUCCESS') {
-          color = 'success';
-          text = 'Thành công';
-        } else if (status === 'PENDING') {
-          color = 'processing';
-          text = 'Đang xử lý';
-        } else if (status === 'FAILED') {
-          color = 'error';
-          text = 'Thất bại';
+
+        if (status === "SUCCESS") {
+          color = "success";
+          text = "Thành công";
+        } else if (status === "PENDING") {
+          color = "processing";
+          text = "Đang xử lý";
+        } else if (status === "FAILED") {
+          color = "error";
+          text = "Thất bại";
         }
-        
+
         return <Tag color={color}>{text}</Tag>;
-      }
+      },
     },
     {
-      title: "Số tiền",
-      dataIndex: "amount",
-      key: "amount",
-      width: 150,
-      align: 'right',
-      render: (amount, record) => (
-        <Text strong style={{ color: record.type === "DEPOSIT" ? '#52c41a' : '#ff4d4f' }}>
-          {record.type === "DEPOSIT" ? '+' : '-'}{amount.toLocaleString()} VND
-        </Text>
-      ),
-    }
+  title: "Số tiền",
+  dataIndex: "amount",
+  key: "amount",
+  width: 150,
+  align: 'right',
+  render: (amount, record) => {
+    // Các loại giao dịch TĂNG số dư (màu xanh, dấu +)
+    const increaseTypes = ['TOUP_WALLET', 'REFUND_WALLET', 'DEPOSIT'];
+    
+    // Các loại giao dịch GIẢM số dư (màu đỏ, dấu -)
+    const decreaseTypes = ['WITHDRAW_WALLET', 'PURCHASE_SELLER_PACKAGE', 
+                          'PURCHASE_PRIORITY_PACKAGE', 'PAY_INVOICE'];
+    
+    const isIncrease = increaseTypes.includes(record.type);
+    const isDecrease = decreaseTypes.includes(record.type);
+    
+    return (
+      <Text 
+        strong 
+        style={{ 
+          color: isIncrease ? '#52c41a' : 
+                 isDecrease ? '#ff4d4f' : 
+                 '#000000'
+        }}
+      >
+        {isIncrease ? '+' : isDecrease ? '-' : ''}
+        {amount.toLocaleString()} VND
+      </Text>
+    );
+  },
+}
+
   ];
 
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#5B93FF',
-          colorBgContainer: '#ffffff',
+          colorPrimary: "#5B93FF",
+          colorBgContainer: "#ffffff",
           borderRadius: 16,
           fontSize: 15,
         },
       }}
     >
-      <Layout style={{ minHeight: '100vh', background: '#F7F9FC' }}>
+      <Layout style={{ minHeight: "100vh", background: "#F7F9FC" }}>
         <Content style={{ padding: "32px" }}>
           <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-            <Space direction="vertical" size={24} style={{ width: '100%' }}>
-              <Button 
+            <Space direction="vertical" size={24} style={{ width: "100%" }}>
+              <Button
                 icon={<Home />}
                 onClick={() => navigate("/")}
                 size="large"
-                style={{ 
-                  background: 'rgba(79, 126, 32, 0.88)',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.3)',
+                style={{
+                  background: "rgba(79, 126, 32, 0.88)",
+                  color: "white",
+                  border: "1px solid rgba(255,255,255,0.3)",
                   height: 48,
                   paddingLeft: 24,
                   paddingRight: 24,
                   fontSize: 16,
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 HOME
               </Button>
 
               {/* Balance Card */}
-              <Card 
-                style={{ 
+              <Card
+                style={{
                   borderRadius: 20,
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #2d5e3eff 0%, #204e287e 100%)',
-                  boxShadow: '0 8px 24px rgba(102, 126, 234, 0.25)'
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #2d5e3eff 0%, #204e287e 100%)",
+                  boxShadow: "0 8px 24px rgba(102, 126, 234, 0.25)",
                 }}
               >
                 <Row align="middle" justify="space-between">
                   <Col>
                     <Space direction="vertical" size={4}>
-                      <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 16 }}>
+                      <Text
+                        style={{
+                          color: "rgba(255,255,255,0.85)",
+                          fontSize: 16,
+                        }}
+                      >
                         Ví của bạn
                       </Text>
-                      <Title level={1} style={{ color: 'white', margin: 0, fontSize: 48, fontWeight: 600 }}>
+                      <Title
+                        level={1}
+                        style={{
+                          color: "white",
+                          margin: 0,
+                          fontSize: 48,
+                          fontWeight: 600,
+                        }}
+                      >
                         {balance.toLocaleString()} VND
                       </Title>
                     </Space>
                   </Col>
                   <Col>
                     <Space size="middle">
-                      <Button 
+                      <Button
                         type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => showModal("deposit")}
                         size="large"
-                        style={{ 
-                          background: 'white',
-                          color: '#667eea',
-                          border: 'none',
+                        style={{
+                          background: "white",
+                          color: "#667eea",
+                          border: "none",
                           height: 48,
                           paddingLeft: 24,
                           paddingRight: 24,
                           fontSize: 16,
                           fontWeight: 500,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                         }}
                       >
                         Nạp tiền
                       </Button>
-                      <Button 
+                      <Button
                         icon={<MinusOutlined />}
                         onClick={() => showModal("withdraw")}
                         size="large"
-                        style={{ 
-                          background: 'rgba(255,255,255,0.2)',
-                          color: 'white',
-                          border: '1px solid rgba(255,255,255,0.3)',
+                        style={{
+                          background: "rgba(255,255,255,0.2)",
+                          color: "white",
+                          border: "1px solid rgba(255,255,255,0.3)",
                           height: 48,
                           paddingLeft: 24,
                           paddingRight: 24,
                           fontSize: 16,
-                          fontWeight: 500
+                          fontWeight: 500,
                         }}
                       >
                         Rút tiền
@@ -305,25 +408,25 @@ const ViewWallet = () => {
               </Card>
 
               {/* Transaction History */}
-              <Card 
+              <Card
                 title={
                   <Title level={4} style={{ margin: 0, fontWeight: 600 }}>
                     Lịch sử giao dịch
                   </Title>
                 }
-                style={{ 
+                style={{
                   borderRadius: 16,
-                  border: 'none',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                 }}
               >
-                <Table 
-                  columns={columns} 
-                  dataSource={transactions} 
-                  pagination={{ 
+                <Table
+                  columns={columns}
+                  dataSource={transactions}
+                  pagination={{
                     pageSize: 6,
-                    position: ['bottomCenter'],
-                    showSizeChanger: false
+                    position: ["bottomCenter"],
+                    showSizeChanger: false,
                   }}
                   rowKey="key"
                   style={{ marginTop: 16 }}
@@ -347,7 +450,7 @@ const ViewWallet = () => {
             cancelText="Hủy"
             width={500}
             styles={{
-              body: { paddingTop: 24 }
+              body: { paddingTop: 24 },
             }}
           >
             <Form form={form} layout="vertical">
@@ -356,28 +459,27 @@ const ViewWallet = () => {
                 label="Số tiền (VND)"
                 rules={[
                   { required: true, message: "Vui lòng nhập số tiền!" },
-                  { 
-                    pattern: /^[0-9]+$/, 
-                    message: "Vui lòng nhập số hợp lệ!" 
-                  }
+                  {
+                    pattern: /^[0-9]+$/,
+                    message: "Vui lòng nhập số hợp lệ!",
+                  },
                 ]}
               >
-                <Input 
-                  placeholder="0" 
-                  size="large"
-                  style={{ fontSize: 18 }}
-                />
+                <Input placeholder="0" size="large" style={{ fontSize: 18 }} />
               </Form.Item>
-              
+
               {transactionType === "withdraw" && (
-                <div style={{ 
-                  padding: 16, 
-                  background: '#f5f5f5', 
-                  borderRadius: 8,
-                  marginTop: 8
-                }}>
+                <div
+                  style={{
+                    padding: 16,
+                    background: "#f5f5f5",
+                    borderRadius: 8,
+                    marginTop: 8,
+                  }}
+                >
                   <Text type="secondary">
-                    Số dư khả dụng: <strong>{balance.toLocaleString()} VND</strong>
+                    Số dư khả dụng:{" "}
+                    <strong>{balance.toLocaleString()} VND</strong>
                   </Text>
                 </div>
               )}

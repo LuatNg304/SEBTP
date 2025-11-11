@@ -11,6 +11,9 @@ import {
   Card,
   Input,
   Form,
+  Select,
+  Upload, // ← Thêm
+  message,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -21,11 +24,14 @@ import {
   DollarOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
+  PlusOutlined, // ← Thêm
 } from "@ant-design/icons";
+
 import api from "../../config/axios";
 import { toast } from "react-toastify";
 import Header from "../../components/header";
 import { useNavigate } from "react-router-dom";
+import { uploadFile } from "../../utils/upload";
 
 const { TextArea } = Input;
 
@@ -39,6 +45,11 @@ const Orders = () => {
   const [cancelForm] = Form.useForm();
   const [contractList, setContractList] = useState([]);
   const [deliveryList, setDeliveryList] = useState([]);
+  const [fileList, setFileList] = useState([]);
+  const [isComplainModalVisible, setIsComplainModalVisible] = useState(false);
+  const [complainForm] = Form.useForm();
+  const [complainLoading, setComplainLoading] = useState(false);
+
   const navigate = useNavigate();
 
   // ✅ Fetch danh sách delivery
@@ -100,17 +111,16 @@ const Orders = () => {
     const contract = contractList.find((c) => c.orderId === orderId);
     return contract?.id;
   };
-
-  // ✅ Hàm lấy delivery ID từ orderId
-  const getDeliveryId = (orderId) => {
-    const delivery = deliveryList.find((d) => d.orderId === orderId.toString());
-    return delivery?.orderId;
+  //lấy status cua delivery theo orderId
+  const getDeliveryStatus = (orderId) => {
+    const delivery = deliveryList.find(
+      (d) => d.orderId.toString() === orderId.toString()
+    );
+    return delivery?.status;
   };
 
   // ✅ Hàm xử lý click nút Chi tiết
   const handleViewDetail = (orderId) => {
-    
-
     navigate(`/delivery/${orderId}`);
   };
 
@@ -332,10 +342,98 @@ const Orders = () => {
               Hủy
             </Button>
           )}
+          {/* Nút Complain mới */}
+          {getDeliveryStatus(record.id)?.includes("RECEIVED") && (
+            <Button
+              danger
+              size="small"
+              icon={<FileTextOutlined />}
+              onClick={() => showComplainModal(record)}
+            >
+              Khiếu nại
+            </Button>
+          )}
         </Space>
       ),
     },
   ];
+  // Thêm các hàm xử lý complain (đặt sau handleCancelOrder)
+  const showComplainModal = (record) => {
+    setSelectedOrder(record);
+    setIsComplainModalVisible(true);
+    complainForm.resetFields();
+    setFileList([]); // ← Reset fileList
+  };
+
+  const handleComplainModalClose = () => {
+    setIsComplainModalVisible(false);
+    setSelectedOrder(null);
+    complainForm.resetFields();
+    setFileList([]); // ← Reset fileList
+  };
+  // ✅ Hàm xử lý thay đổi file upload
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+  };
+  // ✅ Hàm validate trước khi upload
+  const beforeUpload = (file) => {
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error("File phải nhỏ hơn 5MB!");
+      return Upload.LIST_IGNORE;
+    }
+    return false; // Không tự động upload
+  };
+
+  const handleSubmitComplain = async () => {
+    try {
+      const values = await complainForm.validateFields();
+      setComplainLoading(true);
+
+      // Upload tất cả ảnh và lấy URLs
+      const imageUrls = [];
+      for (const file of fileList) {
+        if (file.originFileObj) {
+          try {
+            const url = await uploadFile(file.originFileObj); // Gọi hàm uploadFile của bạn
+            imageUrls.push(url);
+          } catch (error) {
+            console.error("❌ Error uploading file:", error);
+            toast.error(`Không thể upload ảnh ${file.name}`);
+          }
+        }
+      }
+
+      // Chuẩn bị data theo format API
+      const complainData = {
+        orderId: selectedOrder.id,
+        complaintType: values.complainType,
+        description: values.description,
+        complaintImages: imageUrls,
+      };
+
+      console.log("📤 Complain data:", complainData);
+
+      // TODO: Gọi API của bạn
+      const response = await api.post("/buyer/complaints/create", complainData);
+
+      toast.success(
+        "Gửi khiếu nại thành công! Chúng tôi sẽ xử lý trong 24-48h."
+      );
+      setIsComplainModalVisible(false);
+      complainForm.resetFields();
+      setFileList([]);
+    } catch (error) {
+      if (error.errorFields) {
+        toast.error("Vui lòng điền đầy đủ thông tin!");
+      } else {
+        console.error("❌ Error:", error);
+        toast.error(error.response?.data?.message || "Không thể gửi khiếu nại");
+      }
+    } finally {
+      setComplainLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -386,6 +484,13 @@ const Orders = () => {
               <Tag color="blue" className="ml-2">
                 {orderList.length} đơn hàng
               </Tag>
+              <Button
+                type="default"
+                danger
+                onClick={() => navigate("/complain")}
+              >
+                Complain
+              </Button>
             </div>
           }
           extra={
@@ -524,8 +629,7 @@ const Orders = () => {
                 <Descriptions.Item label="Số tiền đã cọc" span={2}>
                   <span className="font-semibold text-green-600">
                     {(
-                      ((selectedOrder.price) *
-                        selectedOrder.depositPercentage) /
+                      (selectedOrder.price * selectedOrder.depositPercentage) /
                       100
                     ).toLocaleString("vi-VN")}{" "}
                     VNĐ
@@ -600,6 +704,91 @@ const Orders = () => {
               maxLength={500}
             />
           </Form.Item>
+        </Form>
+      </Modal>
+      
+      {/* Modal Khiếu nại đơn hàng */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FileTextOutlined className="text-orange-600" />
+            <span>Khiếu nại đơn hàng #{selectedOrder?.id}</span>
+          </div>
+        }
+        open={isComplainModalVisible}
+        onCancel={handleComplainModalClose}
+        onOk={handleSubmitComplain}
+        okText="Gửi khiếu nại"
+        cancelText="Hủy"
+        confirmLoading={complainLoading}
+        okButtonProps={{ danger: true }}
+        width={600}
+      >
+        <Form form={complainForm} layout="vertical">
+          <p className="mb-4 text-gray-600">
+            Vui lòng mô tả chi tiết vấn đề bạn gặp phải với đơn hàng này. Chúng
+            tôi sẽ xem xét và phản hồi trong vòng 24-48 giờ.
+          </p>
+
+          <Form.Item
+            name="complainType"
+            label="Loại khiếu nại"
+            rules={[
+              { required: true, message: "Vui lòng chọn loại khiếu nại!" },
+            ]}
+          >
+            <Select placeholder="Chọn loại khiếu nại" size="large">
+              <Select.Option value="DAMAGED_PRODUCT">
+                Sản phẩm bị hư hỏng
+              </Select.Option>
+              <Select.Option value="WRONG_ITEM">Sai sản phẩm</Select.Option>
+              <Select.Option value="NOT_AS_DESCRIBED">
+                Không đúng như mô tả
+              </Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Mô tả chi tiết"
+            rules={[
+              { required: true, message: "Vui lòng mô tả vấn đề chi tiết!" },
+              { min: 20, message: "Mô tả phải có ít nhất 20 ký tự!" },
+              { max: 1000, message: "Mô tả không được quá 1000 ký tự!" },
+            ]}
+          >
+            <TextArea
+              rows={6}
+              placeholder="Mô tả chi tiết vấn đề: thời gian phát hiện, tình trạng sản phẩm, những gì bạn mong muốn..."
+              showCount
+              maxLength={1000}
+            />
+          </Form.Item>
+
+          <Form.Item label="File minh chứng (tối đa 5 file)">
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={handleUploadChange}
+              beforeUpload={beforeUpload}
+              maxCount={5}
+            >
+              {fileList.length >= 5 ? null : (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Tải lên</div>
+                </div>
+              )}
+            </Upload>
+            <p className="text-xs text-gray-500 mt-2">Tối đa 5MB/file</p>
+          </Form.Item>
+
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+            <p className="text-sm text-yellow-800">
+              <strong>Lưu ý:</strong> Khiếu nại sẽ được gửi đến bộ phận hỗ trợ.
+              File minh chứng sẽ giúp chúng tôi xử lý nhanh hơn.
+            </p>
+          </div>
         </Form>
       </Modal>
     </div>

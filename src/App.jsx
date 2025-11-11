@@ -34,6 +34,8 @@ import ContractView from "./pages/seller/posts/ContractView";
 import BuyerContract from "./pages/buyerContract";
 import DeliveryView from "./pages/seller/posts/DeliveryView";
 import OrderDelivery from "./pages/delivery";
+import Complain from "./pages/buyerComplain/Complain";
+import AdminComplain from "./pages/admin/complain/AdminComplain";
 
 
 const router = createBrowserRouter([
@@ -96,6 +98,10 @@ const router = createBrowserRouter([
         path: "posted",
         element: <Posted />,
       },
+      {
+        path: "complain",
+        element: <AdminComplain />,
+      },
     ],
   },
 
@@ -147,6 +153,9 @@ const router = createBrowserRouter([
   },{
     path: "delivery/:id",
     element: <OrderDelivery />,
+  },{
+    path:"/complain",
+    element:<Complain/>
   }
 ]);
 

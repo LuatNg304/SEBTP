@@ -26,6 +26,7 @@ const items = [
     getItem("Reject", "2", null, null, "/admin/post-reject"),
     getItem("Posted", "3", null, null, "/admin/posted"),
   ]),
+  getItem("Complain", "4", <UserOutlined />,null,"/admin/complain")
 ];
 
 const Dashboard = () => {
