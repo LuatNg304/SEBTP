@@ -214,7 +214,7 @@ export default function ComplaintDetail() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate px-4">
-            Chi tiết Khiếu nại 
+            Chi tiết Khiếu nại
           </h1>
           <button
             onClick={goBack}
@@ -362,7 +362,8 @@ export default function ComplaintDetail() {
             </div>
 
             {/* Chỉ hiển thị Form Hành động nếu status là PENDING */}
-            {complaint.status === "PENDING" ? (
+            {complaint.status === "PENDING" ||
+            complaint.status === "REJECTED" ? (
               <div className="bg-white rounded-lg shadow-lg p-6 h-fit">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                   Hành động xử lý

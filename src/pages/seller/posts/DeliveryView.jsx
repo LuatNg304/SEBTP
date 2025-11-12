@@ -4,27 +4,23 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   Descriptions,
-  Select,
+  // Select, // <- Không cần Select nữa
   Tag,
   Space,
-  Steps, 
+  Steps,
 } from "antd";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import api from "../../../config/axios";
 import { toast } from "react-toastify";
 
 // --- DANH SÁCH TRẠNG THÁI ---
-
 const STATUS_OPTIONS = [
   { value: "PREPARING", label: "Đang chuẩn bị" },
   { value: "READY", label: "Sẵn sàng giao" },
-
   { value: "DELIVERING", label: "Đang giao hàng" },
   { value: "PICKUP_PENDING", label: "Chờ lấy hàng" },
   { value: "RECEIVED", label: "Đã giao thành công" },
 ];
-
-
 
 // --- HELPER: Định dạng Tag Trạng thái ---
 const getDeliveryStatusTag = (status) => {
@@ -62,6 +58,8 @@ export default function DeliveryView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // State này giờ chỉ còn dùng cho GHN
   const [selectedStatus, setSelectedStatus] = useState("");
 
   const navigate = useNavigate();
@@ -69,45 +67,45 @@ export default function DeliveryView() {
   const location = useLocation();
   const method = location.state?.deliveryMethod;
 
+  // Các biến tính toán
   const provider = deliveryInfo?.deliveryProvider?.toUpperCase();
   const orderId = deliveryInfo?.id;
   const isGhn = provider === "GHN";
 
- console.log(method);
- 
- let availableStatusOptions; // Dùng 'let'
- if (method === "BUYER_PICKUP") {
-   // Nếu là "BUYER_PICKUP", lọc bỏ "Đang giao hàng"
-   availableStatusOptions = STATUS_OPTIONS.filter(
-     (option) => option.value !== "DELIVERING"
-   );
- } else {
-   // Mặc định trả về tất cả
-   availableStatusOptions = STATUS_OPTIONS;
- }
- const availableStepItems = availableStatusOptions.map((option) => ({
-   title: option.label,
- }));
-  const currentOptions = isGhn
-    ? availableStatusOptions.filter((option) => option.value === "RECEIVED")
-    : availableStatusOptions;
+  console.log("Phương thức giao hàng:", method);
 
-  // --- HÀM TẢI DỮ LIỆU ---
+  // --- 1. LỌC CÁC BƯỚC (STEPS) DỰA TRÊN PHƯƠNG THỨC GIAO HÀNG ---
+  let availableStatusOptions; // Dùng 'let'
+  if (method === "BUYER_PICKUP") {
+    // Nếu là "BUYER_PICKUP", lọc bỏ "Đang giao hàng"
+    availableStatusOptions = STATUS_OPTIONS.filter(
+      (option) => option.value !== "DELIVERING"
+    );
+  } else {
+    // Mặc định trả về tất cả
+    availableStatusOptions = STATUS_OPTIONS;
+  }
+
+  // Tạo items cho component Steps
+  const availableStepItems = availableStatusOptions.map((option) => ({
+    title: option.label,
+  }));
+
+  // --- 2. HÀM TẢI DỮ LIỆU ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/seller/order-deliveries/${id}`);
       if (res.data && (res.data.success || res.data)) {
-        // Linh hoạt hơn với cấu trúc response
-        const data = res.data.data || res.data; // Lấy data.data trước, nếu không có thì lấy res.data
+        const data = res.data.data || res.data;
         setDeliveryInfo(data);
 
         const provider = data?.deliveryProvider?.toUpperCase();
         if (provider === "GHN") {
+          // Chỉ set state này cho GHN
           setSelectedStatus("RECEIVED");
-        } else {
-          setSelectedStatus(data.status);
         }
+        // Đã xóa: logic set `selectedStatus` cho manual
       } else {
         throw new Error(res.data.message || "Không thể tải dữ liệu");
       }
@@ -116,64 +114,95 @@ export default function DeliveryView() {
         err.response?.data?.message || err.message || "Lỗi không xác định";
       setError(errorMessage);
       toast.error("Vui lòng chờ người mua đặt thanh toán!");
-      navigate(-1)
+      navigate(-1);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, navigate]); 
 
-  // --- HÀM CẬP NHẬT TRẠNG THÁI (ĐÃ CẬP NHẬT) ---
-
+  // --- 3. HÀM CẬP NHẬT TRẠNG THÁI (CHỈ DÀNH CHO GHN) ---
   const handleUpdateStatus = async () => {
-    if (!selectedStatus) {
-      toast.error("Vui lòng chọn một trạng thái để cập nhật.");
+    // Kiểm tra logic GHN
+    if (!selectedStatus || !isGhn) {
+      toast.error("Hành động không hợp lệ.");
       return;
     }
 
     setIsUpdating(true);
-
-    // Log kiểm tra
     console.log(
-      "Đang cập nhật với orderId:",
+      "Đang cập nhật (GHN) với orderId:",
       orderId,
       "và status:",
       selectedStatus
     );
 
     try {
-      const provider = deliveryInfo?.deliveryProvider?.toUpperCase();
-
-      if (provider === "GHN") {
-        const payload = {
-          deliveryStatus: selectedStatus,
-        };
-        // Sử dụng `orderId` (từ useParams)
-        await api.put(`/seller/order-deliveries/${orderId}/ghn`, payload);
-      } else {
-        // Sử dụng `orderId` (từ useParams)
-        await api.put(
-          `/seller/order-deliveries/${orderId}/manual?deliveryStatus=${selectedStatus}`
-        );
-      }
+      // Chỉ còn logic của GHN
+      const payload = {
+        deliveryStatus: selectedStatus, // Sẽ luôn là "RECEIVED"
+      };
+      await api.put(`/seller/order-deliveries/${orderId}/ghn`, payload);
 
       toast.success("Cập nhật trạng thái thành công!");
-      fetchData();
+      fetchData(); // Tải lại dữ liệu
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || "Cập nhật thất bại";
-      console.error("Lỗi cập nhật:", err); // Thêm log lỗi
+      console.error("Lỗi cập nhật:", err);
       toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // --- HÀM QUAY LẠI ---
+  // --- 4. HÀM MỚI: CẬP NHẬT MANUAL THEO TỪNG BƯỚC ---
+  const handleManualUpdate = async () => {
+    // 1. Tìm trạng thái hiện tại
+    const currentIndex = availableStatusOptions.findIndex(
+      (option) => option.value === deliveryInfo.status
+    );
+
+    // 2. Kiểm tra xem có trạng thái tiếp theo không
+    if (currentIndex < 0 || currentIndex >= availableStatusOptions.length - 1) {
+      toast.warn("Không có trạng thái tiếp theo để cập nhật.");
+      return;
+    }
+
+    // 3. Lấy trạng thái tiếp theo
+    const nextStatus = availableStatusOptions[currentIndex + 1];
+    const statusToUpdate = nextStatus.value; // (ví dụ: "READY")
+
+    if (!statusToUpdate) {
+      toast.error("Lỗi: Không tìm thấy trạng thái tiếp theo.");
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      // 4. Gọi API
+      await api.put(
+        `/seller/order-deliveries/${orderId}/manual?deliveryStatus=${statusToUpdate}`
+      );
+
+      toast.success("Cập nhật trạng thái thành công!");
+      fetchData(); // Tải lại dữ liệu để cập nhật UI
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || err.message || "Cập nhật thất bại";
+      console.error("Lỗi cập nhật:", err);
+      toast.error(errorMessage);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // --- 5. HÀM QUAY LẠI ---
   const goBack = () => {
     navigate(-1);
   };
 
-  // --- useEffect TẢI DỮ LIỆU LẦN ĐẦU ---
+  // --- 6. useEffect TẢI DỮ LIỆU LẦN ĐẦU ---
   useEffect(() => {
     if (id) {
       fetchData();
@@ -183,8 +212,7 @@ export default function DeliveryView() {
     }
   }, [id, fetchData]);
 
-  // --- RENDER ---
-
+  // --- RENDER LOADING ---
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -193,6 +221,7 @@ export default function DeliveryView() {
     );
   }
 
+  // --- RENDER ERROR ---
   if (error) {
     return (
       <div className="flex flex-col justify-center items-center h-screen p-4">
@@ -204,6 +233,7 @@ export default function DeliveryView() {
     );
   }
 
+  // --- RENDER KHÔNG CÓ DỮ LIỆU ---
   if (!deliveryInfo) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -212,11 +242,10 @@ export default function DeliveryView() {
     );
   }
 
-  // --- 3. TÍNH TOÁN INDEX HIỆN TẠI CHO STEPS ---
- const currentStepIndex = availableStatusOptions.findIndex(
-   
-   (option) => option.value === deliveryInfo.status
- );
+  // --- 7. TÍNH TOÁN INDEX HIỆN TẠI CHO STEPS ---
+  const currentStepIndex = availableStatusOptions.findIndex(
+    (option) => option.value === deliveryInfo.status
+  );
 
   // --- GIAO DIỆN CHÍNH ---
   return (
@@ -238,39 +267,32 @@ export default function DeliveryView() {
           Chi tiết Giao hàng cho Đơn hàng #{deliveryInfo.orderId}
         </h2>
 
-        {/* --- 4. THÊM COMPONENT STEPS VÀO ĐÂY --- */}
+        {/* Component Steps */}
         <div className="mb-8">
-          {" "}
-          {/* Thêm khoảng cách dưới */}
           <Steps
             current={currentStepIndex}
             items={availableStepItems}
-            responsive={true} // Tự động thu gọn trên di động
+            responsive={true}
           />
         </div>
 
-        {/* Component Descriptions của Ant Design để hiển thị thông tin */}
+        {/* Component Descriptions */}
         <Descriptions bordered column={1}>
           <Descriptions.Item label="ID Giao Hàng">
             {deliveryInfo.id}
           </Descriptions.Item>
-
           <Descriptions.Item label="Trạng thái hiện tại">
             {getDeliveryStatusTag(deliveryInfo.status)}
           </Descriptions.Item>
-
           <Descriptions.Item label="Nhà vận chuyển">
             {deliveryInfo.deliveryProvider || "Chưa cập nhật"}
           </Descriptions.Item>
-
           <Descriptions.Item label="Mã vận đơn">
             {deliveryInfo.deliveryTrackingNumber || "Chưa cập nhật"}
           </Descriptions.Item>
-
           <Descriptions.Item label="Ngày giao (dự kiến/thực tế)">
             {formatDate(deliveryInfo.deliveryDate)}
           </Descriptions.Item>
-
           <Descriptions.Item label="Ngày tạo phiếu">
             {formatDate(deliveryInfo.createdAt)}
           </Descriptions.Item>
@@ -286,36 +308,56 @@ export default function DeliveryView() {
               <Button
                 type="primary"
                 size="large"
-                onClick={handleUpdateStatus}
+                onClick={handleUpdateStatus} // <-- Dùng hàm GHN
                 loading={isUpdating}
-                disabled={isUpdating || deliveryInfo.status === selectedStatus}
+                disabled={isUpdating} // Nút này luôn bật
                 style={{ width: "100%" }}
               >
-                {isUpdating ? "..." : "Cập nhật (GHN)"}
+                {isUpdating ? "..." : "Xác nhận Đã Giao (GHN)"}
               </Button>
             ) : (
-              // 2. NẾU KHÔNG PHẢI GHN
-              <Space.Compact style={{ width: "100%" }}>
-                <Select
-                  value={selectedStatus}
-                  onChange={(value) => setSelectedStatus(value)}
-                  options={currentOptions}
-                  style={{ width: "100%" }}
-                  size="large"
-                  placeholder="Chọn trạng thái..."
-                />
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={handleUpdateStatus}
-                  loading={isUpdating}
-                  disabled={
-                    isUpdating || deliveryInfo.status === selectedStatus
+              // 2. NẾU KHÔNG PHẢI GHN (MANUAL)
+              <>
+                {/* Tự động tính toán trạng thái tiếp theo */}
+                {(() => {
+                  // Tìm nextStatus
+                  const currentStepIndex = availableStatusOptions.findIndex(
+                    (option) => option.value === deliveryInfo.status
+                  );
+
+                  let nextStatus = null;
+                  if (
+                    currentStepIndex > -1 &&
+                    currentStepIndex < availableStatusOptions.length - 1
+                  ) {
+                    // Chỉ lấy nếu nó không phải là trạng thái cuối cùng
+                    nextStatus = availableStatusOptions[currentStepIndex + 1];
                   }
-                >
-                  {isUpdating ? "..." : "Cập nhật"}
-                </Button>
-              </Space.Compact>
+
+                  // Chỉ hiển thị nút nếu có trạng thái tiếp theo
+                  if (nextStatus) {
+                    return (
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={handleManualUpdate} // <-- Dùng hàm Manual
+                        loading={isUpdating}
+                        disabled={isUpdating}
+                        style={{ width: "100%" }}
+                      >
+                        {
+                          isUpdating
+                            ? "Đang cập nhật..."
+                            : `Chuyển sang: ${nextStatus.label}` // <-- Hiển thị label động
+                        }
+                      </Button>
+                    );
+                  }
+
+             
+                  return null;
+                })()}
+              </>
             )}
           </div>
         )}

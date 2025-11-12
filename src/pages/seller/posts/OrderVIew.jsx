@@ -3,9 +3,6 @@ import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"; // Sử dụng ic
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../config/axios";
 
-// Giả sử api là một axios instance đã được cấu hình
-// import api from "../../../config/axios";
-// import { toast } from "react-toastify";
 
 // === CÁC HÀM TIỆN ÍCH (Helpers) ===
 
@@ -111,8 +108,15 @@ export default function OrderView() {
   const goBack = () => {
     navigate(-1);
   };
-  const goContract = () => {
-   navigate(`/seller/contract/create/${id}`);
+  const goContract = async () => {
+    try {
+    
+      navigate(`/seller/contract/create/${id}`);
+    } catch (error) {
+     
+      console.error("Đã xảy ra lỗi:", error); // (Nên log lỗi ra console)
+      
+    }
   };
 
   // Hàm kiểm tra giá trị có null hoặc undefined không

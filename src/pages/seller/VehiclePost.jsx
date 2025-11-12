@@ -55,7 +55,18 @@ export default function VehiclePost() {
   const [suggestedPrice, setSuggestedPrice] = useState(null);
   //  state để kiểm soát việc gọi API
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
-
+  const getPackageTypeName = (apiType) => {
+    // Dùng toUpperCase() để đảm bảo khớp kể cả khi API trả về "basic"
+    switch (apiType.toUpperCase()) {
+      case "BASIC":
+        return "VIP 1";
+      case "PREMIUM":
+        return " VIP 2";
+  
+      default:
+        return apiType; 
+    }
+  };
   // Thay thế đoạn useEffect hiện tại bằng đoạn này
   useEffect(() => {
     const fetchSuggestedPrice = async () => {
@@ -267,24 +278,41 @@ export default function VehiclePost() {
 
             {/* Gói đề xuất */}
             <div>
-              <label className="block mb-1 text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="priorityPackageId" // Thêm 'htmlFor' để liên kết với 'id' của select
+                className="block mb-1 text-gray-700 dark:text-gray-300"
+              >
                 Gói đề xuất
               </label>
+
+              {/* PHẦN MÔ TẢ ĐÃ ĐƯỢC TÁCH RA 
+    Đặt mô tả ở đây dưới dạng helper text (văn bản hỗ trợ)
+  */}
+              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                Gói dịch vụ giúp sản phẩm của bạn được ưu tiên hiển thị trên
+                trang đề xuất. Tăng khả năng tiếp cận khách hàng, nâng cao tỉ lệ
+                xem và thúc đẩy doanh số bán hàng nhanh chóng.
+              </p>
+
               <select
+                id="priorityPackageId" // Thêm 'id'
                 name="priorityPackageId"
                 value={formData.priorityPackageId}
                 onChange={handleChange}
                 className="w-full rounded-lg border-gray-300 dark:bg-gray-700 dark:text-white p-3"
               >
-                <option value="">-- Không chọn --</option>
+                {/* Option mặc định giờ chỉ cần một mô tả ngắn gọn
+                 */}
+                <option value="">-- Không chọn (để mặc định) --</option>
+
                 {priorityPackages.map((pkg) => (
                   <option key={pkg.id} value={pkg.id}>
-                    {pkg.durationDays} ngày - {pkg.type} - {pkg.price} VNĐ
+                    {pkg.durationDays} ngày - {getPackageTypeName(pkg.type)} -
+                    {pkg.price} VNĐ
                   </option>
                 ))}
               </select>
             </div>
-
             {/* Delivery methods */}
             <div>
               <label className="block mb-1 text-gray-700 dark:text-gray-300">
@@ -416,9 +444,9 @@ export default function VehiclePost() {
               id="price"
               name="price"
               label="Giá bán"
-              type="text" 
-              inputMode="numeric" 
-              placeholder="10.000.000" 
+              type="text"
+              inputMode="numeric"
+              placeholder="10.000.000"
               value={formatNumber(formData.price)} // <-- SỬ DỤNG HÀM FORMAT
               onChange={handleChange}
               unit="VNĐ"

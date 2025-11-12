@@ -75,7 +75,7 @@ const ContractManagement = () => {
       // --- 1. SẮP XẾP DỮ LIỆU SAU KHI TẢI ---
       // Sắp xếp theo 'createdAt' (ngày tạo), mới nhất lên đầu (descending)
       processedData.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        (a, b) => new Date(b.sellerSignedAt) - new Date(a.sellerSignedAt)
       );
       // --- KẾT THÚC SẮP XẾP ---
 
@@ -135,10 +135,10 @@ const ContractManagement = () => {
     // --- THÊM CỘT NGÀY TẠO ---
     {
       title: "Ngày Tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
+      dataIndex: "sellerSignedAt",
+      key: "sellerSignedAt",
       render: (text) => formatDate(text), // Sử dụng hàm formatDate
-      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      sorter: (a, b) => new Date(a.sellerSignedAt) - new Date(b.sellerSignedAt),
       // Mặc định đã được sắp xếp lúc tải, đây là để user tự sort lại
     },
     // --- KẾT THÚC THÊM CỘT ---
