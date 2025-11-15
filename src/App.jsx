@@ -39,6 +39,9 @@ import AdminComplain from "./pages/admin/complain/AdminComplain";
 import ComplaintList from "./pages/seller/complaint/Complaints";
 import ComplaintDetail from "./pages/seller/complaint/ComplainDetail";
 import ContractManagement from "./pages/seller/ContractManagement";
+import SellerPackage from "./pages/admin/config/SellerPackage";
+import PriorityPackage from "./pages/admin/config/PriorityPackage";
+import DepositPercentage from "./pages/admin/config/DepositPercentage";
 
 const router = createBrowserRouter([
   {
@@ -107,6 +110,18 @@ const router = createBrowserRouter([
         path: "complain",
         element: <AdminComplain />,
       },
+      {
+        path: "sellerPackage",
+        element: <SellerPackage />,
+      },
+      {
+        path: "priorityPackage",
+        element: <PriorityPackage/>,
+      },
+      {
+        path: "depositPercentage",
+        element: <DepositPercentage/>,
+      },
     ],
   },
 
@@ -161,7 +176,7 @@ const router = createBrowserRouter([
     element: <OrderDelivery />,
   },
   {
-    path: "/complain",
+    path: "complain",
     element: <Complain />,
   },
 ]);

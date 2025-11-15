@@ -38,11 +38,29 @@ const Payment = () => {
   const [loading, setLoading] = useState(true);
   const [serviceTypes, setServiceTypes] = useState([]);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
-  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [wantDeposit, setWantDeposit] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [shippingFee, setShippingFee] = useState(null);
   const [loadingShippingFee, setLoadingShippingFee] = useState(false);
+  const [depositPercentage, setDepositPercentage] = useState(null);
+
+  // ✅ Fetch deposit percentage on component mount
+  useEffect(() => {
+    const fetchDepositPercentage = async () => {
+      try {
+        const response = await api.get("/user/deposit-percentage");
+        setDepositPercentage(response.data.data * 100);
+        console.log("✅ Deposit percentage:", response.data.data);
+      } catch (error) {
+        console.log("❌ Error fetching deposit percentage:", error);
+        toast.error(
+          error.response?.data?.message || "Không thể tải thông tin đặt cọc"
+        );
+      }
+    };
+    fetchDepositPercentage();
+  }, []);
 
   // Fetch product details
   useEffect(() => {
@@ -80,7 +98,7 @@ const Payment = () => {
           }
         } catch (error) {
           if (
-            error.response.data.message === "Người mua chưa cập nhật địa chỉ"
+            error.response?.data?.message === "Người mua chưa cập nhật địa chỉ"
           ) {
             toast.error(error.response.data.message);
             setTimeout(() => {
@@ -98,7 +116,7 @@ const Payment = () => {
       }
     };
     fetchServiceTypes();
-  }, [selectedDelivery, id]);
+  }, [selectedDelivery, id, navigate]);
 
   // Fetch shipping fee khi đã có service type
   useEffect(() => {
@@ -128,7 +146,6 @@ const Payment = () => {
     try {
       setSubmitting(true);
 
-      // Validate
       const postId = parseInt(id);
       if (!postId || isNaN(postId)) {
         toast.error("ID sản phẩm không hợp lệ");
@@ -138,25 +155,20 @@ const Payment = () => {
         toast.error("Vui lòng chọn phương thức giao hàng");
         return;
       }
-      if (!selectedPayment) {
-        toast.error("Vui lòng chọn hình thức thanh toán");
-        return;
-      }
 
-      // ✅ Tạo params cho query string
       const params = {
         postId: postId,
         deliveryMethod: selectedDelivery,
-        paymentType: selectedPayment,
+        paymentType: "PLATFORM",
+        wantDeposit: wantDeposit,
       };
 
-      // Thêm serviceTypeId nếu chọn GHN
       if (selectedDelivery === "GHN" && selectedService) {
         params.serviceTypeId = parseInt(selectedService);
       }
+
       console.log("📦 Order params:", params);
 
-      // ✅ POST request với params trong URL (KHÔNG phải body)
       const response = await api.post("/buyer/orders/create", null, { params });
       console.log("✅ Order created:", response.data);
 
@@ -175,7 +187,7 @@ const Payment = () => {
     }
   };
 
-  // ✅ Delivery method options - ALL POSSIBLE OPTIONS
+  // Delivery method options
   const allDeliveryOptions = [
     {
       value: "SELLER_DELIVERY",
@@ -197,31 +209,34 @@ const Payment = () => {
     },
   ];
 
-  // ✅ Filter delivery options based on product's deliveryMethods
   const availableDeliveryOptions = allDeliveryOptions.filter((option) =>
     product?.deliveryMethods?.includes(option.value)
   );
 
-  // ✅ Payment type options - ALL POSSIBLE OPTIONS
-  const allPaymentOptions = [
-    {
-      value: "DEPOSIT",
-      label: "Đặt cọc",
-      icon: <WalletOutlined />,
-      description: "Thanh toán một phần trước, phần còn lại khi nhận hàng",
-    },
-    {
-      value: "FULL",
-      label: "Thanh toán toàn bộ",
-      icon: <WalletOutlined />,
-      description: "Thanh toán đầy đủ ngay bây giờ",
-    },
-  ];
+  // ✅ Payment options - sử dụng depositPercentage từ state
+  const paymentOptions = depositPercentage
+    ? [
+        {
+          value: false,
+          label: "Thanh toán toàn bộ khi nhận hàng",
+          icon: <WalletOutlined />,
+          description: "Thanh toán đầy đủ 100% khi nhận hàng",
+        },
+        {
+          value: true,
+          label: "Đặt cọc trước",
+          icon: <WalletOutlined />,
+          description: `Đặt cọc ${depositPercentage}% trước, thanh toán phần còn lại khi nhận hàng`,
+        },
+      ]
+    : [];
 
-  // ✅ Filter payment options based on product's paymentTypes
-  const availablePaymentOptions = allPaymentOptions.filter((option) =>
-    product?.paymentTypes?.includes(option.value)
-  );
+  // ✅ Tính tiền đặt cọc
+  const calculateDepositAmount = () => {
+    if (!product || !depositPercentage) return 0;
+    const productPrice = product.price || 0;
+    return (productPrice * depositPercentage) / 100;
+  };
 
   // Tính tổng tiền
   const calculateTotal = () => {
@@ -232,7 +247,8 @@ const Payment = () => {
     return productPrice + shipping;
   };
 
-  if (loading || !product) {
+  // ✅ Show loading nếu chưa có depositPercentage hoặc product
+  if (loading || !product || depositPercentage === null) {
     return (
       <div
         className="overflow-x-hidden"
@@ -366,59 +382,52 @@ const Payment = () => {
                   }
                   required
                 >
-                  {availablePaymentOptions.length > 0 ? (
-                    <Radio.Group
-                      value={selectedPayment}
-                      onChange={(e) => setSelectedPayment(e.target.value)}
+                  <Radio.Group
+                    value={wantDeposit}
+                    onChange={(e) => setWantDeposit(e.target.value)}
+                    className="w-full"
+                  >
+                    <Space
+                      direction="vertical"
                       className="w-full"
+                      size="middle"
                     >
-                      <Space
-                        direction="vertical"
-                        className="w-full"
-                        size="middle"
-                      >
-                        {availablePaymentOptions.map((option) => (
-                          <Card
-                            key={option.value}
-                            className={`cursor-pointer transition-all ${
-                              selectedPayment === option.value
-                                ? "border-2 border-green-500 bg-green-50"
-                                : "border hover:border-green-300"
-                            }`}
-                            onClick={() => setSelectedPayment(option.value)}
-                          >
-                            <Radio value={option.value} className="w-full">
-                              <div className="ml-2">
-                                <div className="flex items-center gap-2 mb-1">
-                                  {option.icon}
-                                  <Text strong className="text-base">
-                                    {option.label}
-                                  </Text>
-                                </div>
-                                <Text type="secondary" className="text-sm">
-                                  {option.description}
+                      {paymentOptions.map((option) => (
+                        <Card
+                          key={option.value.toString()}
+                          className={`cursor-pointer transition-all ${
+                            wantDeposit === option.value
+                              ? "border-2 border-green-500 bg-green-50"
+                              : "border hover:border-green-300"
+                          }`}
+                          onClick={() => setWantDeposit(option.value)}
+                        >
+                          <Radio value={option.value} className="w-full">
+                            <div className="ml-2">
+                              <div className="flex items-center gap-2 mb-1">
+                                {option.icon}
+                                <Text strong className="text-base">
+                                  {option.label}
                                 </Text>
                               </div>
-                            </Radio>
-                          </Card>
-                        ))}
-                      </Space>
-                    </Radio.Group>
-                  ) : (
-                    <Alert
-                      message="Không có hình thức thanh toán"
-                      description="Sản phẩm này không có hình thức thanh toán nào."
-                      type="warning"
-                      showIcon
-                    />
-                  )}
+                              <Text type="secondary" className="text-sm">
+                                {option.description}
+                              </Text>
+                            </div>
+                          </Radio>
+                        </Card>
+                      ))}
+                    </Space>
+                  </Radio.Group>
                 </Form.Item>
 
                 {/* Alert info */}
-                {selectedPayment === "DEPOSIT" && (
+                {wantDeposit && (
                   <Alert
                     message="Lưu ý về đặt cọc"
-                    description="Bạn cần thanh toán một phần tiền đặt cọc. Phần còn lại sẽ thanh toán khi nhận hàng."
+                    description={`Bạn cần thanh toán ${depositPercentage}% giá sản phẩm (${calculateDepositAmount().toLocaleString(
+                      "vi-VN"
+                    )} VNĐ). Phần còn lại và phí giao hàng sẽ thanh toán khi nhận hàng.`}
                     type="info"
                     showIcon
                     className="mb-4"
@@ -427,7 +436,7 @@ const Payment = () => {
 
                 <Divider />
 
-                {/* ✅ SUMMARY CARD - Hiển thị breakdown phía trên button */}
+                {/* SUMMARY CARD */}
                 <Card
                   className="mb-6"
                   style={{
@@ -454,7 +463,7 @@ const Payment = () => {
                       </Text>
                     </div>
 
-                    {/* ✅ Conditional: Hiển thị phí GHN nếu chọn GHN */}
+                    {/* Phí GHN */}
                     {selectedDelivery === "GHN" && (
                       <>
                         {loadingShippingFee ? (
@@ -493,7 +502,7 @@ const Payment = () => {
 
                     <Divider style={{ margin: "12px 0" }} />
 
-                    {/* ✅ TOTAL - Luôn hiển thị */}
+                    {/* Tổng cộng */}
                     <div className="flex justify-between items-center">
                       <Text
                         strong
@@ -510,6 +519,31 @@ const Payment = () => {
                         {calculateTotal().toLocaleString("vi-VN")} VNĐ
                       </Text>
                     </div>
+
+                    {/* Hiển thị số tiền đặt cọc */}
+                    {wantDeposit && (
+                      <>
+                        <Divider style={{ margin: "12px 0" }} />
+                        <div className="flex justify-between items-center bg-yellow-50 p-3 rounded">
+                          <Text strong className="text-base">
+                            Số tiền cần đặt cọc ({depositPercentage}% giá SP):
+                          </Text>
+                          <Text
+                            strong
+                            className="text-xl"
+                            style={{ color: "#fa8c16" }}
+                          >
+                            {calculateDepositAmount().toLocaleString("vi-VN")}{" "}
+                            VNĐ
+                          </Text>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <Text type="secondary" className="text-sm">
+                            (Phí giao hàng thanh toán khi nhận)
+                          </Text>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </Card>
 
@@ -521,10 +555,7 @@ const Payment = () => {
                   loading={submitting}
                   onClick={handleSubmitOrder}
                   disabled={
-                    !selectedDelivery ||
-                    !selectedPayment ||
-                    availableDeliveryOptions.length === 0 ||
-                    availablePaymentOptions.length === 0
+                    !selectedDelivery || availableDeliveryOptions.length === 0
                   }
                   className="h-14 text-lg font-semibold"
                   style={{ background: "#33bd24c5" }}

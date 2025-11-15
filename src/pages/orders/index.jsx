@@ -12,7 +12,7 @@ import {
   Input,
   Form,
   Select,
-  Upload, // ← Thêm
+  Upload,
   message,
 } from "antd";
 import {
@@ -24,7 +24,7 @@ import {
   DollarOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
-  PlusOutlined, // ← Thêm
+  PlusOutlined,
 } from "@ant-design/icons";
 
 import api from "../../config/axios";
@@ -52,7 +52,7 @@ const Orders = () => {
 
   const navigate = useNavigate();
 
-  // ✅ Fetch danh sách delivery
+  // Fetch danh sách delivery
   const fetchDeliveries = async () => {
     try {
       const response = await api.get("/buyer/order-deliveries");
@@ -63,7 +63,7 @@ const Orders = () => {
     }
   };
 
-  // ✅ Fetch danh sách hợp đồng
+  // Fetch danh sách hợp đồng
   const fetchContracts = async () => {
     try {
       const response = await api.get("/buyer/contracts");
@@ -101,17 +101,15 @@ const Orders = () => {
     fetchDeliveries();
   }, []);
 
-  // ✅ Hàm kiểm tra đơn hàng có hợp đồng không
   const hasContract = (orderId) => {
     return contractList.some((contract) => contract.orderId === orderId);
   };
 
-  // ✅ Hàm lấy contract ID từ orderId
   const getContractId = (orderId) => {
     const contract = contractList.find((c) => c.orderId === orderId);
     return contract?.id;
   };
-  //lấy status cua delivery theo orderId
+
   const getDeliveryStatus = (orderId) => {
     const delivery = deliveryList.find(
       (d) => d.orderId.toString() === orderId.toString()
@@ -119,7 +117,6 @@ const Orders = () => {
     return delivery?.status;
   };
 
-  // ✅ Hàm xử lý click nút Chi tiết
   const handleViewDetail = (orderId) => {
     navigate(`/delivery/${orderId}`);
   };
@@ -131,6 +128,7 @@ const Orders = () => {
       APPROVED: { text: "Đã xác nhận", color: "blue" },
       DONE: { text: "Hoàn thành", color: "green" },
       DEPOSITED: { text: "Đã đặt cọc", color: "cyan" },
+      CANCELED: { text: "Đã hủy", color: "default" },
     };
     return statusMap[status] || { text: status, color: "default" };
   };
@@ -144,13 +142,9 @@ const Orders = () => {
     return deliveryMap[method] || method;
   };
 
-  const getPaymentType = (type) => {
-    const paymentMap = {
-      DEPOSIT: "Đặt cọc",
-      FULL: "Thanh toán toàn bộ",
-      COD: "Thanh toán khi nhận hàng",
-    };
-    return paymentMap[type] || type;
+  // ✅ CẬP NHẬT: Hàm hiển thị hình thức thanh toán dựa vào wantDeposit
+  const getPaymentTypeDisplay = (wantDeposit) => {
+    return wantDeposit ? "Đặt cọc trước" : "Thanh toán toàn bộ khi nhận hàng";
   };
 
   const showOrderDetail = (record) => {
@@ -288,6 +282,7 @@ const Orders = () => {
           APPROVED: 3,
           DEPOSITED: 4,
           DONE: 5,
+          CANCELED: 6,
         };
         return statusOrder[a.status] - statusOrder[b.status];
       },
@@ -297,6 +292,7 @@ const Orders = () => {
         { text: "Đã xác nhận", value: "APPROVED" },
         { text: "Đã đặt cọc", value: "DEPOSITED" },
         { text: "Hoàn thành", value: "DONE" },
+        { text: "Đã hủy", value: "CANCELED" },
       ],
       onFilter: (value, record) => record.status === value,
       render: (status) => {
@@ -330,9 +326,7 @@ const Orders = () => {
             </Button>
           )}
 
-          {(record.status === "PENDING" ||
-            record.status === "APPROVED" ||
-            record.status === "DEPOSITED") && (
+          {record.status === "PENDING" && (
             <Button
               danger
               size="small"
@@ -342,7 +336,7 @@ const Orders = () => {
               Hủy
             </Button>
           )}
-          {/* Nút Complain mới */}
+
           {getDeliveryStatus(record.id)?.includes("RECEIVED") && (
             <Button
               danger
@@ -357,32 +351,32 @@ const Orders = () => {
       ),
     },
   ];
-  // Thêm các hàm xử lý complain (đặt sau handleCancelOrder)
+
   const showComplainModal = (record) => {
     setSelectedOrder(record);
     setIsComplainModalVisible(true);
     complainForm.resetFields();
-    setFileList([]); // ← Reset fileList
+    setFileList([]);
   };
 
   const handleComplainModalClose = () => {
     setIsComplainModalVisible(false);
     setSelectedOrder(null);
     complainForm.resetFields();
-    setFileList([]); // ← Reset fileList
+    setFileList([]);
   };
-  // ✅ Hàm xử lý thay đổi file upload
+
   const handleUploadChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
   };
-  // ✅ Hàm validate trước khi upload
+
   const beforeUpload = (file) => {
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
       message.error("File phải nhỏ hơn 5MB!");
       return Upload.LIST_IGNORE;
     }
-    return false; // Không tự động upload
+    return false;
   };
 
   const handleSubmitComplain = async () => {
@@ -390,12 +384,11 @@ const Orders = () => {
       const values = await complainForm.validateFields();
       setComplainLoading(true);
 
-      // Upload tất cả ảnh và lấy URLs
       const imageUrls = [];
       for (const file of fileList) {
         if (file.originFileObj) {
           try {
-            const url = await uploadFile(file.originFileObj); // Gọi hàm uploadFile của bạn
+            const url = await uploadFile(file.originFileObj);
             imageUrls.push(url);
           } catch (error) {
             console.error("❌ Error uploading file:", error);
@@ -404,7 +397,6 @@ const Orders = () => {
         }
       }
 
-      // Chuẩn bị data theo format API
       const complainData = {
         orderId: selectedOrder.id,
         complaintType: values.complainType,
@@ -414,7 +406,6 @@ const Orders = () => {
 
       console.log("📤 Complain data:", complainData);
 
-      // TODO: Gọi API của bạn
       const response = await api.post("/buyer/complaints/create", complainData);
 
       toast.success(
@@ -479,8 +470,7 @@ const Orders = () => {
           className="shadow-2xl rounded-xl"
           title={
             <div className="flex items-center gap-3">
-              {/* <ShoppingCartOutlined className="text-2xl text-blue-600" /> */}
-              <span className="text-2xl ">Đơn hàng của tôi</span>
+              <span className="text-2xl">Đơn hàng của tôi</span>
               <Tag color="blue" className="ml-2">
                 {orderList.length} đơn hàng
               </Tag>
@@ -531,7 +521,7 @@ const Orders = () => {
         </Card>
       </div>
 
-      {/* Modal chi tiết đơn hàng */}
+      {/* ✅ Modal chi tiết đơn hàng - CẬP NHẬT */}
       <Modal
         title={
           <div className="flex items-center gap-2">
@@ -604,36 +594,34 @@ const Orders = () => {
               </Tag>
             </Descriptions.Item>
 
+            {/* ✅ CẬP NHẬT: Hiển thị hình thức thanh toán dựa vào wantDeposit */}
             <Descriptions.Item label="Hình thức thanh toán" span={2}>
               <Tag
-                color={selectedOrder.paymentType === "FULL" ? "green" : "gold"}
+                color={selectedOrder.wantDeposit ? "gold" : "green"}
+                icon={<DollarOutlined />}
               >
-                <DollarOutlined /> {getPaymentType(selectedOrder.paymentType)}
+                {getPaymentTypeDisplay(selectedOrder.wantDeposit)}
               </Tag>
             </Descriptions.Item>
 
-            {selectedOrder.paymentType === "DEPOSIT" && (
+            {/* ✅ Chỉ hiển thị thông tin đặt cọc nếu wantDeposit = true */}
+            {selectedOrder.wantDeposit && (
               <>
                 <Descriptions.Item label="Phần trăm đặt cọc" span={2}>
-                  {selectedOrder.depositPercentage}%
+                  {(selectedOrder.depositPercentage * 100).toFixed(0)}%
                 </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái đặt cọc" span={2}>
-                  {selectedOrder.depositPaid ? (
-                    <Tag color="green" icon={<CheckCircleOutlined />}>
-                      Đã đặt cọc
-                    </Tag>
-                  ) : (
-                    <Tag color="orange">Chưa đặt cọc</Tag>
-                  )}
-                </Descriptions.Item>
-                <Descriptions.Item label="Số tiền đã cọc" span={2}>
+                <Descriptions.Item label="Số tiền đặt cọc" span={2}>
                   <span className="font-semibold text-green-600">
                     {(
-                      (selectedOrder.price * selectedOrder.depositPercentage) /
-                      100
+                      selectedOrder.price * selectedOrder.depositPercentage
                     ).toLocaleString("vi-VN")}{" "}
                     VNĐ
                   </span>
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái đặt cọc" span={2}>
+                  <Tag color="green" icon={<CheckCircleOutlined />}>
+                    Đã đặt cọc
+                  </Tag>
                 </Descriptions.Item>
               </>
             )}
@@ -706,7 +694,7 @@ const Orders = () => {
           </Form.Item>
         </Form>
       </Modal>
-      
+
       {/* Modal Khiếu nại đơn hàng */}
       <Modal
         title={

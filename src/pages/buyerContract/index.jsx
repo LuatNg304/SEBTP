@@ -90,7 +90,6 @@ const BuyerContract = () => {
       setOtpModalVisible(false);
       otpForm.resetFields();
 
-      // Reload lại thông tin hợp đồng
       await fetchContract();
     } catch (error) {
       if (error.errorFields) {
@@ -107,15 +106,13 @@ const BuyerContract = () => {
   };
 
   // Hủy hợp đồng
-  // Hủy hợp đồng (gọi từ modal)
   const handleCancelContract = async () => {
     try {
       setCancelLoading(true);
       await api.patch(`/buyer/contracts/${id}/cancel`);
       toast.success("Hủy hợp đồng thành công!");
-      setCancelModalVisible(false); // Đóng modal
+      setCancelModalVisible(false);
 
-      // Quay lại trang orders
       setTimeout(() => {
         navigate("/orders");
       }, 1000);
@@ -130,6 +127,16 @@ const BuyerContract = () => {
   // In hợp đồng
   const handlePrint = () => {
     window.print();
+  };
+
+  // ✅ Helper function để hiển thị phương thức thanh toán
+  const getPaymentMethodText = (wantDeposit, depositPercentage) => {
+    if (wantDeposit) {
+      const percentage = (depositPercentage * 100).toFixed(0);
+      return `Bên B thanh toán đặt cọc ${percentage}% giá trị sản phẩm, phần còn lại và phí vận chuyển thanh toán khi nhận hàng.`;
+    } else {
+      return "Bên B thanh toán toàn bộ khi nhận hàng.";
+    }
   };
 
   if (loading) {
@@ -210,7 +217,6 @@ const BuyerContract = () => {
           </Button>
 
           <Space size="large">
-            {/* Chỉ hiện nút ký nếu chưa ký và trạng thái PENDING */}
             {!contract.buyerSigned && contract.status === "PENDING" && (
               <Button
                 type="primary"
@@ -223,13 +229,12 @@ const BuyerContract = () => {
               </Button>
             )}
 
-            {/* Chỉ hiện nút hủy nếu trạng thái PENDING */}
             {contract.status === "PENDING" && (
               <Button
                 danger
                 size="large"
                 icon={<CloseCircleOutlined />}
-                onClick={() => setCancelModalVisible(true)} // Chỉ mở modal
+                onClick={() => setCancelModalVisible(true)}
               >
                 Hủy hợp đồng
               </Button>
@@ -273,7 +278,6 @@ const BuyerContract = () => {
               </div>
             </div>
 
-            {/* Đường gạch ngang dưới phần tiêu đề */}
             <div className="flex justify-center mb-6">
               <div style={{ width: "80px", borderTop: "3px solid #000" }}></div>
             </div>
@@ -489,7 +493,7 @@ const BuyerContract = () => {
               </div>
             </div>
 
-            {/* 4. Phương thức thanh toán */}
+            {/* ✅ 4. Phương thức thanh toán - CẬP NHẬT */}
             <div className="mb-4" style={{ fontSize: "12pt" }}>
               <div
                 style={{
@@ -503,13 +507,36 @@ const BuyerContract = () => {
 
               <div className="ml-4">
                 <div>
-                  {contract.paymentType === "FULL" &&
-                    "Bên B thanh toán toàn bộ giá trị hợp đồng cho Bên A."}
-                  {contract.paymentType === "DEPOSIT" &&
-                    `Bên B thanh toán đặt cọc ${contract.depositPercentage}% giá trị hợp đồng, phần còn lại thanh toán khi nhận hàng.`}
-                  {contract.paymentType === "COD" &&
-                    "Bên B thanh toán khi nhận hàng (COD)."}
+                  {getPaymentMethodText(
+                    contract.wantDeposit,
+                    contract.depositPercentage
+                  )}
                 </div>
+
+                {/* ✅ Hiển thị chi tiết số tiền đặt cọc nếu wantDeposit = true */}
+                {contract.wantDeposit && (
+                  <div className="mt-2">
+                    <div>
+                      - Số tiền đặt cọc:{" "}
+                      <span style={{ fontWeight: "bold" }}>
+                        {(
+                          contract.price * contract.depositPercentage
+                        ).toLocaleString("vi-VN")}{" "}
+                        VNĐ
+                      </span>
+                    </div>
+                    <div>
+                      - Số tiền thanh toán khi nhận hàng:{" "}
+                      <span style={{ fontWeight: "bold" }}>
+                        {(
+                          contract.price * (1 - contract.depositPercentage) +
+                          contract.shippingFee
+                        ).toLocaleString("vi-VN")}{" "}
+                        VNĐ
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -745,7 +772,7 @@ const BuyerContract = () => {
       >
         <Form form={otpForm} layout="vertical">
           <p className="mb-4 text-gray-600">
-            Mã OTP đã được gửi đến email . Vui lòng nhập mã OTP để xác nhận ký
+            Mã OTP đã được gửi đến email. Vui lòng nhập mã OTP để xác nhận ký
             hợp đồng:
           </p>
           <Form.Item

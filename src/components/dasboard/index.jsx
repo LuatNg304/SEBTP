@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   UserOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Dropdown, Avatar, Space, Breadcrumb, Typography } from "antd";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom"; // ✅ Thêm useLocation
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/accountSlice";
+import { LucidePodcast, Podcast, User, User2, UserCheck, UserCogIcon } from "lucide-react";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Text } = Typography;
@@ -21,12 +22,17 @@ function getItem(label, key, icon, children, to) {
 }
 
 const items = [
-  getItem("Post", "sub1", <UserOutlined />, [
-    getItem("Pending", "1", null, null, "/admin"),
-    getItem("Reject", "2", null, null, "/admin/post-reject"),
-    getItem("Posted", "3", null, null, "/admin/posted"),
+  getItem("Bài đăng", "sub1", <User />, [
+    getItem("Chờ duyệt", "1", null, null, "/admin"),
+    getItem("Từ chối", "2", null, null, "/admin/post-reject"),
+    getItem("Đã đăng", "3", null, null, "/admin/posted"),
   ]),
-  getItem("Complain", "4", <UserOutlined />,null,"/admin/complain")
+  getItem("Khiếu nại", "4", <LucidePodcast />, null, "/admin/complain"),
+  getItem("Gói dịch vụ", "sub2", <UserCogIcon />, [
+    getItem("Gói người bán", "5", null, null, "/admin/sellerPackage"),
+    getItem("Gói ưu tiên", "6", null, null, "/admin/priorityPackage"),
+    getItem("Phần trăm đặt cọc", "7", null, null, "/admin/depositPercentage"),
+  ]),
 ];
 
 const Dashboard = () => {
@@ -34,6 +40,33 @@ const Dashboard = () => {
   const account = useSelector((state) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ Lấy URL hiện tại
+
+  // ✅ Hàm map URL sang menu key
+  const getSelectedKey = (pathname) => {
+    const pathMap = {
+      "/admin": "1",
+      "/admin/post-reject": "2",
+      "/admin/posted": "3",
+      "/admin/complain": "4",
+      "/admin/sellerPackage": "5",
+      "/admin/priorityPackage": "6",
+      "/admin/depositPercentage": "7",
+      // Thêm các path khác nếu cần
+    };
+    return pathMap[pathname] || "1";
+  };
+
+  // ✅ Hàm lấy openKeys cho submenu
+  const getOpenKeys = (pathname) => {
+    if (pathname.startsWith("/admin/sellerPackage") || pathname === "/admin/priorityPackage"|| pathname === "/admin/depositPercentage") {
+      return ["sub2"]; // Mở submenu "Gói dịch vụ"
+    }
+    if (pathname.startsWith("/admin")) {
+      return ["sub1"]; // Mở submenu "Bài đăng"
+    }
+    return [];
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -47,7 +80,7 @@ const Dashboard = () => {
         {
           key: "logout",
           icon: <LogoutOutlined />,
-          label: <span onClick={handleLogout} style={{ cursor: "pointer" }}>Logout</span>,
+          label: <span onClick={handleLogout} style={{ cursor: "pointer" }}>Đăng xuất</span>,
         },
       ]}
     />
@@ -69,7 +102,8 @@ const Dashboard = () => {
         </div>
         <Menu
           theme="dark"
-          defaultSelectedKeys={["1"]}
+          selectedKeys={[getSelectedKey(location.pathname)]} // ✅ Thay defaultSelectedKeys
+          defaultOpenKeys={getOpenKeys(location.pathname)} // ✅ Tự động mở submenu
           mode="inline"
           items={items}
         />
@@ -114,10 +148,6 @@ const Dashboard = () => {
             <Outlet />
           </div>
         </Content>
-
-        {/* <Footer style={{ textAlign: "center", background: "#f0f2f5" }}>
-          ECO-SANH ©2025
-        </Footer> */}
       </Layout>
     </Layout>
   );

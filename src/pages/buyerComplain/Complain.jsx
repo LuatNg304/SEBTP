@@ -142,7 +142,7 @@ const Complain = () => {
       render: (_, record) => (
         <Space size="middle">
           <a onClick={() => handleViewDetail(record.id)}>View detail</a>
-          <a>Delete</a>
+          
         </Space>
       ),
     },

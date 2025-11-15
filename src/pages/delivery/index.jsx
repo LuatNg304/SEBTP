@@ -35,12 +35,12 @@ const OrderDelivery = () => {
   const [invoices, setInvoices] = useState([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  // ✅ Fetch thông tin delivery
+  // Fetch thông tin delivery
   const fetchDelivery = async () => {
     try {
       const response = await api.get(`/buyer/order-deliveries/${id}`);
       setDelivery(response.data.data);
-      console.log("Luat dep:", response.data.data);
+      console.log("✅ Delivery:", response.data.data);
       return response.data.data;
     } catch (error) {
       console.error("❌ Delivery not found:", error.response?.status);
@@ -48,7 +48,7 @@ const OrderDelivery = () => {
     }
   };
 
-  // ✅ Fetch thông tin đơn hàng
+  // Fetch thông tin đơn hàng
   const fetchOrder = async (orderId) => {
     try {
       const response = await api.get(`/buyer/orders/${orderId}`);
@@ -61,7 +61,7 @@ const OrderDelivery = () => {
     }
   };
 
-  // ✅ Fetch invoices theo orderId
+  // Fetch invoices theo orderId
   const fetchInvoices = async (orderId) => {
     try {
       const response = await api.get(`/buyer/invoices/orders/${orderId}`);
@@ -74,7 +74,7 @@ const OrderDelivery = () => {
     }
   };
 
-  // ✅ Thanh toán invoice (từ card invoice hoặc card đơn hàng)
+  // Thanh toán invoice
   const handlePaymentInvoice = async (invoiceId) => {
     try {
       setPaymentLoading(true);
@@ -95,7 +95,7 @@ const OrderDelivery = () => {
     }
   };
 
-  // ✅ Xử lý thanh toán từ card thông tin đơn hàng (khi PICKUP_PENDING)
+  // Xử lý thanh toán từ card thông tin đơn hàng
   const handlePaymentFromOrderCard = async () => {
     try {
       setPaymentLoading(true);
@@ -160,7 +160,7 @@ const OrderDelivery = () => {
       PREPARING: { text: "Đang chuẩn bị", color: "orange" },
       READY: { text: "Sẵn sàng", color: "blue" },
       DELIVERING: { text: "Đang giao", color: "processing" },
-      PICKUP_PENDING: { text: "Chờ lấy hàng", color: "gold" },
+      PICKUP_PENDING: { text: "Đang thanh toán", color: "gold" },
       DELIVERED: { text: "Đã giao", color: "green" },
       RECEIVED: { text: "Đã nhận", color: "success" },
     };
@@ -172,12 +172,11 @@ const OrderDelivery = () => {
       { key: "PREPARING", title: "Chuẩn bị" },
       { key: "READY", title: "Sẵn sàng" },
       { key: "DELIVERING", title: "Đang giao" },
-      { key: "PICKUP_PENDING", title: "Chờ lấy" },
+      { key: "PICKUP_PENDING", title: "Đang thanh toán" },
       { key: "DELIVERED", title: "Đã giao" },
       { key: "RECEIVED", title: "Đã nhận" },
     ];
 
-    // Lọc bỏ DELIVERING nếu là BUYER_PICKUP
     const statuses = allStatuses.filter((status) => {
       if (
         status.key === "DELIVERING" &&
@@ -219,13 +218,11 @@ const OrderDelivery = () => {
     return deliveryMap[method] || method;
   };
 
-  const getPaymentType = (type) => {
-    const paymentMap = {
-      DEPOSIT: "Đặt cọc",
-      FULL: "Thanh toán toàn bộ",
-      COD: "Thanh toán khi nhận hàng",
-    };
-    return paymentMap[type] || type;
+  // ✅ Helper function để hiển thị hình thức thanh toán
+  const getPaymentTypeDisplay = (wantDeposit) => {
+    return wantDeposit
+      ? "Đặt cọc trước"
+      : "Thanh toán toàn bộ khi nhận hàng";
   };
 
   const getOrderStatusConfig = (status) => {
@@ -239,14 +236,14 @@ const OrderDelivery = () => {
     };
     return statusMap[status] || { text: status, color: "default" };
   };
+
   const handleConfirmOrder = async () => {
     try {
       const res = await api.post(
         `buyer/order-deliveries/${delivery.id}/confirm-received`
       );
       fetchDelivery();
-      console.log("ID cua delivery: ", delivery.id);
-
+      console.log("✅ Delivery ID:", delivery.id);
       toast.success("Xác nhận giao hàng thành công!");
     } catch (error) {
       toast.error(
@@ -279,7 +276,7 @@ const OrderDelivery = () => {
         >
           <Spin size="large" tip="Đang tải thông tin giao hàng..." />
         </div>
-      ) : !delivery && !activeInvoice && !order ? (
+      ) : !delivery && !activeInvoice ? (
         <div className="max-w-[1200px] mx-auto px-4 py-8">
           <Card>
             <p>Không tìm thấy thông tin giao hàng hoặc hóa đơn</p>
@@ -315,6 +312,7 @@ const OrderDelivery = () => {
               />
             )}
 
+            {/* Card thông tin giao hàng */}
             {delivery && (
               <Card
                 bordered={false}
@@ -358,6 +356,7 @@ const OrderDelivery = () => {
                       year: "numeric",
                     })}
                   </Descriptions.Item>
+
                   <Descriptions.Item label="Trạng thái hiện tại" span={2}>
                     <Tag color={getDeliveryStatusConfig(delivery.status).color}>
                       {getDeliveryStatusConfig(delivery.status).text}
@@ -414,6 +413,7 @@ const OrderDelivery = () => {
               </Card>
             )}
 
+            {/* Card thanh toán tiền cọc */}
             {!delivery && activeInvoice && (
               <Card
                 bordered={false}
@@ -488,6 +488,7 @@ const OrderDelivery = () => {
               </Card>
             )}
 
+            {/* ✅ Thông tin đơn hàng - CẬP NHẬT */}
             {order && (
               <Card
                 bordered={false}
@@ -548,31 +549,30 @@ const OrderDelivery = () => {
                     </Tag>
                   </Descriptions.Item>
 
+                  {/* ✅ Hình thức thanh toán - CẬP NHẬT */}
                   <Descriptions.Item label="Hình thức thanh toán" span={2}>
-                    <Tag
-                      color={order.paymentType === "FULL" ? "green" : "gold"}
-                    >
-                      <DollarOutlined /> {getPaymentType(order.paymentType)}
+                    <Tag color={order.wantDeposit ? "gold" : "green"}>
+                      <DollarOutlined />{" "}
+                      {getPaymentTypeDisplay(order.wantDeposit)}
                     </Tag>
                   </Descriptions.Item>
 
-                  {order.paymentType === "DEPOSIT" &&
-                    order.depositPercentage && (
-                      <>
-                        <Descriptions.Item label="Phần trăm đặt cọc">
-                          {order.depositPercentage * 100}%
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Số tiền đặt cọc">
-                          <span className="font-semibold text-cyan-600">
-                            {(
-                              (order.price * 100 * order.depositPercentage) /
-                              100
-                            ).toLocaleString("vi-VN")}{" "}
-                            VNĐ
-                          </span>
-                        </Descriptions.Item>
-                      </>
-                    )}
+                  {/* ✅ Chỉ hiển thị thông tin đặt cọc nếu wantDeposit = true */}
+                  {order.wantDeposit && order.depositPercentage && (
+                    <>
+                      <Descriptions.Item label="Phần trăm đặt cọc">
+                        {(order.depositPercentage * 100).toFixed(0)}%
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Số tiền đặt cọc">
+                        <span className="font-semibold text-cyan-600">
+                          {(order.price * order.depositPercentage).toLocaleString(
+                            "vi-VN"
+                          )}{" "}
+                          VNĐ
+                        </span>
+                      </Descriptions.Item>
+                    </>
+                  )}
 
                   <Descriptions.Item label="Trạng thái đơn hàng" span={2}>
                     <Tag color={getOrderStatusConfig(order.status).color}>
@@ -632,7 +632,9 @@ const OrderDelivery = () => {
               </Card>
             )}
           </Space>
+
           <Divider />
+
           {delivery?.status === "DELIVERED" && (
             <div className="text-center">
               <Button
