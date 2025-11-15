@@ -215,7 +215,8 @@ export default function VehiclePost() {
         deliveryMethods: formData.deliveryMethods.map((m) =>
           m.replace(" ", "_").toUpperCase()
         ),
-        paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
+        paymentTypes: ["PLATFORM"],
+        
         images: uploadedImageUrls,
         wantsTrustedLabel: formData.wantsTrustedLabel,
 
@@ -333,25 +334,7 @@ export default function VehiclePost() {
               ))}
             </div>
 
-            {/* Payment types */}
-            <div>
-              <label className="block mb-1 text-gray-700 dark:text-gray-300">
-                Phương thức thanh toán
-              </label>
-              {paymentTypesOptions.map((type) => (
-                <label key={type} className="inline-flex items-center mr-4">
-                  <input
-                    type="checkbox"
-                    name="paymentTypes"
-                    value={type}
-                    checked={formData.paymentTypes.includes(type)}
-                    onChange={handleChange}
-                    className="form-checkbox"
-                  />
-                  <span className="ml-2">{type}</span>
-                </label>
-              ))}
-            </div>
+    
 
             <div>
               <label className="inline-flex items-center cursor-pointer">

@@ -29,14 +29,15 @@ const formatCurrency = (number) => {
   }).format(number);
 };
 const formatPaymentType = (type) => {
-  if (type === "DEPOSIT") return "Thanh toán đầy đủ khi giao";
-  if (type === "FULL") return "Thanh toán qua nền tảng";
+  if (type === "PLATFORM") return "Thanh toán qua nền tảng";
+  
   return type || "-";
 };
 const formatDeliveryMethod = (method) => {
   if (method === "SELLER_DELIVERY") return "Người bán tự vận chuyển";
   if (method === "EXPRESS") return "Hỏa tốc";
   if (method === "STANDARD") return "Tiêu chuẩn";
+  if (method === "BUYER_PICKUP") return "Người mua đến lấy";
   return method || "-";
 };
 const formatText = (text) => {
@@ -413,10 +414,8 @@ export default function ContractView() {
             <>
               <p className="mb-2">
                 <span className="font-semibold">5. Đặt cọc:</span>
-                {contract.depositPercentage}% giá trị tài sản (Tương đương
-                {formatCurrency(
-                  contract.price * (contract.depositPercentage / 100)
-                )}
+                {" "}{contract.depositPercentage * 100}% giá trị tài sản (Tương đương
+                {" "}{formatCurrency(contract.price * contract.depositPercentage)}
                 ).
               </p>
 
@@ -426,9 +425,10 @@ export default function ContractView() {
                 </span>
                 {formatCurrency(
                   contract.price -
-                    contract.price * (contract.depositPercentage / 100)
-                )}{" "}
-                VND.
+                    contract.price * contract.depositPercentage +
+                    contract.shippingFee
+                )}
+              
               </p>
             </>
           )}

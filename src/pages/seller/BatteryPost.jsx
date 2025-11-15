@@ -190,7 +190,7 @@ export default function BatteryPost() {
         deliveryMethods: formData.deliveryMethods.map((m) =>
           m.replace(" ", "_").toUpperCase()
         ),
-        paymentTypes: formData.paymentTypes.map((p) => p.toUpperCase()),
+        paymentTypes: ["PLATFORM"],
         isUseWallet: formData.isUseWallet,
         images: uploadedImageUrls,
         wantsTrustedLabel: formData.wantsTrustedLabel,
@@ -425,24 +425,7 @@ export default function BatteryPost() {
               ))}
             </div>
 
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Phương thức thanh toán
-              </label>
-              {paymentTypesOptions.map((type) => (
-                <label key={type} className="inline-flex items-center mr-4">
-                  <input
-                    type="checkbox"
-                    name="paymentTypes"
-                    value={type}
-                    checked={formData.paymentTypes.includes(type)}
-                    onChange={handleChange}
-                    className="form-checkbox"
-                  />
-                  <span className="ml-2">{type}</span>
-                </label>
-              ))}
-            </div>
+            
           </div>
 
           <div className="flex justify-end pt-4">

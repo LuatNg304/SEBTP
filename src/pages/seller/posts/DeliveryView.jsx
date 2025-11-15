@@ -18,7 +18,7 @@ const STATUS_OPTIONS = [
   { value: "PREPARING", label: "Đang chuẩn bị" },
   { value: "READY", label: "Sẵn sàng giao" },
   { value: "DELIVERING", label: "Đang giao hàng" },
-  { value: "PICKUP_PENDING", label: "Chờ lấy hàng" },
+  { value: "PICKUP_PENDING", label: "Chờ thanh toán" },
   { value: "RECEIVED", label: "Đã giao thành công" },
 ];
 

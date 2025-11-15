@@ -28,8 +28,8 @@ const formatCurrency = (number) => {
  * Chuyển đổi loại thanh toán
  */
 const formatPaymentType = (type) => {
-  if (type === "DEPOSIT") return "Thanh toán đầy dủ khi giao";
-  if (type === "FULL") return "Thanh toán toàn bộ trên nền tảng";
+  if (type === "PLATFORM") return "Thanh toán qua nền tảng";
+  
   return type || "-";
 };
 
@@ -37,8 +37,11 @@ const formatDeliveryMethod = (method) => {
   if (method === "SELLER_DELIVERY") return "Người bán tự vận chuyển";
   if (method === "EXPRESS") return "Hỏa tốc";
   if (method === "STANDARD") return "Tiêu chuẩn";
-  return method || "-";
+  if (method === "BUYER_PICKUP") return "Người mua đến lấy";
+   return method || "-";
 };
+
+
 
 /**
  * Hiển thị giá trị, hoặc "Chưa cung cấp" nếu là null/undefined
@@ -446,11 +449,9 @@ export default function Contract() {
           {isPresent(contract.depositPercentage) && (
             <>
               <p className="mb-2">
-                <span className="font-semibold">5. Đặt cọc:</span>
-                {contract.depositPercentage}% giá trị tài sản (Tương đương
-                {formatCurrency(
-                  contract.price * (contract.depositPercentage / 100)
-                )}
+                <span className="font-semibold">5. Đặt cọc:</span>{" "}
+                {contract.depositPercentage * 100}% giá trị tài sản (Tương đương{" "}
+                {formatCurrency(contract.price * contract.depositPercentage)}
                 ).
               </p>
 
@@ -458,12 +459,11 @@ export default function Contract() {
                 <span className="font-semibold">
                   6. Số tiền còn lại phải thanh toán:
                 </span>
-
                 {formatCurrency(
-                  contract.price - (
-                    contract.price * (contract.depositPercentage / 100)
-                  )
-                )} VND.
+                  contract.price -
+                    contract.price * contract.depositPercentage +
+                    contract.shippingFee
+                )}
               </p>
             </>
           )}

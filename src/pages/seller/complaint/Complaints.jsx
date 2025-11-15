@@ -19,14 +19,30 @@ import api from "../../../config/axios";
 const { Title } = Typography;
 const { Option } = Select;
 
-// --- DANH SÁCH LỌC (Không đổi) ---
+// ==========================================================
+// *** BẮT ĐẦU PHẦN CẬP NHẬT STATUS ***
+// ==========================================================
+
+// --- DANH SÁCH LỌC (ĐÃ CẬP NHẬT) ---
 const STATUS_FILTER_OPTIONS = [
   { value: "ALL", label: "Tất cả trạng thái" },
-  { value: "PENDING", label: "Chờ xử lý" },
-  { value: "RESOLUTION_GIVEN", label: "Đã phản hồi" },
+  // Trạng thái chờ/Review
+  { value: "PENDING", label: "Chờ xử lý" }, // Giữ lại PENDING chung
+  { value: "SELLER_REVIEWING", label: "Chờ người bán xử lý" },
+  { value: "ADMIN_REVIEWING", label: "Admin đang xem xét" },
   { value: "ADMIN_SOLVING", label: "Admin đang giải quyết" },
-  { value: "RESOLVED", label: "Đã giải quyết" },
-  { value: "REJECTED", label: "Đã từ chối" },
+  { value: "RESOLUTION_GIVEN", label: "Đã phản hồi" }, // Giữ lại
+
+  // Trạng thái từ chối
+  { value: "REJECTED", label: "Đã từ chối" }, // Giữ lại REJECTED chung
+  { value: "SELLER_REJECTED", label: "Người bán từ chối" },
+  { value: "BUYER_REJECTED", label: "Người mua từ chối" },
+
+  // Trạng thái giải quyết/Đóng
+  { value: "RESOLVED", label: "Đã giải quyết" }, // Giữ lại RESOLVED chung
+  { value: "SELLER_RESOLVED", label: "Người bán đã giải quyết" },
+  { value: "CLOSED_REFUND", label: "Đã đóng (Đã hoàn tiền)" },
+  { value: "CLOSED_NO_REFUND", label: "Đã đóng (Không hoàn tiền)" },
 ];
 
 // --- HELPER FUNCTIONS ---
@@ -43,7 +59,7 @@ const formatDate = (dateString) => {
 };
 
 /**
- * 2. Tạo Tag AntD cho trạng thái
+ * 2. Tạo Tag AntD cho trạng thái (ĐÃ CẬP NHẬT)
  */
 const getComplaintTag = (status) => {
   let color = "default";
@@ -51,13 +67,25 @@ const getComplaintTag = (status) => {
 
   // Ánh xạ status sang màu sắc và text
   const statusMap = {
-    // Status
+    // --- Trạng thái Chờ/Review ---
     PENDING: { color: "orange", text: "Chờ xử lý" },
+    SELLER_REVIEWING: { color: "blue", text: "Chờ người bán xử lý" },
     RESOLUTION_GIVEN: { color: "blue", text: "Đã phản hồi" },
-    RESOLVED: { color: "green", text: "Đã giải quyết" },
-    REJECTED: { color: "red", text: "Đã từ chối" },
+    ADMIN_REVIEWING: { color: "purple", text: "Admin đang xem xét" },
     ADMIN_SOLVING: { color: "purple", text: "Admin đang giải quyết" },
-    // Loại khiếu nại
+
+    // --- Trạng thái Từ chối ---
+    REJECTED: { color: "red", text: "Đã từ chối" },
+    SELLER_REJECTED: { color: "red", text: "Người bán từ chối" },
+    BUYER_REJECTED: { color: "red", text: "Người mua từ chối" },
+
+    // --- Trạng thái Đã giải quyết/Đóng ---
+    RESOLVED: { color: "green", text: "Đã giải quyết" },
+    SELLER_RESOLVED: { color: "green", text: "Người bán đã giải quyết" },
+    CLOSED_REFUND: { color: "green", text: "Đã đóng (Đã hoàn tiền)" },
+    CLOSED_NO_REFUND: { color: "default", text: "Đã đóng (Không hoàn tiền)" },
+
+    // --- Loại khiếu nại (giữ nguyên) ---
     DAMAGED_PRODUCT: { color: "yellow", text: "Sản phẩm bị hỏng" },
     WRONG_ITEM: { color: "yellow", text: "Giao sai sản phẩm" },
     NOT_AS_DESCRIBED: { color: "yellow", text: "Không đúng mô tả" },
@@ -70,6 +98,9 @@ const getComplaintTag = (status) => {
 
   return <Tag color={color}>{text}</Tag>;
 };
+// ==========================================================
+// *** KẾT THÚC PHẦN CẬP NHẬT STATUS ***
+// ==========================================================
 
 // === THÀNH PHẦN CHÍNH ===
 
@@ -247,9 +278,10 @@ export default function ComplaintListAntD() {
               loading={loading}
               rowKey="id"
               locale={{ emptyText: emptyText }}
-             scroll={{
+              scroll={{
                 x: "max-content",
-                y: 300,}}
+                y: 300,
+              }}
             />
           </div>
         </div>

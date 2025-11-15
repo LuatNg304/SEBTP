@@ -1,22 +1,19 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Loader2,
   ArrowLeft,
   Send,
- XCircle,
+  XCircle,
   Check,
   X,
-
   AlertCircle,
 } from "lucide-react";
 
- import { useNavigate, useParams } from "react-router-dom"; 
- import api from "../../../config/axios"; 
- import { toast } from "react-toastify"; 
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../../../config/axios";
+import { toast } from "react-toastify";
 import ImageModal from "./ImageModal";
-
-
-
 
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -38,31 +35,51 @@ const formatCurrency = (number) => {
   }).format(number);
 };
 
+
 const StatusTag = ({ status }) => {
   // Ánh xạ status sang màu sắc Tailwind
   const colorMap = {
-    PENDING: "bg-orange-100 text-orange-800",
-    RESOLUTION_GIVEN: "bg-blue-100 text-blue-800",
-    RESOLVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
+    // Trạng thái đang chờ / review
+    
+    SELLER_REVIEWING: "bg-blue-100 text-blue-800", // MỚI
+    ADMIN_REVIEWING: "bg-purple-100 text-purple-800", // MỚI
     ADMIN_SOLVING: "bg-purple-100 text-purple-800",
+    RESOLUTION_GIVEN: "bg-blue-100 text-blue-800",
 
-    // Loại khiếu nại
+    // Trạng thái từ chối
+    REJECTED: "bg-red-100 text-red-800",
+    SELLER_REJECTED: "bg-red-100 text-red-800", // MỚI
+    BUYER_REJECTED: "bg-red-100 text-red-800", // MỚI
+
+    // Trạng thái đã giải quyết / đóng
+    RESOLVED: "bg-green-100 text-green-800",
+    SELLER_RESOLVED: "bg-green-100 text-green-800", // MỚI
+    CLOSED_REFUND: "bg-green-100 text-green-800", // MỚI
+    CLOSED_NO_REFUND: "bg-gray-100 text-gray-800", // MỚI (Dùng màu xám trung tính)
+
+    // Loại khiếu nại (giữ nguyên)
     DAMAGED_PRODUCT: "bg-yellow-100 text-yellow-800",
     WRONG_ITEM: "bg-yellow-100 text-yellow-800",
     NOT_AS_DESCRIBED: "bg-yellow-100 text-yellow-800",
   };
 
-  //  status sang văn bản tiếng Việt
+  //  status sang văn bản tiếng Việt
   const textMap = {
-    // Status
-    PENDING: "Chờ xử lý",
-    RESOLUTION_GIVEN: "Đã phản hồi",
-    RESOLVED: "Đã giải quyết",
-    REJECTED: "Đã từ chối",
+    // Status cũ
+    
+   
     ADMIN_SOLVING: "Admin đang giải quyết",
 
-    // Loại khiếu nại
+    // Status MỚI
+    SELLER_REVIEWING: "Chờ người bán xử lý",
+    ADMIN_REVIEWING: "Admin đang xem xét",
+    SELLER_REJECTED: "Người bán từ chối",
+    BUYER_REJECTED: "Người mua từ chối",
+    CLOSED_NO_REFUND: "Đã đóng (Không hoàn tiền)",
+    SELLER_RESOLVED: "Người bán đã giải quyết",
+    CLOSED_REFUND: "Đã đóng (Đã hoàn tiền)",
+
+    // Loại khiếu nại (giữ nguyên)
     DAMAGED_PRODUCT: "Sản phẩm bị hỏng",
     WRONG_ITEM: "Giao sai sản phẩm",
     NOT_AS_DESCRIBED: "Không đúng mô tả",
@@ -79,6 +96,9 @@ const StatusTag = ({ status }) => {
     </span>
   );
 };
+// ==========================================================
+// *** KẾT THÚC PHẦN CẬP NHẬT STATUS ***
+// ==========================================================
 
 // === THÀNH PHẦN CHÍNH ===
 
@@ -92,7 +112,7 @@ export default function ComplaintDetail() {
   const [modalImageUrl, setModalImageUrl] = useState(null);
 
   const navigate = useNavigate();
- const { id } = useParams();
+  const { id } = useParams();
 
   const goBack = () => {
     navigate(-1);
@@ -137,9 +157,9 @@ export default function ComplaintDetail() {
       toast.error("Vui lòng nhập lý do/giải pháp khi Từ chối hoặc Gửi Admin.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     // Xây dựng payload dựa trên hành động
     const payload = {
       complaintId: Number(complaint.id),
@@ -148,14 +168,13 @@ export default function ComplaintDetail() {
       accepted: action === "accept",
     };
     console.log(payload);
-    
 
     try {
       const res = await api.patch("/seller/complaints/resolution", payload);
       if (res.data.success) {
         toast.success("Xử lý khiếu nại thành công!");
-       
-        navigate(-1); 
+
+        navigate(-1);
       } else {
         throw new Error(res.data.message || "Lỗi khi xử lý");
       }
@@ -362,8 +381,8 @@ export default function ComplaintDetail() {
             </div>
 
             {/* Chỉ hiển thị Form Hành động nếu status là PENDING */}
-            {complaint.status === "PENDING" ||
-            complaint.status === "REJECTED" ? (
+            {complaint.status === "SELLER_REVIEWING" ||
+            complaint.status === "BUYER_REJECTED" ? (
               <div className="bg-white rounded-lg shadow-lg p-6 h-fit">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                   Hành động xử lý
