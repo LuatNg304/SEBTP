@@ -5,22 +5,22 @@ import {
   Button,
   Carousel,
   Descriptions,
-  Input,
   Modal,
   Space,
   Spin,
   Table,
   Tag,
 } from "antd";
+import { ExclamationCircleFilled } from "@ant-design/icons";
+
+const { confirm } = Modal;
 
 const AdminComplain = () => {
   const [complain, setComplain] = useState(null);
   const [detailModal, setDetailModal] = useState(false);
   const [complainDetail, setComplainDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [rejectModalVisible, setRejectModalVisible] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
-  const [rejectLoading, setRejectLoading] = useState(false);
+
   const fetchComplain = async () => {
     try {
       const res = await api.get("/admin/complaints/list");
@@ -34,6 +34,7 @@ const AdminComplain = () => {
   useEffect(() => {
     fetchComplain();
   }, []);
+
   //detail
   const handleViewDetail = async (complaintId) => {
     setDetailLoading(true);
@@ -51,41 +52,58 @@ const AdminComplain = () => {
     }
   };
 
-  //refun
-  const showRejectModal = () => {
-    setDetailModal(false);
-    setRejectModalVisible(true);
+  //refund
+  const showRefundConfirm = () => {
+    confirm({
+      title: "Xác nhận hoàn tiền",
+      icon: <ExclamationCircleFilled />,
+      content: `Bạn có chắc chắn muốn hoàn tiền cho khiếu nại #${complainDetail?.id}?`,
+      okText: "Đồng ý",
+      cancelText: "Hủy",
+      okType: "primary",
+      onOk: async () => {
+        try {
+          await api.put(`/admin/complaints/handle`, {
+            complaintId: complainDetail.id,
+            resolutionType: "REFUND",
+          });
+          toast.success("Đã hoàn tiền.");
+          setDetailModal(false);
+          fetchComplain();
+        } catch (error) {
+          toast.error(error?.response?.data?.message || "Lỗi khi hoàn tiền.");
+        }
+      },
+    });
   };
-  const handleReject = async () => {
-    setRejectLoading(true);
-    try {
-      await api.patch("/admin/complaints/handle", {
-        complaintId: complainDetail.id,
-        resolution: rejectReason,
-      });
-      toast.success("Đã gửi hướng giải quyết của bạn.");
-      setRejectModalVisible(false);
-      setDetailModal(false);
-      fetchComplain();
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Lỗi khi gửi hướng giải quyết.");
-    } finally {
-      setRejectLoading(false);
-    }
+
+  //reject
+  const showRejectConfirm = () => {
+    confirm({
+      title: "Xác nhận từ chối",
+      icon: <ExclamationCircleFilled style={{ color: "#ff4d4f" }} />,
+      content: `Bạn có chắc chắn muốn từ chối khiếu nại #${complainDetail?.id}?`,
+      okText: "Từ chối",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          await api.put(`/admin/complaints/handle`, {
+            complaintId: complainDetail.id,
+            resolutionType: "NO_REFUND",
+          });
+          toast.success("Đã từ chối đơn khiếu nại.");
+          setDetailModal(false);
+          fetchComplain();
+        } catch (error) {
+          toast.error(
+            error?.response?.data?.message || "Lỗi khi từ chối đơn khiếu nại."
+          );
+        }
+      },
+    });
   };
-  //dong ý
-  const handleRefun = async () => {
-    try {
-      await api.put(
-        `/admin/complaints/refund?complaintId=${complainDetail.id}`
-      );
-      toast.success("Đã hoàn tiên.");
-      setDetailModal(false);
-      fetchComplain();
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Lỗi khi hoàn tiền.");
-    }
-  };
+
   const columns = [
     {
       title: "ComplainID",
@@ -110,7 +128,6 @@ const AdminComplain = () => {
       title: "Type",
       dataIndex: "type",
       key: "type",
-      // render: (text) => <a>{text}</a>,
     },
     {
       title: "Seller Name",
@@ -128,17 +145,7 @@ const AdminComplain = () => {
       key: "status",
       render: (status) => {
         let color = "green";
-        //     PENDING,
-        // RESOLUTION_GIVEN,
-        // RESOLVED,
-        // REJECTED,
-        // ADMIN_SOLVING
-        if (status === "PENDING") color = "green";
-        if (status === "RESOLUTION_GIVEN") color = "blue";
-        if (status === "RESOLVED") color = "orange";
-        if (status === "REJECTED") color = "red";
-        if (status === "ADMIN_SOLVING") color = "red";
-
+        if (status === "ADMIN_REVIEWING") color = "red";
         return <Tag color={color}>{status.toUpperCase()}</Tag>;
       },
     },
@@ -152,21 +159,22 @@ const AdminComplain = () => {
       ),
     },
   ];
+
   return (
     <div>
       <Table columns={columns} dataSource={complain} />
-      {/* modal rèun */}
+      {/* modal detail */}
       <Modal
         open={detailModal}
         onCancel={() => setDetailModal(false)}
         footer={
-          complainDetail?.status === "ADMIN_SOLVING"
+          complainDetail?.status === "ADMIN_REVIEWING"
             ? [
-                <Button type="primary" onClick={handleRefun}>
+                <Button type="primary" onClick={showRefundConfirm} key="refund">
                   Hoàn tiền
                 </Button>,
-                <Button type="default" success onClick={showRejectModal}>
-                  Đưa ra hướng giải quyết
+                <Button danger onClick={showRejectConfirm} key="reject">
+                  Từ chối
                 </Button>,
                 <Button onClick={() => setDetailModal(false)} key="close">
                   Đóng
@@ -241,37 +249,6 @@ const AdminComplain = () => {
         ) : (
           <div className="text-red-600">Không tìm thấy chi tiết khiếu nại</div>
         )}
-      </Modal>
-      {/* modal resol */}
-      <Modal
-        open={rejectModalVisible}
-        title="Hướng giải quyết từ Amin"
-        onCancel={() => setRejectModalVisible(false)}
-        footer={[
-          <Button
-            key="ok"
-            type="primary"
-            danger
-            style={{ marginTop: 16 }} // Thêm margin-top 16px
-            loading={rejectLoading}
-            onClick={handleReject}
-            disabled={!rejectReason.trim()}
-          >
-            Gửi
-          </Button>,
-          <Button key="cancel" onClick={() => setRejectModalVisible(false)}>
-            Đóng
-          </Button>,
-        ]}
-      >
-        <Input.TextArea
-          rows={4}
-          placeholder="Hướng giải quyết"
-          value={rejectReason}
-          onChange={(e) => setRejectReason(e.target.value)}
-          showCount
-          maxLength={500}
-        />
       </Modal>
     </div>
   );

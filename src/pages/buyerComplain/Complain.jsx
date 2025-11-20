@@ -1,10 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import api from "../../config/axios";
-import { Button, Card, Input, Space, Table, Tag } from "antd";
+import {
+  Button,
+  Card,
+  Input,
+  Space,
+  Table,
+  Tag,
+  Modal,
+  Carousel,
+  Descriptions,
+  Spin,
+  Upload,
+} from "antd";
+import { ExclamationCircleFilled, PlusOutlined } from "@ant-design/icons";
 import Header from "../../components/header";
 import { useNavigate } from "react-router-dom";
-import { Modal, Carousel, Descriptions, Spin } from "antd";
+
+const { confirm } = Modal;
 
 const Complain = () => {
   const [complain, setComplain] = useState(null);
@@ -12,9 +26,25 @@ const Complain = () => {
   const [detailModal, setDetailModal] = useState(false);
   const [complainDetail, setComplainDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+
+  // Modal từ chối phương án của seller
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectLoading, setRejectLoading] = useState(false);
+
+  // Modal yêu cầu seller tiếp tục giải quyết
+  const [continueModalVisible, setContinueModalVisible] = useState(false);
+  const [reDescription, setReDescription] = useState("");
+  const [continueLoading, setContinueLoading] = useState(false);
+
+  // Modal gửi lên admin
+  const [adminModalVisible, setAdminModalVisible] = useState(false);
+  const [adminDescription, setAdminDescription] = useState("");
+  const [adminImageUrls, setAdminImageUrls] = useState([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
 
   const fetchComplain = async () => {
     try {
@@ -29,6 +59,7 @@ const Complain = () => {
   useEffect(() => {
     fetchComplain();
   }, []);
+
   const handleViewDetail = async (complaintId) => {
     setDetailLoading(true);
     setDetailModal(true);
@@ -44,24 +75,39 @@ const Complain = () => {
       setDetailLoading(false);
     }
   };
-  //dong ý
-  const handleAccept = async () => {
-    try {
-      await api.patch(
-        `/buyer/complaints/agree?complaintId=${complainDetail.id}`
-      );
-      toast.success("Bạn đã chấp nhận phương án giải quyết.");
-      setDetailModal(false);
-      fetchComplain(); // reload lại danh sách complaint nếu có
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Lỗi khi xác nhận đồng ý.");
-    }
+
+  // Đồng ý phương án
+  const showAcceptConfirm = () => {
+    confirm({
+      title: "Xác nhận đồng ý",
+      icon: <ExclamationCircleFilled />,
+      content: `Bạn có chắc chắn muốn chấp nhận phương án giải quyết cho khiếu nại #${complainDetail?.id}?`,
+      okText: "Đồng ý",
+      cancelText: "Hủy",
+      okType: "primary",
+      onOk: async () => {
+        try {
+          await api.patch(
+            `/buyer/complaints/agree?complaintId=${complainDetail.id}`
+          );
+          toast.success("Bạn đã chấp nhận phương án giải quyết.");
+          setDetailModal(false);
+          fetchComplain();
+        } catch (error) {
+          toast.error(
+            error?.response?.data?.message || "Lỗi khi xác nhận đồng ý."
+          );
+        }
+      },
+    });
   };
-  // từ chối
+
+  // Từ chối phương án
   const showRejectModal = () => {
     setDetailModal(false);
     setRejectModalVisible(true);
   };
+
   const handleReject = async () => {
     setRejectLoading(true);
     try {
@@ -71,7 +117,7 @@ const Complain = () => {
       });
       toast.success("Bạn đã từ chối phương án giải quyết.");
       setRejectModalVisible(false);
-      setDetailModal(false);
+      setRejectReason("");
       fetchComplain();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Lỗi khi từ chối.");
@@ -79,6 +125,113 @@ const Complain = () => {
       setRejectLoading(false);
     }
   };
+
+  // Yêu cầu seller tiếp tục giải quyết
+  const showContinueModal = () => {
+    setDetailModal(false);
+    setContinueModalVisible(true);
+  };
+
+  const handleContinue = async () => {
+    setContinueLoading(true);
+    try {
+      await api.patch("/buyer/complaints/continue", {
+        complaintId: complainDetail.id,
+        reDescription: reDescription,
+      });
+      toast.success("Đã gửi yêu cầu seller tiếp tục giải quyết.");
+      setContinueModalVisible(false);
+      setReDescription("");
+      fetchComplain();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Lỗi khi gửi yêu cầu tiếp tục."
+      );
+    } finally {
+      setContinueLoading(false);
+    }
+  };
+
+  // Gửi khiếu nại lên admin
+  const showAdminModal = async () => {
+    setDetailModal(false);
+    
+    // Lấy dữ liệu từ API list/by-order-id
+    try {
+      const res = await api.get(
+        `/buyer/complaints/list/by-order-id?orderId=${complainDetail.orderId}`
+      );
+      const existingComplaint = res.data.data;
+      
+      // Map dữ liệu vào form
+      if (existingComplaint) {
+        setAdminDescription(existingComplaint.description || "");
+        
+        // Map hình ảnh hiện có
+        if (existingComplaint.imageUrls && existingComplaint.imageUrls.length > 0) {
+          const mappedImages = existingComplaint.imageUrls.map((url, index) => ({
+            uid: `-${index}`,
+            name: `image-${index}.jpg`,
+            status: "done",
+            url: url,
+          }));
+          setFileList(mappedImages);
+          setAdminImageUrls(existingComplaint.imageUrls);
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin complaint:", error);
+    }
+    
+    setAdminModalVisible(true);
+  };
+
+  const handleAdminRequest = async () => {
+    setAdminLoading(true);
+    try {
+      await api.post("/buyer/complaints/admin-request", {
+        orderId: complainDetail.orderId,
+        complaintType: complainDetail.type,
+        description: adminDescription,
+        complaintImages: adminImageUrls,
+      });
+      toast.success("Đã gửi khiếu nại lên admin.");
+      setAdminModalVisible(false);
+      setAdminDescription("");
+      setAdminImageUrls([]);
+      setFileList([]);
+      fetchComplain();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Lỗi khi gửi khiếu nại lên admin."
+      );
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  // Xử lý upload hình ảnh
+  const handlePreview = async (file) => {
+    setPreviewImage(file.url || file.preview);
+    setPreviewOpen(true);
+  };
+
+  const handleChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+    
+    // Cập nhật adminImageUrls với các URL đã upload
+    const urls = newFileList
+      .filter((file) => file.status === "done" && file.url)
+      .map((file) => file.url);
+    setAdminImageUrls(urls);
+  };
+
+  const uploadButton = (
+    <button style={{ border: 0, background: "none" }} type="button">
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </button>
+  );
 
   const columns = [
     {
@@ -104,7 +257,6 @@ const Complain = () => {
       title: "Type",
       dataIndex: "type",
       key: "type",
-      // render: (text) => <a>{text}</a>,
     },
     {
       title: "Seller Name",
@@ -122,16 +274,13 @@ const Complain = () => {
       key: "status",
       render: (status) => {
         let color = "green";
-        //     PENDING,
-        // RESOLUTION_GIVEN,
-        // RESOLVED,
-        // REJECTED,
-        // ADMIN_SOLVING
-        if (status === "PENDING") color = "green";
-        if (status === "RESOLUTION_GIVEN") color = "blue";
-        if (status === "RESOLVED") color = "orange";
-        if (status === "REJECTED") color = "red";
-        if (status === "ADMIN_SOLVING") color = "red";
+        if (status === "SELLER_REVIEWING") color = "blue";
+        if (status === "ADMIN_REVIEWING") color = "orange";
+        if (status === "SELLER_REJECTED") color = "red";
+        if (status === "BUYER_REJECTED") color = "red";
+        if (status === "CLOSED_NO_REFUND") color = "volcano";
+        if (status === "SELLER_RESOLVED") color = "cyan";
+        if (status === "CLOSED_REFUND") color = "green";
 
         return <Tag color={color}>{status.toUpperCase()}</Tag>;
       },
@@ -142,11 +291,11 @@ const Complain = () => {
       render: (_, record) => (
         <Space size="middle">
           <a onClick={() => handleViewDetail(record.id)}>View detail</a>
-          
         </Space>
       ),
     },
   ];
+
   return (
     <div
       className="overflow-x-hidden"
@@ -166,7 +315,6 @@ const Complain = () => {
           className="shadow-2xl rounded-xl"
           title={
             <div className="flex items-center gap-3">
-              {/* <ShoppingCartOutlined className="text-2xl text-blue-600" /> */}
               <span className="text-2xl ">Danh sách khiếu nại</span>
               <Tag color="blue" className="ml-2">
                 {complain?.length} đơn hàng
@@ -182,18 +330,38 @@ const Complain = () => {
           <Table columns={columns} dataSource={complain} />
         </Card>
 
-        {/* //modo chi tiet compalin */}
+        {/* Modal chi tiết complaint */}
         <Modal
           open={detailModal}
           onCancel={() => setDetailModal(false)}
           footer={
-            complainDetail?.status === "RESOLUTION_GIVEN" || complainDetail?.status === "ADMIN_RESOLUTION_GIVEN" 
+            complainDetail?.status === "SELLER_RESOLVED"
               ? [
-                  <Button type="primary" onClick={handleAccept} key="accept">
+                  <Button
+                    type="primary"
+                    onClick={showAcceptConfirm}
+                    key="accept"
+                  >
                     Đồng ý
                   </Button>,
                   <Button danger onClick={showRejectModal} key="reject">
                     Từ chối
+                  </Button>,
+                  <Button onClick={() => setDetailModal(false)} key="close">
+                    Đóng
+                  </Button>,
+                ]
+              : complainDetail?.status === "SELLER_REJECTED"
+              ? [
+                  <Button
+                    type="primary"
+                    onClick={showContinueModal}
+                    key="continue"
+                  >
+                    Yêu cầu tiếp tục giải quyết
+                  </Button>,
+                  <Button danger onClick={showAdminModal} key="admin">
+                    Gửi lên Admin
                   </Button>,
                   <Button onClick={() => setDetailModal(false)} key="close">
                     Đóng
@@ -274,7 +442,8 @@ const Complain = () => {
             </div>
           )}
         </Modal>
-        {/* modal tu choi */}
+
+        {/* Modal từ chối phương án */}
         <Modal
           open={rejectModalVisible}
           title="Nhập lý do từ chối"
@@ -284,7 +453,6 @@ const Complain = () => {
               key="ok"
               type="primary"
               danger
-              style={{ marginTop: 16 }} // Thêm margin-top 16px
               loading={rejectLoading}
               onClick={handleReject}
               disabled={!rejectReason.trim()}
@@ -304,6 +472,99 @@ const Complain = () => {
             showCount
             maxLength={500}
           />
+        </Modal>
+
+        {/* Modal yêu cầu seller tiếp tục giải quyết */}
+        <Modal
+          open={continueModalVisible}
+          title="Yêu cầu seller tiếp tục giải quyết"
+          onCancel={() => setContinueModalVisible(false)}
+          footer={[
+            <Button
+              key="ok"
+              type="primary"
+              loading={continueLoading}
+              onClick={handleContinue}
+              disabled={!reDescription.trim()}
+            >
+              Gửi yêu cầu
+            </Button>,
+            <Button
+              key="cancel"
+              onClick={() => setContinueModalVisible(false)}
+            >
+              Đóng
+            </Button>,
+          ]}
+        >
+          <Input.TextArea
+            rows={4}
+            placeholder="Mô tả thêm về vấn đề cần seller tiếp tục giải quyết..."
+            value={reDescription}
+            onChange={(e) => setReDescription(e.target.value)}
+            showCount
+            maxLength={500}
+          />
+        </Modal>
+
+        {/* Modal gửi lên admin */}
+        <Modal
+          open={adminModalVisible}
+          title="Gửi khiếu nại lên Admin"
+          onCancel={() => setAdminModalVisible(false)}
+          footer={[
+            <Button
+              key="ok"
+              type="primary"
+              danger
+              loading={adminLoading}
+              onClick={handleAdminRequest}
+              disabled={!adminDescription.trim()}
+            >
+              Gửi lên Admin
+            </Button>,
+            <Button key="cancel" onClick={() => setAdminModalVisible(false)}>
+              Đóng
+            </Button>,
+          ]}
+          width={700}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2 font-medium">Mô tả vấn đề:</label>
+              <Input.TextArea
+                rows={4}
+                placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."
+                value={adminDescription}
+                onChange={(e) => setAdminDescription(e.target.value)}
+                showCount
+                maxLength={500}
+              />
+            </div>
+
+            <div>
+              <label className="block mb-2 font-medium">Hình ảnh minh chứng:</label>
+              <Upload
+                listType="picture-card"
+                fileList={fileList}
+                onPreview={handlePreview}
+                onChange={handleChange}
+                beforeUpload={() => false}
+              >
+                {fileList.length >= 8 ? null : uploadButton}
+              </Upload>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Modal preview image */}
+        <Modal
+          open={previewOpen}
+          title="Xem trước hình ảnh"
+          footer={null}
+          onCancel={() => setPreviewOpen(false)}
+        >
+          <img alt="preview" style={{ width: "100%" }} src={previewImage} />
         </Modal>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "../../components/header";
 import {
   Carousel,
@@ -9,26 +9,21 @@ import {
   Divider,
   Card,
   Skeleton,
-  // Descriptions, // <- Không cần dùng Descriptions nữa
 } from "antd";
 import {
   ShoppingCartOutlined,
   CarOutlined,
-  ThunderboltOutlined,
-  DollarCircleOutlined,
-  ClockCircleOutlined,
-  CalendarOutlined,
-  DashboardOutlined,
   CameraOutlined,
-  SolutionOutlined,
   CrownOutlined,
-  // BatteryChargingOutlined, // (Bạn chưa import icon này, nhưng tôi thêm vào cho mục Pin)
+  SwapOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
 import { useSelector } from "react-redux";
+import Compare from "./Compare";
 
 const { Title, Text } = Typography;
 
@@ -50,9 +45,14 @@ const ViewProduct = () => {
   const [item, setItem] = useState(null);
   const { id } = useParams();
   const [replateProduct, setPreplateProduct] = useState(null);
+  const [showCompare, setShowCompare] = useState(false);
+  const [selectedProductToCompare, setSelectedProductToCompare] =
+    useState(null);
+  const compareRef = useRef(null);
   const isLogin = useSelector((state) => state.account);
   const postData = item?.data;
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchitem = async () => {
       try {
@@ -72,17 +72,27 @@ const ViewProduct = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!postData?.productType) {
-        console.log(" Chưa có productType");
+        console.log("⏳ Chưa có productType");
         return;
       }
 
       try {
         console.log(`🔍 Fetch loại: ${postData.productType}`);
         const res = await api.get(`/public/posts/type/${postData.productType}`);
-        setPreplateProduct(res.data);
-        console.log(" Sản phẩm liên quan:", res.data);
+
+        // Lọc bỏ sản phẩm hiện tại khỏi danh sách liên quan
+        const filteredProducts = res.data.data.filter(
+          (product) => product.id !== parseInt(id)
+        );
+
+        setPreplateProduct({
+          ...res.data,
+          data: filteredProducts,
+        });
+
+        console.log("✅ Sản phẩm liên quan (đã lọc):", filteredProducts);
       } catch (error) {
-        console.log(" Lỗi:", error);
+        console.log("❌ Lỗi:", error);
         toast.error(
           error.response?.data?.message || "Lỗi tải sản phẩm liên quan"
         );
@@ -90,12 +100,63 @@ const ViewProduct = () => {
     };
 
     fetchProduct();
-  }, [postData?.productType]);
+  }, [postData?.productType, id]);
+
+  // Hàm xử lý khi click nút So sánh
+  const handleOpenCompare = (productId) => {
+    if (!isLogin) {
+      toast.error("Vui lòng đăng nhập để sử dụng tính năng so sánh");
+      return;
+    }
+    setSelectedProductToCompare(productId);
+    setShowCompare(true);
+
+    // Scroll đến phần Compare sau khi render
+    setTimeout(() => {
+      compareRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
+  };
+
+  // Hàm đóng Compare
+  const handleCloseCompare = () => {
+    setShowCompare(false);
+    setSelectedProductToCompare(null);
+  };
 
   const images = postData?.images || [];
+  const isTrusted = postData?.trusted;
+
+  const renderInfoItem = (label, value) => {
+    if (!value && value !== 0) {
+      return null;
+    }
+    let displayValue = value;
+    if (label === "Màu sắc" && typeof value === "string") {
+      displayValue = (
+        <Tag
+          color={value.toLowerCase()}
+          className="font-medium text-base !text-black"
+        >
+          {value}
+        </Tag>
+      );
+    }
+    return (
+      <div>
+        <Text type="secondary" className="block text-sm mb-1">
+          {label}
+        </Text>
+        <Text strong className="text-base font-semibold text-gray-900">
+          {displayValue}
+        </Text>
+      </div>
+    );
+  };
 
   const ModernLoading = () => (
-    // ... (Phần loading giữ nguyên, không thay đổi)
     <main className="max-w-[1200px] mx-auto px-4 py-8">
       <Card bordered={false} className="shadow-xl rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-4">
@@ -137,39 +198,6 @@ const ViewProduct = () => {
     );
   }
 
-  // Chuyển đổi trạng thái trusted để phù hợp với hiển thị "Đã kiểm duyệt"
-  const isTrusted = postData.trusted;
-
-  // --- BẮT ĐẦU: Helper function mới ---
-  // (Giữ nguyên helper function 'renderInfoItem' như cũ)
-  const renderInfoItem = (label, value) => {
-    if (!value && value !== 0) {
-      return null;
-    }
-    let displayValue = value;
-    if (label === "Màu sắc" && typeof value === "string") {
-      displayValue = (
-        <Tag
-          color={value.toLowerCase()}
-          className="font-medium text-base !text-black"
-        >
-          {value}
-        </Tag>
-      );
-    }
-    return (
-      <div>
-        <Text type="secondary" className="block text-sm mb-1">
-          {label}
-        </Text>
-        <Text strong className="text-base font-semibold text-gray-900">
-          {displayValue}
-        </Text>
-      </div>
-    );
-  };
-  // --- KẾT THÚC: Helper function mới ---
-
   return (
     <div
       className="overflow-x-hidden"
@@ -184,11 +212,11 @@ const ViewProduct = () => {
     >
       <Header />
 
-      {/* === BẮT ĐẦU LAYOUT 2 CỘT MỚI === */}
       <main className="max-w-[1200px] mx-auto px-2 py-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-          {/* === CỘT BÊN TRÁI (Nội dung chính) === */}
-          <div className="lg:col-span-2 space-y-1 ">
+          {/* === CỘT BÊN TRÁI === */}
+          <div className="lg:col-span-2 space-y-1">
+            {/* Carousel hình ảnh */}
             <Carousel
               arrows
               infinite={true}
@@ -225,9 +253,8 @@ const ViewProduct = () => {
               )}
             </Carousel>
 
-            {/* Card 2: Chứa Thông số & Mô tả */}
+            {/* Card Thông tin chi tiết */}
             <Card bordered={false} className="shadow-2xl rounded-xl p-4">
-              {/* Thông số kỹ thuật chính */}
               <Title
                 level={4}
                 className="mb-6 border-b pb-3 flex items-center text-gray-800"
@@ -235,9 +262,7 @@ const ViewProduct = () => {
                 Thông tin chi tiết sản phẩm
               </Title>
 
-              {/* Layout Grid cho thông số (giữ nguyên) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 p-4">
-                {/* === Dữ liệu Xe Cộ === */}
                 {postData.productType === "VEHICLE" && (
                   <>
                     {renderInfoItem(
@@ -253,7 +278,6 @@ const ViewProduct = () => {
                   </>
                 )}
 
-                {/* === Dữ liệu Pin/Ắc quy === */}
                 {postData.productType !== "VEHICLE" && (
                   <>
                     {renderInfoItem("Loại Pin", postData.batteryType)}
@@ -269,7 +293,6 @@ const ViewProduct = () => {
                   </>
                 )}
 
-                {/* === Thông tin chung === */}
                 {renderInfoItem(
                   "Ngày đăng",
                   postData.postDate
@@ -284,7 +307,6 @@ const ViewProduct = () => {
 
               <Divider className="my-8" />
 
-              {/* Mô tả sản phẩm */}
               <Title level={4} className="mb-4 flex items-center text-gray-800">
                 Mô tả sản phẩm
               </Title>
@@ -296,11 +318,10 @@ const ViewProduct = () => {
               </div>
             </Card>
           </div>
-          {/* === HẾT CỘT BÊN TRÁI === */}
 
-          {/* === CỘT BÊN PHẢI (Hành động & Người bán) === */}
+          {/* === CỘT BÊN PHẢI === */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Card 1: Chứa Thông tin, Giá, Nút bấm */}
+            {/* Card Giá & Nút hành động */}
             <Card bordered={false} className="shadow-2xl rounded-xl p-6 !mb-2">
               <Title
                 level={2}
@@ -330,7 +351,6 @@ const ViewProduct = () => {
                 )}
               </Space>
 
-              {/* Phần Giá Nổi Bật */}
               <div className="bg-green-50 p-5 rounded-xl border-l-4 border-green-600 my-5 flex items-baseline justify-between">
                 <div>
                   <Text type="secondary" className="block text-lg mb-1">
@@ -351,7 +371,6 @@ const ViewProduct = () => {
 
               <Divider className="my-6" />
 
-              {/* Thêm các nút hành động */}
               <Space size="large" className="mt-4 flex flex-wrap">
                 {isLogin ? (
                   <Button
@@ -393,9 +412,9 @@ const ViewProduct = () => {
               </Space>
             </Card>
 
-            {/* Card 2: Chứa Thông tin người bán */}
+            {/* Card Thông tin người bán */}
             {postData.user && (
-              <Card bordered={false} className="shadow-2xl rounded-xl p-4 ">
+              <Card bordered={false} className="shadow-2xl rounded-xl p-4">
                 <Title
                   level={4}
                   className="mb-4 flex items-center text-gray-800"
@@ -403,7 +422,6 @@ const ViewProduct = () => {
                   Thông tin người bán
                 </Title>
 
-                {/* Layout Grid cho thông tin người bán (giữ nguyên) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 p-4">
                   {renderInfoItem(
                     "Tên cửa hàng",
@@ -422,13 +440,41 @@ const ViewProduct = () => {
               </Card>
             )}
           </div>
-          {/* === HẾT CỘT BÊN PHẢI === */}
+          {/* Card So sánh sản phẩm */}
+          {showCompare && selectedProductToCompare && (
+            <div ref={compareRef} className="mt-2 lg:col-span-3 ">
+              <Card
+                bordered={false}
+                className="shadow-2xl rounded-xl p-4 mt-2 border-2 border-blue-300"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <Title level={4} className="mb-0 text-blue-600">
+                    <SwapOutlined className="mr-2" />
+                    So sánh sản phẩm
+                  </Title>
+                  <Button
+                    type="text"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={handleCloseCompare}
+                    className="hover:bg-red-50"
+                  >
+                    Đóng
+                  </Button>
+                </div>
+                <Compare
+                  postId1={id}
+                  postId2={selectedProductToCompare}
+                  onClose={handleCloseCompare}
+                />
+              </Card>
+            </div>
+          )}
         </div>
       </main>
-      {/* === KẾT THÚC LAYOUT 2 CỘT === */}
 
       {/* Sản phẩm liên quan */}
-      {replateProduct && (
+      {replateProduct && replateProduct.data.length > 0 && (
         <div className="max-w-[1200px] mx-auto px-2 py-2 mb-8">
           <Card bordered={false} className="shadow-2xl rounded-xl p-6">
             <Title level={4} className="mb-6 flex items-center text-gray-800">
@@ -436,90 +482,112 @@ const ViewProduct = () => {
             </Title>
 
             {replateProduct.data.length < 3 ? (
-              // Nếu ít hơn 3 sản phẩm, hiển thị dạng grid thông thường
+              // Hiển thị dạng grid nếu ít hơn 3 sản phẩm
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {replateProduct.data.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() =>
-                      (window.location.href = `/view-product/${product.id}`)
-                    }
+                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    {/* Ảnh sản phẩm */}
-                    <div className="relative">
-                      <img
-                        src={product.images?.[0] || "/placeholder.png"}
-                        alt={product.title}
-                        className="w-full h-48 object-cover"
-                        onError={(e) => {
-                          e.target.src = "/placeholder.png";
-                        }}
-                      />
-                      <button
-                        className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-green-50"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <FiHeart className="h-5 w-5 text-green-500" />
-                      </button>
-                      {product.trusted && (
-                        <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
-                          Nổi bật
-                        </span>
-                      )}
-                    </div>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() =>
+                        (window.location.href = `/view-product/${product.id}`)
+                      }
+                    >
+                      <div className="relative">
+                        <img
+                          src={product.images?.[0] || "/placeholder.png"}
+                          alt={product.title}
+                          className="w-full h-48 object-cover"
+                        />
 
-                    {/* Thông tin sản phẩm */}
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-2 line-clamp-2">
-                        {product.title}
-                      </h3>
-                      <p className="text-green-600 font-medium text-xl mb-2">
-                        {product.price?.toLocaleString("vi-VN")} VNĐ
-                      </p>
+                        {/* Container cho 2 nút - Nằm bên phải */}
+                        <div className="absolute top-2 right-2 flex gap-2 z-10">
+                          {/* Nút So sánh */}
+                          <button
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenCompare(product.id);
+                            }}
+                            title="So sánh sản phẩm"
+                          >
+                            <SwapOutlined className="text-blue-500 text-lg" />
+                          </button>
 
-                      {/* Thông số kỹ thuật */}
-                      <div className="space-y-2 mb-4">
-                        {product.productType === "VEHICLE" ? (
-                          <>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Hãng xe: </span>
-                              {product.vehicleBrand || "N/A"}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Model: </span>
-                              {product.model || "N/A"}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Màu sắc: </span>
-                              {product.color || "N/A"}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Loại: </span>
-                              {product.batteryType || "N/A"}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Thương hiệu: </span>
-                              {product.batteryBrand || "N/A"}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Dung lượng: </span>
-                              {product.capacity
-                                ? `${product.capacity} Ah`
-                                : "N/A"}
-                            </p>
-                          </>
+                          {/* Nút Yêu thích */}
+                          <button
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-green-50 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Thêm vào yêu thích"
+                          >
+                            <FiHeart className="h-5 w-5 text-green-500" />
+                          </button>
+                        </div>
+
+                        {/* Tag Nổi bật */}
+                        {product.trusted && (
+                          <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
+                            Nổi bật
+                          </span>
                         )}
+                      </div>
+
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                          {product.title}
+                        </h3>
+                        <p className="text-green-600 font-medium text-xl mb-2">
+                          {product.price?.toLocaleString("vi-VN")} VNĐ
+                        </p>
+
+                        <div className="space-y-2 mb-4">
+                          {product.productType === "VEHICLE" ? (
+                            <>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Hãng xe: </span>
+                                {product.vehicleBrand || "N/A"}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Model: </span>
+                                {product.model || "N/A"}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Màu sắc: </span>
+                                {product.color || "N/A"}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Loại: </span>
+                                {product.batteryType || "N/A"}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">
+                                  Thương hiệu:{" "}
+                                </span>
+                                {product.batteryBrand || "N/A"}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">
+                                  Dung lượng:{" "}
+                                </span>
+                                {product.capacity
+                                  ? `${product.capacity} Ah`
+                                  : "N/A"}
+                              </p>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              // Carousel cho nhiều sản phẩm
+              // Hiển thị Carousel nếu >= 3 sản phẩm
               <Carousel
                 arrows
                 dots={true}
@@ -536,90 +604,110 @@ const ViewProduct = () => {
                         .map((product) => (
                           <div
                             key={product.id}
-                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                            onClick={() =>
-                              (window.location.href = `/view-product/${product.id}`)
-                            }
+                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                           >
-                            {/* Ảnh sản phẩm */}
-                            <div className="relative">
-                              <img
-                                src={product.images?.[0] || "/placeholder.png"}
-                                alt={product.title}
-                                className="w-full h-48 object-cover"
-                                onError={(e) => {
-                                  e.target.src = "/placeholder.png";
-                                }}
-                              />
-                              <button
-                                className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-green-50"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <FiHeart className="h-5 w-5 text-green-500" />
-                              </button>
-                              {product.trusted && (
-                                <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
-                                  Nổi bật
-                                </span>
-                              )}
-                            </div>
+                            <div
+                              className="cursor-pointer"
+                              onClick={() =>
+                                (window.location.href = `/view-product/${product.id}`)
+                              }
+                            >
+                              <div className="relative">
+                                <img
+                                  src={
+                                    product.images?.[0] || "/placeholder.png"
+                                  }
+                                  alt={product.title}
+                                  className="w-full h-48 object-cover"
+                                />
 
-                            {/* Thông tin sản phẩm */}
-                            <div className="p-4">
-                              <h3 className="text-lg font-semibold mb-2 line-clamp-2">
-                                {product.title}
-                              </h3>
-                              <p className="text-green-600 font-medium text-xl mb-2">
-                                {product.price?.toLocaleString("vi-VN")} VNĐ
-                              </p>
+                                {/* Container cho 2 nút - Nằm bên phải */}
+                                <div className="absolute top-2 right-2 flex gap-2 z-10">
+                                  {/* Nút So sánh */}
+                                  <button
+                                    className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenCompare(product.id);
+                                    }}
+                                    title="So sánh sản phẩm"
+                                  >
+                                    <SwapOutlined className="text-blue-500 text-lg" />
+                                  </button>
 
-                              {/* Thông số kỹ thuật */}
-                              <div className="space-y-2 mb-4">
-                                {product.productType === "VEHICLE" ? (
-                                  <>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">
-                                        Hãng xe:{" "}
-                                      </span>
-                                      {product.vehicleBrand || "N/A"}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">
-                                        Model:{" "}
-                                      </span>
-                                      {product.model || "N/A"}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">
-                                        Màu sắc:{" "}
-                                      </span>
-                                      {product.color || "N/A"}
-                                    </p>
-                                  </>
-                                ) : (
-                                  <>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">
-                                        Loại:{" "}
-                                      </span>
-                                      {product.batteryType || "N/A"}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">
-                                        Thương hiệu:{" "}
-                                      </span>
-                                      {product.batteryBrand || "N/A"}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">
-                                        Dung lượng:{" "}
-                                      </span>
-                                      {product.capacity
-                                        ? `${product.capacity} Ah`
-                                        : "N/A"}
-                                    </p>
-                                  </>
+                                  {/* Nút Yêu thích */}
+                                  <button
+                                    className="p-2 bg-white rounded-full shadow-md hover:bg-green-50 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                    title="Thêm vào yêu thích"
+                                  >
+                                    <FiHeart className="h-5 w-5 text-green-500" />
+                                  </button>
+                                </div>
+
+                                {/* Tag Nổi bật */}
+                                {product.trusted && (
+                                  <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
+                                    Nổi bật
+                                  </span>
                                 )}
+                              </div>
+
+                              <div className="p-4">
+                                <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                                  {product.title}
+                                </h3>
+                                <p className="text-green-600 font-medium text-xl mb-2">
+                                  {product.price?.toLocaleString("vi-VN")} VNĐ
+                                </p>
+
+                                <div className="space-y-2 mb-4">
+                                  {product.productType === "VEHICLE" ? (
+                                    <>
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">
+                                          Hãng xe:{" "}
+                                        </span>
+                                        {product.vehicleBrand || "N/A"}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">
+                                          Model:{" "}
+                                        </span>
+                                        {product.model || "N/A"}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">
+                                          Màu sắc:{" "}
+                                        </span>
+                                        {product.color || "N/A"}
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">
+                                          Loại:{" "}
+                                        </span>
+                                        {product.batteryType || "N/A"}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">
+                                          Thương hiệu:{" "}
+                                        </span>
+                                        {product.batteryBrand || "N/A"}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">
+                                          Dung lượng:{" "}
+                                        </span>
+                                        {product.capacity
+                                          ? `${product.capacity} Ah`
+                                          : "N/A"}
+                                      </p>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
