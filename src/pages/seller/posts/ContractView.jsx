@@ -29,14 +29,15 @@ const formatCurrency = (number) => {
   }).format(number);
 };
 const formatPaymentType = (type) => {
-  if (type === "DEPOSIT") return "Đặt cọc";
-  if (type === "FULL") return "Thanh toán toàn bộ";
+  if (type === "PLATFORM") return "Thanh toán qua nền tảng";
+  
   return type || "-";
 };
 const formatDeliveryMethod = (method) => {
   if (method === "SELLER_DELIVERY") return "Người bán tự vận chuyển";
   if (method === "EXPRESS") return "Hỏa tốc";
   if (method === "STANDARD") return "Tiêu chuẩn";
+  if (method === "BUYER_PICKUP") return "Người mua đến lấy";
   return method || "-";
 };
 const formatText = (text) => {
@@ -206,7 +207,7 @@ export default function ContractView() {
         <h2 className="text-center text-2xl sm:text-2xl font-bold mb-6">
           HỢP ĐỒNG MUA BÁN TÀI SẢN
         </h2>
-        {/* Hiển thị ngày tạo hợp đồng (createdAt) thay vì ngày hôm nay */}
+
         <p className="text-right mb-8 italic">
           Ngày{" "}
           {contract.createdAt
@@ -410,14 +411,26 @@ export default function ContractView() {
             {formatPaymentType(contract.paymentType)}
           </p>
           {isPresent(contract.depositPercentage) && (
-            <p className="mb-2">
-              <span className="font-semibold">5. Đặt cọc:</span>{" "}
-              {contract.depositPercentage}% giá trị tài sản (Tương đương{" "}
-              {formatCurrency(
-                contract.price * (contract.depositPercentage / 100)
-              )}
-              ).
-            </p>
+            <>
+              <p className="mb-2">
+                <span className="font-semibold">5. Đặt cọc:</span>
+                {" "}{contract.depositPercentage * 100}% giá trị tài sản (Tương đương
+                {" "}{formatCurrency(contract.price * contract.depositPercentage)}
+                ).
+              </p>
+
+              <p className="mb-2">
+                <span className="font-semibold">
+                  6. Số tiền còn lại phải thanh toán:
+                </span>
+                {formatCurrency(
+                  contract.price -
+                    contract.price * contract.depositPercentage +
+                    contract.shippingFee
+                )}
+              
+              </p>
+            </>
           )}
         </section>
         {/* Điều 3: Giao nhận */}

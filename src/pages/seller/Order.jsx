@@ -28,14 +28,11 @@ const getOrderStatusTag = (status) => {
       text = "Giao Hàng Nhanh";
       break;
     // phương thức thanh toán
-    case "FULL":
+    case "PLATFORM":
       color = "green";
-      text = "Thanh toán toàn bộ";
+      text = "Giao dịch qua nền tảng";
       break;
-    case "DEPOSIT":
-      color = "blue";
-      text = "Đặt cọc";
-      break;
+  
     // status
     case "PENDING":
       color = "orange";

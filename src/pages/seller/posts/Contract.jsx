@@ -28,8 +28,8 @@ const formatCurrency = (number) => {
  * Chuyển đổi loại thanh toán
  */
 const formatPaymentType = (type) => {
-  if (type === "DEPOSIT") return "Đặt cọc";
-  if (type === "FULL") return "Thanh toán toàn bộ";
+  if (type === "PLATFORM") return "Thanh toán qua nền tảng";
+  
   return type || "-";
 };
 
@@ -37,8 +37,11 @@ const formatDeliveryMethod = (method) => {
   if (method === "SELLER_DELIVERY") return "Người bán tự vận chuyển";
   if (method === "EXPRESS") return "Hỏa tốc";
   if (method === "STANDARD") return "Tiêu chuẩn";
-  return method || "-";
+  if (method === "BUYER_PICKUP") return "Người mua đến lấy";
+   return method || "-";
 };
+
+
 
 /**
  * Hiển thị giá trị, hoặc "Chưa cung cấp" nếu là null/undefined
@@ -101,7 +104,7 @@ export default function Contract() {
 
       // Gọi API như bạn yêu cầu
       console.log(payload);
-      
+
       const res = await api.post("/seller/contracts", payload);
 
       if (res.data && res.data.success) {
@@ -141,6 +144,7 @@ export default function Contract() {
           err.response?.data?.message || err.message || "Lỗi không xác định";
         setError(errorMessage);
         toast.error(errorMessage);
+        navigate(-1);
       } finally {
         setLoading(false);
       }
@@ -164,7 +168,7 @@ export default function Contract() {
       </div>
     );
   }
-  
+
   // Màn hình lỗi
   if (error) {
     return (
@@ -443,14 +447,25 @@ export default function Contract() {
             {formatPaymentType(contract.paymentType)}
           </p>
           {isPresent(contract.depositPercentage) && (
-            <p className="mb-2">
-              <span className="font-semibold">5. Đặt cọc:</span>
-              {contract.depositPercentage}% giá trị tài sản (Tương đương
-              {formatCurrency(
-                contract.price * (contract.depositPercentage / 100)
-              )}
-              ).
-            </p>
+            <>
+              <p className="mb-2">
+                <span className="font-semibold">5. Đặt cọc:</span>{" "}
+                {contract.depositPercentage * 100}% giá trị tài sản (Tương đương{" "}
+                {formatCurrency(contract.price * contract.depositPercentage)}
+                ).
+              </p>
+
+              <p className="mb-2">
+                <span className="font-semibold">
+                  6. Số tiền còn lại phải thanh toán:
+                </span>
+                {formatCurrency(
+                  contract.price -
+                    contract.price * contract.depositPercentage +
+                    contract.shippingFee
+                )}
+              </p>
+            </>
           )}
         </section>
         {/* Điều 3: Giao nhận */}
@@ -483,28 +498,32 @@ export default function Contract() {
           </p>
         </section>
         <section className="mb-8 print:hidden">
-          <h3 className="text-xl font-bold mb-4 ">PHÍ VẬN CHUYỂN</h3>
+          {contract.deliveryMethod === "SELLER_DELIVERY" && (
+            <>
+              <h3 className="text-xl font-bold mb-4 ">PHÍ VẬN CHUYỂN</h3>
 
-          <label
-            htmlFor="shippingFee"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Nhập phí vận chuyển
-          </label>
-          <div className="relative">
-            <input
-              type="text" // Dùng 'text' để hiển thị format
-              id="shippingFee"
-              // Giá trị hiển thị là state đã được format
-              value={shippingFee.toLocaleString("vi-VN")}
-              onChange={handleShippingFeeChange}
-              className="w-full p-3 pr-12 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 font-sans text-right"
-              placeholder="0"
-            />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-              VND
-            </span>
-          </div>
+              <label
+                htmlFor="shippingFee"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Nhập phí vận chuyển
+              </label>
+              <div className="relative">
+                <input
+                  type="text" // Dùng 'text' để hiển thị format
+                  id="shippingFee"
+                  // Giá trị hiển thị là state đã được format
+                  value={shippingFee.toLocaleString("vi-VN")}
+                  onChange={handleShippingFeeChange}
+                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 font-sans text-right"
+                  placeholder="0"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                  VND
+                </span>
+              </div>
+            </>
+          )}
         </section>
         {/* === KHỐI GHI CHÚ MỚI (CHỈ HIỂN THỊ TRÊN WEB) === */}
         <section className="mb-8 print:hidden">
