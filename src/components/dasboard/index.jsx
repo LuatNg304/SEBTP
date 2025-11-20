@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   UserOutlined,
   LogoutOutlined,
+  MoneyCollectTwoTone,
 } from "@ant-design/icons";
 import { Layout, Menu, Dropdown, Avatar, Space, Breadcrumb, Typography } from "antd";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom"; // ✅ Thêm useLocation
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../redux/accountSlice";
 import { LucidePodcast, Podcast, User, User2, UserCheck, UserCogIcon } from "lucide-react";
+import { TbTransactionYen } from "react-icons/tb";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Text } = Typography;
@@ -33,6 +35,11 @@ const items = [
     getItem("Gói ưu tiên", "6", null, null, "/admin/priorityPackage"),
     getItem("Phần trăm đặt cọc", "7", null, null, "/admin/depositPercentage"),
   ]),
+  getItem("Giao dịch", "sub3", <TbTransactionYen />, [
+    getItem("Lịch sử giao dịch", "8", null, null, "/admin/sellerPackage"),
+    getItem("Ký quỷ", "9", null, null, "/admin/escrow"),
+    
+  ]),
 ];
 
 const Dashboard = () => {
@@ -52,6 +59,8 @@ const Dashboard = () => {
       "/admin/sellerPackage": "5",
       "/admin/priorityPackage": "6",
       "/admin/depositPercentage": "7",
+      // "/admin/priorityPackage": "8",
+      "/admin/escrow": "9",
       // Thêm các path khác nếu cần
     };
     return pathMap[pathname] || "1";

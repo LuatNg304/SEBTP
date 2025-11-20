@@ -42,6 +42,7 @@ import ContractManagement from "./pages/seller/ContractManagement";
 import SellerPackage from "./pages/admin/config/SellerPackage";
 import PriorityPackage from "./pages/admin/config/PriorityPackage";
 import DepositPercentage from "./pages/admin/config/DepositPercentage";
+import Escrow from "./pages/admin/Transaction/Escrow";
 
 const router = createBrowserRouter([
   {
@@ -121,6 +122,11 @@ const router = createBrowserRouter([
       {
         path: "depositPercentage",
         element: <DepositPercentage/>,
+      },
+   
+      {
+        path: "escrow",
+        element: <Escrow/>,
       },
     ],
   },
