@@ -95,8 +95,8 @@ const Order = () => {
       // Chỉ gọi API này 1 lần
       const res = await api.get("/seller/orders");
       let incomingData =
-        res.data?.data || (Array.isArray(res.data) ? res.data : []);
-      console.log("XEM DỮ LIỆU GỐC:", incomingData[0]);
+        res.data?.data || [];
+      
       const processedData = incomingData.map((item, index) => ({
         ...item,
         key: item.orderId || item.id || index,
