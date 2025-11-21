@@ -191,7 +191,7 @@ export default function BatteryPost() {
           m.replace(" ", "_").toUpperCase()
         ),
         paymentTypes: ["PLATFORM"],
-        isUseWallet: formData.isUseWallet,
+        
         images: uploadedImageUrls,
         wantsTrustedLabel: formData.wantsTrustedLabel,
 
@@ -209,7 +209,7 @@ export default function BatteryPost() {
       toast.success("Đăng bài thành công!");
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
-      toast.error( "Lỗi khi đăng  bài mong bạn kiểm tra thông tin");
+     toast.error(error.response?.data?.message || "Có lỗi xảy ra.");
     } finally {
       setIsSubmitting(false);
     }

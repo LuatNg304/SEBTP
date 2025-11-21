@@ -46,7 +46,7 @@ const PackageCard = ({ packageData }) => {
 
         const data = res.data;
 
-        // ⚙️ Trường hợp backend trả về success = false → chuyển /wallet
+        //  Trường hợp backend trả về success = false → chuyển /wallet
         if (data?.success === false) {
           toast.error("Số dư không đủ. Vui lòng nạp thêm vào ví của bạn.");
           window.location.href = "/wallet";
@@ -66,11 +66,7 @@ const PackageCard = ({ packageData }) => {
 
   return (
     <div className={cardClass}>
-      {isFeatured && (
-        <div className="absolute top-4 -right-12 bg-yellow-500 text-white py-1 px-10 text-sm font-bold uppercase transform rotate-45 shadow-lg">
-          Best Seller
-        </div>
-      )}
+      
 
       {/* Header */}
       <div className={headerClass}>
@@ -98,14 +94,7 @@ const PackageCard = ({ packageData }) => {
               Giới hạn đăng bài: <strong>{postLimit}</strong> bài
             </span>
           </li>
-          <li className="flex items-start border-b pb-3 last:border-b-0">
-            <span className="mr-3 mt-1 text-blue-500">
-              <CheckIcon />
-            </span>
-            <span className="text-gray-700">
-              Thời hạn sử dụng: <strong>{durationDays}</strong> ngày
-            </span>
-          </li>
+          
         </ul>
       </div>
 
