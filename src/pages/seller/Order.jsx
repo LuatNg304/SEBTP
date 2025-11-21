@@ -32,7 +32,7 @@ const getOrderStatusTag = (status) => {
       color = "green";
       text = "Giao dịch qua nền tảng";
       break;
-  
+
     // status
     case "PENDING":
       color = "orange";
@@ -95,8 +95,8 @@ const Order = () => {
       // Chỉ gọi API này 1 lần
       const res = await api.get("/seller/orders");
       let incomingData =
-        res.data?.data || (Array.isArray(res.data) ? res.data : []);
-        console.log("XEM DỮ LIỆU GỐC:", incomingData[0]);
+        res.data?.data || [];
+      
       const processedData = incomingData.map((item, index) => ({
         ...item,
         key: item.orderId || item.id || index,
@@ -104,7 +104,7 @@ const Order = () => {
       setData(processedData); // 2. Lưu dữ liệu gốc
 
       // 3. Lọc ban đầu (mặc định là 'vehicle')
-     
+
       const initialFilter = processedData.filter(
         (item) => item.productType === "VEHICLE"
       );
@@ -133,10 +133,8 @@ const Order = () => {
     setTimeout(() => {
       let newFilteredData = [];
       if (viewMode === "vehicle") {
-       
         newFilteredData = data.filter((item) => item.productType === "VEHICLE");
       } else {
-       
         newFilteredData = data.filter((item) => item.productType === "BATTERY");
       }
       setFilteredData(newFilteredData); // Cập nhật danh sách hiển thị
@@ -263,6 +261,27 @@ const Order = () => {
         { text: "Thanh toán đầy đủ", value: "FULL" },
       ],
       onFilter: (value, record) => record.paymentType?.toUpperCase() === value,
+    },
+
+    {
+      title: "Trạng thái thanh toán", 
+      dataIndex: "wantDeposit",
+      key: "wantDeposit",
+      render: (wantDeposit) => {
+        
+        if (wantDeposit === true) {
+          // Dùng màu sắc và chữ nghĩa phù hợp với ý định đặt cọc
+          return <Tag color="magenta">ĐÃ ĐẶT CỌC</Tag>;
+        }
+        return <Tag color="default">CHƯA ĐẶT CỌC</Tag>;
+      },
+      filters: [
+        
+        { text: "Đã đặt cọc", value: true },
+        { text: "Chưa đặt cọc", value: false },
+      ],
+      // onFilter phải so sánh boolean
+      onFilter: (value, record) => record.wantDeposit === value,
     },
     {
       title: "Phương Thức vận chuyển",
