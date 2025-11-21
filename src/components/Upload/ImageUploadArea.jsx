@@ -4,7 +4,7 @@ import React from "react";
 import { Upload } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 // Giả định getBase64 nằm trong file utility riêng,
-// nếu không, bạn cần định nghĩa nó ở đây hoặc import nó.
+
 
 // Helper để tạo Base64 Data URL (cần cho preview ảnh mới)
 const getBase64 = (file) =>

@@ -30,6 +30,19 @@ export default function BatteryPost() {
   const [fileList, setFileList] = useState([]);
   const user = useSelector((state) => state.account.user);
   const navigate = useNavigate();
+
+  const getPackageTypeName = (apiType) => {
+    // Dùng toUpperCase() để đảm bảo khớp kể cả khi API trả về "basic"
+    switch (apiType.toUpperCase()) {
+      case "BASIC":
+        return "VIP 1";
+      case "PREMIUM":
+        return " VIP 2";
+
+      default:
+        return apiType;
+    }
+  };
   const [formData, setFormData] = useState({
     productType: "BATTERY",
     title: "",
@@ -384,6 +397,11 @@ export default function BatteryPost() {
             <label className="block text-gray-700 dark:text-gray-300 mb-1">
               Gói đề xuất
             </label>
+            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              Gói dịch vụ giúp sản phẩm của bạn được ưu tiên hiển thị trên trang
+              đề xuất. Tăng khả năng tiếp cận khách hàng, nâng cao tỉ lệ xem và
+              thúc đẩy doanh số bán hàng nhanh chóng.
+            </p>
             <select
               name="priorityPackageId"
               value={formData.priorityPackageId}
@@ -398,7 +416,8 @@ export default function BatteryPost() {
               <option value="">-- Chọn gói đề xuất (không bắt buộc) --</option>
               {priorityPackages.map((pkg) => (
                 <option key={pkg.id} value={pkg.id}>
-                  {pkg.type} ({pkg.durationDays} ngày) - {pkg.price} VNĐ
+                  {pkg.durationDays} ngày - {getPackageTypeName(pkg.type)} -
+                  {pkg.price} VNĐ
                 </option>
               ))}
             </select>
@@ -424,8 +443,6 @@ export default function BatteryPost() {
                 </label>
               ))}
             </div>
-
-            
           </div>
 
           <div className="flex justify-end pt-4">

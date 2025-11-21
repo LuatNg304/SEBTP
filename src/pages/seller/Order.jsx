@@ -139,7 +139,7 @@ const Order = () => {
       }
       setFilteredData(newFilteredData); // Cập nhật danh sách hiển thị
       setLoading(false); // Tắt loading
-    }, 100); // 100ms delay
+    }, 100); 
   }, [viewMode, data]); // Chạy lại khi viewMode hoặc data gốc thay đổi
 
   // 5. Cập nhật useEffect tính Stats để dùng 'filteredData'
@@ -167,7 +167,7 @@ const Order = () => {
   }, [filteredData]); // Phụ thuộc vào filteredData
 
   // --- ACTIONS (Cập nhật hàm Tải lại dữ liệu) ---
-  // ... (handleViewOrder, handleGoToDelivery không đổi) ...
+  
   const handleViewOrder = (record) => {
     navigate(`/seller/order/view/${record.id}`);
   };
