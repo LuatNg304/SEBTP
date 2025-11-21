@@ -10,6 +10,7 @@ import RegisterModal from "../../components/modals/RegisterModal";
 import { LogOutIcon, Search, User, Wallet, ShoppingCart } from "lucide-react";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
+import NotificationBell from "../../pages/home/Notifications";
 
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -145,32 +146,6 @@ const Header = () => {
             },
           ]
         : []),
-      // {
-      //   type: "divider",
-      // },
-      // // Only show "Register Seller" if user is not already a seller
-      // ...(role == "SELLER"
-      //   ? [
-      //       {
-      //   key: "switch-role",
-      //   label: (
-      //     <div className="flex items-center justify-between w-full gap-3 py-1">
-      //       <span className="text-gray-700 whitespace-nowrap">
-      //         Chế độ Seller
-      //       </span>
-      //       <Switch
-      //         checked={role === "SELLER"}
-      //         onChange={handleRoleSwitch}
-      //         checkedChildren="On"
-      //         unCheckedChildren="Off"
-      //         style={{ minWidth: 44 }}
-      //       />
-      //     </div>
-      //   ),
-      // },
-      //     ]
-      //   : []),
-
       {
         type: "divider",
       },
@@ -188,6 +163,8 @@ const Header = () => {
       },
     ],
   };
+
+  const buttonHeight = "40px";
 
   return (
     <header className="bg-white shadow grid grid-cols-6 items-center px-6 py-3">
@@ -223,36 +200,36 @@ const Header = () => {
       </div>
 
       {/* RIGHT */}
-      <div className="flex items-center justify-end gap-4">
-        <button className="p-2 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 active:scale-95">
-          <FiHeart className="h-6 w-6 text-gray-700 transition-colors duration-300 hover:text-red-500 hover:fill-red-500" />
-        </button>
-
+      <div className="flex items-center justify-end gap-4" style={{ height: buttonHeight }}>
         {account?.user ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" style={{ height: buttonHeight }}>
             <Dropdown
               menu={userMenu}
               placement="bottomRight"
               trigger={["click"]}
             >
-              <button className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow transition-all duration-300 hover:shadow-lg hover:bg-gray-50 hover:scale-105 active:scale-95">
+              <button
+                className="flex items-center gap-2 bg-white px-3 rounded-full shadow transition-all duration-300 hover:shadow-lg hover:bg-gray-50 hover:scale-105 active:scale-95"
+                style={{ height: buttonHeight }}
+              >
                 <img
                   src={account?.user?.avatar || "/default-avatar.png"}
                   alt="avatar"
                   className="w-8 h-8 rounded-full object-cover border border-gray-300 transition-all duration-300 hover:border-green-600"
                 />
-                <span className="font-medium text-gray-700">
-                  {account?.user?.fullName || "Người dùng"}
-                </span>
+                <span className="font-medium text-gray-700">{account?.user?.fullName || "Người dùng"}</span>
               </button>
             </Dropdown>
 
             <button
-              className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-lg hover:scale-105 active:scale-95"
+              className="px-3 bg-black text-white rounded-full text-sm font-medium transition-all duration-300 hover:bg-gray-800 hover:shadow-lg hover:scale-105 active:scale-95"
               onClick={handleGoToPost}
+              style={{ height: buttonHeight }}
             >
               Đăng tin
             </button>
+
+            <NotificationBell account={account} />
           </div>
         ) : (
           <>

@@ -729,7 +729,7 @@ const Orders = () => {
               <Select.Option value="DAMAGED_PRODUCT">
                 Sản phẩm bị hư hỏng
               </Select.Option>
-              <Select.Option value="WRONG_ITEM">Sai sản phẩm</Select.Option>
+              {/* <Select.Option value="WRONG_ITEM">Sai sản phẩm</Select.Option> */}
               <Select.Option value="NOT_AS_DESCRIBED">
                 Không đúng như mô tả
               </Select.Option>

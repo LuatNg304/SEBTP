@@ -43,6 +43,8 @@ import SellerPackage from "./pages/admin/config/SellerPackage";
 import PriorityPackage from "./pages/admin/config/PriorityPackage";
 import DepositPercentage from "./pages/admin/config/DepositPercentage";
 import Escrow from "./pages/admin/Transaction/Escrow";
+import NotFound from "./pages/404";
+import Unauthorized from "./pages/404/Unauthorized ";
 
 const router = createBrowserRouter([
   {
@@ -67,7 +69,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-
+  //seller
   {
     path: "seller",
     element: <SellerLayout />, // layout chứa header + sidebar
@@ -91,6 +93,7 @@ const router = createBrowserRouter([
       { path: "/seller/order", element: <Order /> },
     ],
   },
+  //admin
   {
     path: "admin",
     element: <Dashboarrd />,
@@ -117,20 +120,20 @@ const router = createBrowserRouter([
       },
       {
         path: "priorityPackage",
-        element: <PriorityPackage/>,
+        element: <PriorityPackage />,
       },
       {
         path: "depositPercentage",
-        element: <DepositPercentage/>,
+        element: <DepositPercentage />,
       },
-   
+
       {
         path: "escrow",
-        element: <Escrow/>,
+        element: <Escrow />,
       },
     ],
   },
-
+  //buyer
   {
     path: "forgot-password",
     element: <ForgotPasswordPage />, // trang quên mật khẩu hiển thị trong layout ngoài
@@ -185,6 +188,14 @@ const router = createBrowserRouter([
     path: "complain",
     element: <Complain />,
   },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+  {
+  path: "unauthorized",
+  element: <Unauthorized />,
+},
 ]);
 
 function App() {

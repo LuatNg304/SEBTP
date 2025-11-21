@@ -73,7 +73,7 @@ const OTPPage = () => {
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
         <h1 className="text-2xl font-bold text-center mb-6">Xác minh OTP</h1>
         <p className="text-sm text-gray-500 text-center mb-4">
-          Mã OTP đã gửi đến email:{email}
+          Mã OTP đã gửi đến email:
           <span className="font-medium">{email || "Không xác định"}</span>
         </p>
 

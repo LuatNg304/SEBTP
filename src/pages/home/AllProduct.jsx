@@ -6,7 +6,7 @@ import News from "./propose/News";
 const AllProduct = () => {
   const items = [
     {
-      label: <span className="font-semibold text-green-700">Dành cho bạn</span>,
+      label: <span className="font-semibold text-green-700">Đề xuất</span>,
       key: "1",
       children: <ForYou />,
     },

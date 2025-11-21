@@ -153,34 +153,29 @@ const Complain = () => {
   };
 
   // Gửi khiếu nại lên admin
-  const showAdminModal = async () => {
+  const showAdminModal = () => {
     setDetailModal(false);
     
-    // Lấy dữ liệu từ API list/by-order-id
-    try {
-      const res = await api.get(
-        `/buyer/complaints/list/by-order-id?orderId=${complainDetail.orderId}`
-      );
-      const existingComplaint = res.data.data;
+    // Lấy dữ liệu từ complainDetail hiện tại
+    if (complainDetail) {
+      // Map description
+      setAdminDescription(complainDetail.description || "");
       
-      // Map dữ liệu vào form
-      if (existingComplaint) {
-        setAdminDescription(existingComplaint.description || "");
-        
-        // Map hình ảnh hiện có
-        if (existingComplaint.imageUrls && existingComplaint.imageUrls.length > 0) {
-          const mappedImages = existingComplaint.imageUrls.map((url, index) => ({
-            uid: `-${index}`,
-            name: `image-${index}.jpg`,
-            status: "done",
-            url: url,
-          }));
-          setFileList(mappedImages);
-          setAdminImageUrls(existingComplaint.imageUrls);
-        }
+      // Map hình ảnh từ imageUrls
+      if (complainDetail.imageUrls && complainDetail.imageUrls.length > 0) {
+        const mappedImages = complainDetail.imageUrls.map((url, index) => ({
+          uid: `-${index}`,
+          name: `image-${index}.jpg`,
+          status: "done",
+          url: url,
+        }));
+        setFileList(mappedImages);
+        setAdminImageUrls(complainDetail.imageUrls);
+      } else {
+        // Reset nếu không có ảnh
+        setFileList([]);
+        setAdminImageUrls([]);
       }
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin complaint:", error);
     }
     
     setAdminModalVisible(true);
@@ -208,6 +203,14 @@ const Complain = () => {
     } finally {
       setAdminLoading(false);
     }
+  };
+
+  // Xử lý đóng modal admin với reset state
+  const handleAdminModalCancel = () => {
+    setAdminModalVisible(false);
+    setAdminDescription("");
+    setAdminImageUrls([]);
+    setFileList([]);
   };
 
   // Xử lý upload hình ảnh
@@ -260,8 +263,8 @@ const Complain = () => {
     },
     {
       title: "Seller Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "sellerName",
+      key: "sellerName",
     },
     {
       title: "description",
@@ -317,7 +320,7 @@ const Complain = () => {
             <div className="flex items-center gap-3">
               <span className="text-2xl ">Danh sách khiếu nại</span>
               <Tag color="blue" className="ml-2">
-                {complain?.length} đơn hàng
+                {complain?.length} đơn khiếu nại
               </Tag>
             </div>
           }
@@ -353,13 +356,6 @@ const Complain = () => {
                 ]
               : complainDetail?.status === "SELLER_REJECTED"
               ? [
-                  <Button
-                    type="primary"
-                    onClick={showContinueModal}
-                    key="continue"
-                  >
-                    Yêu cầu tiếp tục giải quyết
-                  </Button>,
                   <Button danger onClick={showAdminModal} key="admin">
                     Gửi lên Admin
                   </Button>,
@@ -421,7 +417,7 @@ const Complain = () => {
                   <Tag color="red">{complainDetail.type}</Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Người bán">
-                  {complainDetail.name}
+                  {complainDetail.sellerName}
                 </Descriptions.Item>
                 <Descriptions.Item label="Mô tả">
                   {complainDetail.description}
@@ -511,7 +507,7 @@ const Complain = () => {
         <Modal
           open={adminModalVisible}
           title="Gửi khiếu nại lên Admin"
-          onCancel={() => setAdminModalVisible(false)}
+          onCancel={handleAdminModalCancel}
           footer={[
             <Button
               key="ok"
@@ -523,7 +519,7 @@ const Complain = () => {
             >
               Gửi lên Admin
             </Button>,
-            <Button key="cancel" onClick={() => setAdminModalVisible(false)}>
+            <Button key="cancel" onClick={handleAdminModalCancel}>
               Đóng
             </Button>,
           ]}

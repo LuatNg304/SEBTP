@@ -13,13 +13,19 @@ import {
 } from "antd";
 import { ExclamationCircleFilled } from "@ant-design/icons";
 
-const { confirm } = Modal;
-
 const AdminComplain = () => {
   const [complain, setComplain] = useState(null);
   const [detailModal, setDetailModal] = useState(false);
   const [complainDetail, setComplainDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+
+  // Modal refund
+  const [refundModalVisible, setRefundModalVisible] = useState(false);
+  const [refundLoading, setRefundLoading] = useState(false);
+
+  // Modal reject
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   const fetchComplain = async () => {
     try {
@@ -53,55 +59,51 @@ const AdminComplain = () => {
   };
 
   //refund
-  const showRefundConfirm = () => {
-    confirm({
-      title: "Xác nhận hoàn tiền",
-      icon: <ExclamationCircleFilled />,
-      content: `Bạn có chắc chắn muốn hoàn tiền cho khiếu nại #${complainDetail?.id}?`,
-      okText: "Đồng ý",
-      cancelText: "Hủy",
-      okType: "primary",
-      onOk: async () => {
-        try {
-          await api.put(`/admin/complaints/handle`, {
-            complaintId: complainDetail.id,
-            resolutionType: "REFUND",
-          });
-          toast.success("Đã hoàn tiền.");
-          setDetailModal(false);
-          fetchComplain();
-        } catch (error) {
-          toast.error(error?.response?.data?.message || "Lỗi khi hoàn tiền.");
-        }
-      },
-    });
+  const showRefundModal = () => {
+    setDetailModal(false);
+    setRefundModalVisible(true);
+  };
+
+  const handleRefund = async () => {
+    setRefundLoading(true);
+    try {
+      await api.patch(`/admin/complaints/handle`, {
+        complaintId: complainDetail.id,
+        resolutionType: "REFUND",
+      });
+      toast.success("Đã hoàn tiền.");
+      setRefundModalVisible(false);
+      fetchComplain();
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Lỗi khi hoàn tiền.");
+    } finally {
+      setRefundLoading(false);
+    }
   };
 
   //reject
-  const showRejectConfirm = () => {
-    confirm({
-      title: "Xác nhận từ chối",
-      icon: <ExclamationCircleFilled style={{ color: "#ff4d4f" }} />,
-      content: `Bạn có chắc chắn muốn từ chối khiếu nại #${complainDetail?.id}?`,
-      okText: "Từ chối",
-      cancelText: "Hủy",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await api.put(`/admin/complaints/handle`, {
-            complaintId: complainDetail.id,
-            resolutionType: "NO_REFUND",
-          });
-          toast.success("Đã từ chối đơn khiếu nại.");
-          setDetailModal(false);
-          fetchComplain();
-        } catch (error) {
-          toast.error(
-            error?.response?.data?.message || "Lỗi khi từ chối đơn khiếu nại."
-          );
-        }
-      },
-    });
+  const showRejectModal = () => {
+    setDetailModal(false);
+    setRejectModalVisible(true);
+  };
+
+  const handleReject = async () => {
+    setRejectLoading(true);
+    try {
+      await api.patch(`/admin/complaints/handle`, {
+        complaintId: complainDetail.id,
+        resolutionType: "NO_REFUND",
+      });
+      toast.success("Đã từ chối đơn khiếu nại.");
+      setRejectModalVisible(false);
+      fetchComplain();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Lỗi khi từ chối đơn khiếu nại."
+      );
+    } finally {
+      setRejectLoading(false);
+    }
   };
 
   const columns = [
@@ -163,17 +165,18 @@ const AdminComplain = () => {
   return (
     <div>
       <Table columns={columns} dataSource={complain} />
-      {/* modal detail */}
+
+      {/* Modal detail */}
       <Modal
         open={detailModal}
         onCancel={() => setDetailModal(false)}
         footer={
           complainDetail?.status === "ADMIN_REVIEWING"
             ? [
-                <Button type="primary" onClick={showRefundConfirm} key="refund">
+                <Button type="primary" onClick={showRefundModal} key="refund">
                   Hoàn tiền
                 </Button>,
-                <Button danger onClick={showRejectConfirm} key="reject">
+                <Button danger onClick={showRejectModal} key="reject">
                   Từ chối
                 </Button>,
                 <Button onClick={() => setDetailModal(false)} key="close">
@@ -249,6 +252,66 @@ const AdminComplain = () => {
         ) : (
           <div className="text-red-600">Không tìm thấy chi tiết khiếu nại</div>
         )}
+      </Modal>
+
+      {/* Modal xác nhận hoàn tiền */}
+      <Modal
+        open={refundModalVisible}
+        title={
+          <div className="flex items-center gap-2">
+            <ExclamationCircleFilled style={{ color: "#1890ff" }} />
+            <span>Xác nhận hoàn tiền</span>
+          </div>
+        }
+        onCancel={() => setRefundModalVisible(false)}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            loading={refundLoading}
+            onClick={handleRefund}
+          >
+            Đồng ý
+          </Button>,
+          <Button key="cancel" onClick={() => setRefundModalVisible(false)}>
+            Hủy
+          </Button>,
+        ]}
+      >
+        <p>
+          Bạn có chắc chắn muốn hoàn tiền cho khiếu nại #
+          {complainDetail?.id}?
+        </p>
+      </Modal>
+
+      {/* Modal xác nhận từ chối */}
+      <Modal
+        open={rejectModalVisible}
+        title={
+          <div className="flex items-center gap-2">
+            <ExclamationCircleFilled style={{ color: "#ff4d4f" }} />
+            <span>Xác nhận từ chối</span>
+          </div>
+        }
+        onCancel={() => setRejectModalVisible(false)}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            danger
+            loading={rejectLoading}
+            onClick={handleReject}
+          >
+            Từ chối
+          </Button>,
+          <Button key="cancel" onClick={() => setRejectModalVisible(false)}>
+            Hủy
+          </Button>,
+        ]}
+      >
+        <p>
+          Bạn có chắc chắn muốn từ chối khiếu nại #{complainDetail?.id}?
+        </p>
       </Modal>
     </div>
   );

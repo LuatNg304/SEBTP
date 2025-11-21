@@ -67,7 +67,7 @@ const ForYou = () => {
                   </button>
                   {bike.trusted && (
                     <span className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm">
-                      Nổi bật
+                      Đã kiểm duyệt
                     </span>
                   )}
                 </div>

@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
 import { Eye, EyeOff } from "lucide-react";
-
 import { toast } from "react-toastify";
 import TermsModal from "./TermsModal";
 import api from "../../config/axios";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
+import { login } from "../../redux/accountSlice";
 
 const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,6 +15,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [values, setValues] = useState({
     email: "",
     fullName: "",
@@ -29,6 +32,56 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     }));
   };
 
+  // Xử lý Google Login
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setIsLoading(true);
+
+      // Chỉ gửi credential lên backend
+      const response = await api.post("/auth/google", {
+        credential: credentialResponse.credential,
+      });
+
+      // Lấy accessToken và user từ response.data
+      const { accessToken, user } = response.data;
+
+      if (accessToken) {
+        // Lưu accessToken vào localStorage
+        localStorage.setItem("accessToken", accessToken);
+        
+        // Dispatch vào Redux
+        dispatch(login(response.data));
+        
+        toast.success("Đăng nhập thành công!");
+
+        // Đóng modal
+        onClose();
+
+        // Chuyển hướng theo role
+        if (user.role === "ADMIN") {
+          navigate("/admin");
+        } else if (user.role === "SELLER") {
+          navigate("/seller");
+        } else {
+          navigate("/");
+        }
+      } else {
+        toast.error("Đăng nhập Google thất bại.");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      const msg =
+        error.response?.data?.message || "Lỗi khi đăng nhập với Google.";
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("Đăng nhập Google thất bại. Vui lòng thử lại.");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -40,8 +93,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
     setIsLoading(true);
 
     try {
-      // Tạo user mới
-
       const response = await api.post("/auth/register", {
         email: values.email,
         password: values.password,
@@ -56,7 +107,6 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           "Đăng ký thành công! Vui lòng kiểm tra email để nhận mã OTP."
         );
 
-        // Reset form
         setValues({
           email: "",
           fullName: "",
@@ -65,13 +115,12 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           isOver18: false,
         });
 
-        // Chuyển đến trang nhập OTP
         setTimeout(() => {
-          onClose(); // đóng modal đăng ký
+          onClose();
           navigate("/otp", {
             state: {
               email: values.email,
-              type: "register", // 🔹 để OTPPage biết đây là xác minh khi đăng ký
+              type: "register",
             },
           });
         }, 800);
@@ -87,17 +136,21 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       setIsLoading(false);
     }
   };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create your account">
       {/* Google Sign Up */}
       <div className="flex flex-col items-center mb-6">
-        <button
-          type="button"
-          className="flex items-center gap-2 px-6 py-3 border-2 border-emerald-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-all"
-        >
-          <img src="/gg.png" alt="Google" className="w-5 h-5" />
-          <span className="text-emerald-700">Continue with Google</span>
-        </button>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+          theme="outline"
+          size="large"
+          text="signup_with"
+          shape="rectangular"
+          logo_alignment="left"
+        />
         <p className="text-gray-500 mt-4">or sign up with:</p>
       </div>
 
@@ -192,8 +245,8 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           <button
             type="button"
             onClick={() => {
-              onClose(); // đóng modal đăng ký
-              onSwitchToLogin(); // mở modal đăng nhập
+              onClose();
+              onSwitchToLogin();
             }}
             className="text-emerald-600 hover:text-emerald-700 hover:underline font-medium transition-colors duration-150"
           >

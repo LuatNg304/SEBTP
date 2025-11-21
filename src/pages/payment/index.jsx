@@ -169,7 +169,7 @@ const Payment = () => {
 
       console.log("📦 Order params:", params);
 
-      const response = await api.post("/buyer/orders/create", null, { params });
+      const response = await api.post("/buyer/orders/create",   params );
       console.log("✅ Order created:", response.data);
 
       toast.success("Đặt hàng thành công!");

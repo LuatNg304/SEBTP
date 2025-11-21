@@ -13,6 +13,7 @@ import { PiFileZip } from "react-icons/pi";
 import { ShoppingCart, User, Wallet } from "lucide-react";
 import api from "../../config/axios";
 import { toast } from "react-toastify";
+import NotificationBell from "./Notifications";
 
 const HomePage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -219,9 +220,10 @@ const HomePage = () => {
 
             {/* Right: Actions */}
             <div className="flex items-center justify-end gap-4">
-              <button className="p-2 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 active:scale-95">
+              
+              {/* <button >
                 <FiHeart className="h-6 w-6 text-gray-700 transition-colors duration-300 hover:text-red-500 hover:fill-red-500" />
-              </button>
+              </button> */}
 
               {account ? (
                 <>
@@ -247,7 +249,7 @@ const HomePage = () => {
                       Quản lý Shop
                     </button>
                   )}
-
+                  
                   <Dropdown
                     menu={{ items: getUserMenuItems() }}
                     placement="bottomRight"
@@ -259,11 +261,12 @@ const HomePage = () => {
                         alt="avatar"
                         className="w-8 h-8 rounded-full object-cover border border-gray-300 transition-all duration-300 hover:border-green-600"
                       />
-                      <span className="font-medium text-gray-700">
+                      <span className="font-medium text-black">
                         {account.user.fullName || "Người dùng"}
                       </span>
                     </button>
                   </Dropdown>
+                  <NotificationBell account={account} />
                 </>
               ) : (
                 <>
@@ -362,20 +365,7 @@ const HomePage = () => {
                   Xe điện
                 </NavLink>
               </li>
-              {/* <li>
-                <NavLink
-                  to="bike"
-                  className={({ isActive }) =>
-                    `font-medium px-3 py-1 rounded-md transition-all duration-300 ${
-                      isActive
-                        ? "text-white bg-green-600 shadow-md scale-105"
-                        : "text-green-600 hover:text-green-800 hover:bg-green-50 hover:scale-105"
-                    }`
-                  }
-                >
-                  Xe máy điện
-                </NavLink>
-              </li> */}
+
               <li>
                 <NavLink
                   to="pin"
