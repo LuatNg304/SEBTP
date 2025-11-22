@@ -45,6 +45,7 @@ import DepositPercentage from "./pages/admin/config/DepositPercentage";
 import Escrow from "./pages/admin/Transaction/Escrow";
 import NotFound from "./pages/404";
 import Unauthorized from "./pages/404/Unauthorized ";
+import EscrowTransaction from "./pages/admin/Transaction/EscrowTransaction";
 
 const router = createBrowserRouter([
   {
@@ -126,7 +127,10 @@ const router = createBrowserRouter([
         path: "depositPercentage",
         element: <DepositPercentage />,
       },
-
+      {
+        path: "escrowTransaction",
+        element: <EscrowTransaction />,
+      },
       {
         path: "escrow",
         element: <Escrow />,
@@ -192,10 +196,10 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFound />,
   },
-  {
-  path: "unauthorized",
-  element: <Unauthorized />,
-},
+//   {
+//   path: "unauthorized",
+//   element: <Unauthorized />,
+// },
 ]);
 
 function App() {
@@ -203,3 +207,4 @@ function App() {
 }
 
 export default App;
+

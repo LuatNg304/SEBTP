@@ -36,7 +36,7 @@ const items = [
     getItem("Phần trăm đặt cọc", "7", null, null, "/admin/depositPercentage"),
   ]),
   getItem("Giao dịch", "sub3", <TbTransactionYen />, [
-    getItem("Lịch sử giao dịch", "8", null, null, "/admin/sellerPackage"),
+    getItem("Lịch sử giao dịch", "8", null, null, "/admin/escrowTransaction"),
     getItem("Ký quỷ", "9", null, null, "/admin/escrow"),
     
   ]),
@@ -59,7 +59,7 @@ const Dashboard = () => {
       "/admin/sellerPackage": "5",
       "/admin/priorityPackage": "6",
       "/admin/depositPercentage": "7",
-      // "/admin/priorityPackage": "8",
+      "/admin/escrowTransaction": "8",
       "/admin/escrow": "9",
       // Thêm các path khác nếu cần
     };
@@ -70,6 +70,9 @@ const Dashboard = () => {
   const getOpenKeys = (pathname) => {
     if (pathname.startsWith("/admin/sellerPackage") || pathname === "/admin/priorityPackage"|| pathname === "/admin/depositPercentage") {
       return ["sub2"]; // Mở submenu "Gói dịch vụ"
+    }
+    if (pathname.startsWith("/admin/escrowTransaction") || pathname.startsWith("/admin/escrow")) {
+      return ["sub3"]; // Mở submenu "Bài đăng"
     }
     if (pathname.startsWith("/admin")) {
       return ["sub1"]; // Mở submenu "Bài đăng"

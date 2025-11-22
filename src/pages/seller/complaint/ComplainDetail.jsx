@@ -164,8 +164,10 @@ export default function ComplaintDetail() {
     const payload = {
       complaintId: Number(complaint.id),
       resolution: resolutionNotes,
+      reason: resolutionNotes,
       requestToAdmin: action === "admin",
       accepted: action === "accept",
+      
     };
     console.log(payload);
 
@@ -381,8 +383,10 @@ export default function ComplaintDetail() {
             </div>
 
             {/* Chỉ hiển thị Form Hành động nếu status là PENDING */}
-            {complaint.status === "SELLER_REVIEWING" ||
-            complaint.status === "BUYER_REJECTED" ? (
+            {complaint.status === "SELLER_REVIEWING" 
+            ||
+            complaint.status === "BUYER_REJECTED" 
+            ? (
               <div className="bg-white rounded-lg shadow-lg p-6 h-fit">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">
                   Hành động xử lý
